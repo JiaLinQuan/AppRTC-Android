@@ -23,7 +23,7 @@ import java.util.Scanner;
  */
 public class AsyncHttpURLConnection {
   private static final int HTTP_TIMEOUT_MS = 8000;
-  private static final String HTTP_ORIGIN = "https://apprtc.appspot.com";
+  private static final String HTTP_ORIGIN = "http://192.168.43.251:8443/call";//"https://apprtc.appspot.com";
   private final String method;
   private final String url;
   private final String message;

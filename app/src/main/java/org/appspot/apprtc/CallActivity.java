@@ -201,6 +201,7 @@ public class CallActivity extends Activity
     // Get Intent parameters.
     final Intent intent = getIntent();
     Uri roomUri = intent.getData();
+    Log.d(TAG, "connecting to:"+roomUri.toString());
     if (roomUri == null) {
       logAndToast(getString(R.string.missing_url));
       Log.e(TAG, "Didn't get any URL in intent!");
