@@ -26,12 +26,16 @@ public interface AppRTCClient {
    */
   public static class RoomConnectionParameters {
     public final String roomUrl;
-    public final String roomId;
+    public final String from;
+    public final String to;
     public final boolean loopback;
+
     public RoomConnectionParameters(
-        String roomUrl, String roomId, boolean loopback) {
+        String roomUrl, String from, String to,
+         boolean loopback) {
       this.roomUrl = roomUrl;
-      this.roomId = roomId;
+      this.from = from;
+      this.to = to;
       this.loopback = loopback;
     }
   }
@@ -46,7 +50,11 @@ public interface AppRTCClient {
   /**
    * Send offer SDP to the other participant.
    */
-  public void sendOfferSdp(final SessionDescription sdp);
+  public void call(final SessionDescription sdp);
+  /**
+   * Send offer SDP to the other participant.
+   */
+  //public void sendOfferSdp(final SessionDescription sdp);
 
   /**
    * Send answer SDP to the other participant.
@@ -69,22 +77,19 @@ public interface AppRTCClient {
   public static class SignalingParameters {
     public final List<PeerConnection.IceServer> iceServers;
     public final boolean initiator;
-    public final String clientId;
     public final String wssUrl;
-    public final String wssPostUrl;
+  //  public final String wssPostUrl;
     public final SessionDescription offerSdp;
     public final List<IceCandidate> iceCandidates;
 
     public SignalingParameters(
         List<PeerConnection.IceServer> iceServers,
-        boolean initiator, String clientId,
-        String wssUrl, String wssPostUrl,
+        boolean initiator,
+        String wssUrl,
         SessionDescription offerSdp, List<IceCandidate> iceCandidates) {
       this.iceServers = iceServers;
       this.initiator = initiator;
-      this.clientId = clientId;
       this.wssUrl = wssUrl;
-      this.wssPostUrl = wssPostUrl;
       this.offerSdp = offerSdp;
       this.iceCandidates = iceCandidates;
     }

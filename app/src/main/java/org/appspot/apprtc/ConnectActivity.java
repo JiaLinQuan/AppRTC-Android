@@ -25,7 +25,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.inputmethod.EditorInfo;
-import android.webkit.URLUtil;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
@@ -54,6 +53,7 @@ public class ConnectActivity extends Activity {
   private EditText roomEditText;
   private ListView roomListView;
   private SharedPreferences sharedPref;
+  private String keyprefFrom;
   private String keyprefVideoCallEnabled;
   private String keyprefResolution;
   private String keyprefFps;
@@ -84,6 +84,7 @@ public class ConnectActivity extends Activity {
     // Get setting keys.
     PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
     sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+    keyprefFrom = getString(R.string.pref_from_key);
     keyprefVideoCallEnabled = getString(R.string.pref_videocall_key);
     keyprefResolution = getString(R.string.pref_resolution_key);
     keyprefFps = getString(R.string.pref_fps_key);
@@ -146,7 +147,7 @@ public class ConnectActivity extends Activity {
           CallActivity.EXTRA_RUNTIME, 0);
       String room = sharedPref.getString(keyprefRoom, "");
       roomEditText.setText(room);
-      connectToRoom(loopback, runTimeMs);
+      connectToUser(loopback, runTimeMs);
       return;
     }
   }
@@ -225,25 +226,24 @@ public class ConnectActivity extends Activity {
         loopback = true;
       }
       commandLineRun = false;
-      connectToRoom(loopback, 0);
+      connectToUser(loopback, 0);
     }
   };
 
-  private void connectToRoom(boolean loopback, int runTimeMs) {
+  private void connectToUser(boolean loopback, int runTimeMs) {
     // Get room name (random for loopback).
-    String roomId;
+    String to;
     if (loopback) {
-      roomId = Integer.toString((new Random()).nextInt(100000000));
+      to = Integer.toString((new Random()).nextInt(100000000));
     } else {
-      roomId = getSelectedItem();
-      if (roomId == null) {
-        roomId = roomEditText.getText().toString();
+      to = getSelectedItem();
+      if (to == null) {
+        to = roomEditText.getText().toString();
       }
     }
-
+    String from = sharedPref.getString(keyprefFrom, getString(R.string.pref_from_default));
     String roomUrl = sharedPref.getString(
-        keyprefRoomServerUrl,
-        getString(R.string.pref_room_server_url_default));
+        keyprefRoomServerUrl,getString(R.string.pref_room_server_url_default));
 
     // Video call enabled flag.
     boolean videoCallEnabled = sharedPref.getBoolean(keyprefVideoCallEnabled,
@@ -341,12 +341,13 @@ public class ConnectActivity extends Activity {
             keyprefTracing, Boolean.valueOf(getString(R.string.pref_tracing_default)));
 
     // Start AppRTCDemo activity.
-    Log.d(TAG, "Connecting to room " + roomId + " at URL " + roomUrl);
+    Log.d(TAG, "Connecting from " + from + " at URL " + roomUrl);
     if (validateUrl(roomUrl)) {
       Uri uri = Uri.parse(roomUrl);
       Intent intent = new Intent(this, CallActivity.class);
       intent.setData(uri);
-      intent.putExtra(CallActivity.EXTRA_ROOMID, roomId);
+      intent.putExtra(CallActivity.EXTRA_FROM, from);
+      intent.putExtra(CallActivity.EXTRA_TO, to);
       intent.putExtra(CallActivity.EXTRA_LOOPBACK, loopback);
       intent.putExtra(CallActivity.EXTRA_VIDEO_CALL, videoCallEnabled);
       intent.putExtra(CallActivity.EXTRA_VIDEO_WIDTH, videoWidth);
@@ -358,8 +359,7 @@ public class ConnectActivity extends Activity {
       intent.putExtra(CallActivity.EXTRA_VIDEOCODEC, videoCodec);
       intent.putExtra(CallActivity.EXTRA_HWCODEC_ENABLED, hwCodec);
       intent.putExtra(CallActivity.EXTRA_CAPTURETOTEXTURE_ENABLED, captureToTexture);
-      intent.putExtra(CallActivity.EXTRA_NOAUDIOPROCESSING_ENABLED,
-          noAudioProcessing);
+      intent.putExtra(CallActivity.EXTRA_NOAUDIOPROCESSING_ENABLED,noAudioProcessing);
       intent.putExtra(CallActivity.EXTRA_AECDUMP_ENABLED, aecDump);
       intent.putExtra(CallActivity.EXTRA_OPENSLES_ENABLED, useOpenSLES);
       intent.putExtra(CallActivity.EXTRA_AUDIO_BITRATE, audioStartBitrate);
@@ -373,8 +373,10 @@ public class ConnectActivity extends Activity {
     }
   }
 
+
   private boolean validateUrl(String url) {
-    if (URLUtil.isHttpsUrl(url) || URLUtil.isHttpUrl(url)) {
+    //if (URLUtil.isHttpsUrl(url) || URLUtil.isHttpUrl(url)) {
+    if (isWSUrl(url) || isWSSUrl(url)) {
       return true;
     }
 
@@ -425,6 +427,21 @@ public class ConnectActivity extends Activity {
     } else {
       return null;
     }
+  }
+
+  public static boolean isWSUrl(String url) {
+    return (null != url) &&
+            (url.length() > 4) &&
+            url.substring(0, 5).equalsIgnoreCase("ws://");
+  }
+
+  /**
+   * @return True iff the url is an https: url.
+   */
+  public static boolean isWSSUrl(String url) {
+    return (null != url) &&
+            (url.length() > 5) &&
+            url.substring(0, 6).equalsIgnoreCase("wss://");
   }
 
 }

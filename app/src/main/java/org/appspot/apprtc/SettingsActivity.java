@@ -22,6 +22,11 @@ import android.preference.Preference;
 public class SettingsActivity extends Activity
     implements OnSharedPreferenceChangeListener{
   private SettingsFragment settingsFragment;
+
+
+  private String keyPrefRoomServerUrl;
+  private String keyPrefFrom;
+
   private String keyprefVideoCall;
   private String keyprefResolution;
   private String keyprefFps;
@@ -39,13 +44,16 @@ public class SettingsActivity extends Activity
   private String keyprefAecDump;
   private String keyprefOpenSLES;
 
-  private String keyPrefRoomServerUrl;
   private String keyPrefDisplayHud;
   private String keyPrefTracing;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
+
+    keyPrefRoomServerUrl = getString(R.string.pref_room_server_url_key);
+    keyPrefFrom = getString(R.string.pref_from_key);
+
     keyprefVideoCall = getString(R.string.pref_videocall_key);
     keyprefResolution = getString(R.string.pref_resolution_key);
     keyprefFps = getString(R.string.pref_fps_key);
@@ -63,7 +71,7 @@ public class SettingsActivity extends Activity
     keyprefAecDump = getString(R.string.pref_aecdump_key);
     keyprefOpenSLES = getString(R.string.pref_opensles_key);
 
-    keyPrefRoomServerUrl = getString(R.string.pref_room_server_url_key);
+
     keyPrefDisplayHud = getString(R.string.pref_displayhud_key);
     keyPrefTracing = getString(R.string.pref_tracing_key);
 
@@ -81,6 +89,10 @@ public class SettingsActivity extends Activity
     SharedPreferences sharedPreferences =
         settingsFragment.getPreferenceScreen().getSharedPreferences();
     sharedPreferences.registerOnSharedPreferenceChangeListener(this);
+
+    updateSummary(sharedPreferences, keyPrefRoomServerUrl);
+    updateSummary(sharedPreferences, keyPrefFrom);
+
     updateSummaryB(sharedPreferences, keyprefVideoCall);
     updateSummary(sharedPreferences, keyprefResolution);
     updateSummary(sharedPreferences, keyprefFps);
@@ -100,7 +112,7 @@ public class SettingsActivity extends Activity
     updateSummaryB(sharedPreferences, keyprefAecDump);
     updateSummaryB(sharedPreferences, keyprefOpenSLES);
 
-    updateSummary(sharedPreferences, keyPrefRoomServerUrl);
+
     updateSummaryB(sharedPreferences, keyPrefDisplayHud);
     updateSummaryB(sharedPreferences, keyPrefTracing);
   }
@@ -122,6 +134,7 @@ public class SettingsActivity extends Activity
         || key.equals(keyPrefVideoCodec)
         || key.equals(keyprefStartAudioBitrateType)
         || key.equals(keyPrefAudioCodec)
+        || key.equals(keyPrefFrom)
         || key.equals(keyPrefRoomServerUrl)) {
       updateSummary(sharedPreferences, key);
     } else if (key.equals(keyprefStartVideoBitrateValue)

@@ -47,46 +47,48 @@ public class CallActivity extends Activity
       PeerConnectionClient.PeerConnectionEvents,
       CallFragment.OnCallEvents {
 
-  public static final String EXTRA_ROOMID =
-      "org.appspot.apprtc.ROOMID";
+  public static final String EXTRA_FROM =
+      "de.lespace.mscwebrtc.FROM";
+  public static final String EXTRA_TO =
+          "de.lespace.mscwebrtc.TO";
   public static final String EXTRA_LOOPBACK =
-      "org.appspot.apprtc.LOOPBACK";
+      "de.lespace.mscwebrtc.LOOPBACK";
   public static final String EXTRA_VIDEO_CALL =
-      "org.appspot.apprtc.VIDEO_CALL";
+      "de.lespace.mscwebrtc.VIDEO_CALL";
   public static final String EXTRA_VIDEO_WIDTH =
-      "org.appspot.apprtc.VIDEO_WIDTH";
+      "de.lespace.mscwebrtc.VIDEO_WIDTH";
   public static final String EXTRA_VIDEO_HEIGHT =
-      "org.appspot.apprtc.VIDEO_HEIGHT";
+      "de.lespace.mscwebrtc.VIDEO_HEIGHT";
   public static final String EXTRA_VIDEO_FPS =
-      "org.appspot.apprtc.VIDEO_FPS";
+      "de.lespace.mscwebrtc.VIDEO_FPS";
   public static final String EXTRA_VIDEO_CAPTUREQUALITYSLIDER_ENABLED =
       "org.appsopt.apprtc.VIDEO_CAPTUREQUALITYSLIDER";
   public static final String EXTRA_VIDEO_BITRATE =
-      "org.appspot.apprtc.VIDEO_BITRATE";
+      "de.lespace.mscwebrtc.VIDEO_BITRATE";
   public static final String EXTRA_VIDEOCODEC =
-      "org.appspot.apprtc.VIDEOCODEC";
+      "de.lespace.mscwebrtc.VIDEOCODEC";
   public static final String EXTRA_HWCODEC_ENABLED =
-      "org.appspot.apprtc.HWCODEC";
+      "de.lespace.mscwebrtc.HWCODEC";
   public static final String EXTRA_CAPTURETOTEXTURE_ENABLED =
-      "org.appspot.apprtc.CAPTURETOTEXTURE";
+      "de.lespace.mscwebrtc.CAPTURETOTEXTURE";
   public static final String EXTRA_AUDIO_BITRATE =
-      "org.appspot.apprtc.AUDIO_BITRATE";
+      "de.lespace.mscwebrtc.AUDIO_BITRATE";
   public static final String EXTRA_AUDIOCODEC =
-      "org.appspot.apprtc.AUDIOCODEC";
+      "de.lespace.mscwebrtc.AUDIOCODEC";
   public static final String EXTRA_NOAUDIOPROCESSING_ENABLED =
-      "org.appspot.apprtc.NOAUDIOPROCESSING";
+      "de.lespace.mscwebrtc.NOAUDIOPROCESSING";
   public static final String EXTRA_AECDUMP_ENABLED =
-      "org.appspot.apprtc.AECDUMP";
+      "de.lespace.mscwebrtc.AECDUMP";
   public static final String EXTRA_OPENSLES_ENABLED =
-      "org.appspot.apprtc.OPENSLES";
+      "de.lespace.mscwebrtc.OPENSLES";
   public static final String EXTRA_DISPLAY_HUD =
-      "org.appspot.apprtc.DISPLAY_HUD";
-  public static final String EXTRA_TRACING = "org.appspot.apprtc.TRACING";
+      "de.lespace.mscwebrtc.DISPLAY_HUD";
+  public static final String EXTRA_TRACING = "de.lespace.mscwebrtc.TRACING";
   public static final String EXTRA_CMDLINE =
-      "org.appspot.apprtc.CMDLINE";
+      "de.lespace.mscwebrtc.CMDLINE";
   public static final String EXTRA_RUNTIME =
-      "org.appspot.apprtc.RUNTIME";
-  private static final String TAG = "CallRTCClient";
+      "de.lespace.mscwebrtc.RUNTIME";
+  private static final String TAG = "CallActivity";
 
   // List of mandatory application permissions.
   private static final String[] MANDATORY_PERMISSIONS = {
@@ -200,19 +202,27 @@ public class CallActivity extends Activity
 
     // Get Intent parameters.
     final Intent intent = getIntent();
-    Uri roomUri = intent.getData();
-    Log.d(TAG, "connecting to:"+roomUri.toString());
-    if (roomUri == null) {
-      logAndToast(getString(R.string.missing_url));
+    Uri wsurl = intent.getData();
+    Log.d(TAG, "connecting to:"+wsurl.toString());
+    if (wsurl == null) {
+      logAndToast(getString(R.string.missing_wsurl));
       Log.e(TAG, "Didn't get any URL in intent!");
       setResult(RESULT_CANCELED);
       finish();
       return;
     }
-    String roomId = intent.getStringExtra(EXTRA_ROOMID);
-    if (roomId == null || roomId.length() == 0) {
-      logAndToast(getString(R.string.missing_url));
-      Log.e(TAG, "Incorrect room ID in intent!");
+    String from = intent.getStringExtra(EXTRA_FROM);
+    String to = intent.getStringExtra(EXTRA_TO);
+    if (from == null || from.length() == 0) {
+      logAndToast(getString(R.string.missing_from));
+      Log.e(TAG, "Incorrect from in intent!");
+      setResult(RESULT_CANCELED);
+      finish();
+      return;
+    }
+    if (to == null || to.length() == 0) {
+      logAndToast(getString(R.string.missing_to));
+      Log.e(TAG, "Incorrect to in intent!");
       setResult(RESULT_CANCELED);
       finish();
       return;
@@ -237,11 +247,12 @@ public class CallActivity extends Activity
         intent.getBooleanExtra(EXTRA_OPENSLES_ENABLED, false));
     commandLineRun = intent.getBooleanExtra(EXTRA_CMDLINE, false);
     runTimeMs = intent.getIntExtra(EXTRA_RUNTIME, 0);
-
+    Log.i(TAG, "creating appRtcClient with roomUri:" + wsurl.toString()+" from:"+from+" to:"+to);
     // Create connection client and connection parameters.
     appRtcClient = new WebSocketRTCClient(this, new LooperExecutor());
+
     roomConnectionParameters = new RoomConnectionParameters(
-        roomUri.toString(), roomId, loopback);
+            wsurl.toString(), from, to, loopback);
 
     // Send intent arguments to fragments.
     callFragment.setArguments(intent.getExtras());
@@ -376,8 +387,8 @@ public class CallActivity extends Activity
     callStartedTimeMs = System.currentTimeMillis();
 
     // Start room connection.
-    logAndToast(getString(R.string.connecting_to,
-        roomConnectionParameters.roomUrl));
+    logAndToast(getString(R.string.connecting_to,roomConnectionParameters.roomUrl));
+
     appRtcClient.connectToRoom(roomConnectionParameters);
 
     // Create and audio manager that will take care of audio routing,
@@ -597,7 +608,8 @@ public class CallActivity extends Activity
         if (appRtcClient != null) {
           logAndToast("Sending " + sdp.type + ", delay=" + delta + "ms");
           if (signalingParameters.initiator) {
-            appRtcClient.sendOfferSdp(sdp);
+           // appRtcClient.sendOfferSdp(sdp);
+              appRtcClient.call(sdp);
           } else {
             appRtcClient.sendAnswerSdp(sdp);
           }

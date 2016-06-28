@@ -1,6 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     <PreferenceCategory
+        android:key="@string/pref_basicsettings_key"
+        android:title="@string/pref_basicsettings_title">
+
+        <EditTextPreference
+            android:key="@string/pref_room_server_url_key"
+            android:title="@string/pref_room_server_url_title"
+            android:inputType="text"
+            android:defaultValue="@string/pref_room_server_url_default"
+            android:dialogTitle="@string/pref_room_server_url_dlg" />
+
+        <EditTextPreference
+            android:key="@string/pref_from_key"
+            android:title="@string/pref_from_title"
+            android:inputType="text"
+            android:defaultValue="@string/pref_from_default"
+            android:dialogTitle="@string/pref_from_dlg" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
         android:key="@string/pref_videosettings_key"
         android:title="@string/pref_videosettings_title">
 
@@ -117,13 +137,6 @@
     <PreferenceCategory
         android:key="@string/pref_miscsettings_key"
         android:title="@string/pref_miscsettings_title">
-
-        <EditTextPreference
-            android:key="@string/pref_room_server_url_key"
-            android:title="@string/pref_room_server_url_title"
-            android:inputType="text"
-            android:defaultValue="@string/pref_room_server_url_default"
-            android:dialogTitle="@string/pref_room_server_url_dlg" />
 
         <CheckBoxPreference
             android:key="@string/pref_displayhud_key"
