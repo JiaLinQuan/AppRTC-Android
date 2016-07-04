@@ -284,7 +284,7 @@ public class WebSocketRTCClient implements AppRTCClient,
                 if(response.equals("rejected"))
                     reportError("register rejected: " + message);
 
-                if(response.equals("skipped")) Log.e(TAG, "registration was skipped because: "+message);
+                if(response.equals("skipped")) Log.e(TAG, "registration was skipped because: " + message);
           }
 
           if(id.equals("callResponse")){

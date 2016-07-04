@@ -52,6 +52,7 @@ public class ConnectActivity extends Activity {
   private ImageButton connectLoopbackButton;
   private EditText roomEditText;
   private ListView roomListView;
+  private ListView userListView;
   private SharedPreferences sharedPref;
   private String keyprefFrom;
   private String keyprefVideoCallEnabled;
@@ -123,6 +124,7 @@ public class ConnectActivity extends Activity {
     });
     roomEditText.requestFocus();
 
+    userListView = (ListView) findViewById(R.id.user_listview);
     roomListView = (ListView) findViewById(R.id.room_listview);
     roomListView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
 
@@ -135,6 +137,11 @@ public class ConnectActivity extends Activity {
     connectLoopbackButton =
         (ImageButton) findViewById(R.id.connect_loopback_button);
     connectLoopbackButton.setOnClickListener(connectListener);
+
+    // register user, if user name and room server URL is set
+    if (sharedPref.getString(keyprefRoomServerUrl, "").length() > 0 &&  sharedPref.getString(keyprefFrom, "").length() > 0) {
+      registerUser(sharedPref.getString(keyprefFrom, ""), sharedPref.getString(keyprefRoomServerUrl, ""));
+    }
 
     // If an implicit VIEW intent is launching the app, go directly to that URL.
     final Intent intent = getIntent();
@@ -230,6 +237,12 @@ public class ConnectActivity extends Activity {
     }
   };
 
+  /**
+   * Connects to a user
+   *
+   * @param loopback
+   * @param runTimeMs
+     */
   private void connectToUser(boolean loopback, int runTimeMs) {
     // Get room name (random for loopback).
     String to;
@@ -371,6 +384,17 @@ public class ConnectActivity extends Activity {
 
       startActivityForResult(intent, CONNECTION_REQUEST);
     }
+  }
+
+  /**
+   * Registers the user at the WebRTC-Server
+   *
+   * @return true, if registered successful
+     */
+  private boolean registerUser(String user, String roomServer) {
+    Log.d(TAG, "Register user " + user + " at room server " + roomServer);
+
+    return true;
   }
 
 

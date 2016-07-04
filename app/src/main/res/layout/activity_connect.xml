@@ -61,12 +61,22 @@
             android:maxLines="1"
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:text="@string/room_names"/>
+
+    <ListView
+        android:id="@+id/user_listview"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:choiceMode="singleChoice"
+        android:listSelector="@android:color/darker_gray"
+        android:drawSelectorOnTop="false" />
+
     <ListView
             android:id="@+id/room_listview"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:choiceMode="singleChoice"
             android:listSelector="@android:color/darker_gray"
-            android:drawSelectorOnTop="false" />
+            android:drawSelectorOnTop="false"
+        android:visibility="gone" />
 
 </LinearLayout>
