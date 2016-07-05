@@ -18,12 +18,15 @@ import java.util.concurrent.Executor;
 
 /**
  * Looper based executor class.
+ * A looper is a thread that runs in the background and processes Runnables
  */
 public class LooperExecutor extends Thread implements Executor {
     private static final String TAG = "LooperExecutor";
     // Object used to signal that looper thread has started and Handler instance
     // associated with looper thread has been allocated.
     private final Object looperStartedEvent = new Object();
+
+    // a handler passes a runnable to the thread, where it was created
     private Handler handler = null;
     private boolean running = false;
     private long threadId;
