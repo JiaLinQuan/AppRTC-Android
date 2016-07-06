@@ -58,8 +58,6 @@ public class WebSocketChannelClient {
         NEW, CONNECTED, REGISTERED, CLOSED, ERROR
     }
 
-    ;
-
     /**
      * Callback interface for messages delivered on WebSocket.
      * All events are dispatched from a looper executor thread.
@@ -79,6 +77,7 @@ public class WebSocketChannelClient {
         //clientID = null;
         wsSendQueue = new LinkedList<String>();
         state = WebSocketConnectionState.NEW;
+        this.executor.requestStart();
     }
 
     public WebSocketConnectionState getState() {
@@ -108,13 +107,41 @@ public class WebSocketChannelClient {
         }
     }
 
+    public void connect2(final String wsUrl) {
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                Log.i(TAG, "connect called: " + wsUrl);
+                checkIfCalledOnValidThread();
+                if (state != WebSocketConnectionState.NEW) {
+                    Log.e(TAG, "WebSocket is already connected.");
+                    return;
+                }
+                wsServerUrl = wsUrl;
+                //postServerUrl = postUrl;
+                closeEvent = false;
+
+                Log.i(TAG, "Connecting WebSocket to: " + wsUrl); //json.getString("appConfigResponse")
+                ws = new WebSocketConnection();
+                wsObserver = new WebSocketObserver();
+                try {
+                    ws.connect(new URI(wsServerUrl), wsObserver);
+                } catch (URISyntaxException e) {
+                    reportError("URI error: " + e.getMessage());
+                } catch (WebSocketException e) {
+                    reportError("WebSocket connection error: " + e.getMessage());
+                }
+            }
+        });
+    }
+
     public void register(final String from) {
         Log.d(TAG, "Registering user " + from);
         checkIfCalledOnValidThread();
         this.from = from;
         // this.clientID = clientID;
         if (state != WebSocketConnectionState.CONNECTED) {
-            Log.w(TAG, "WebSocket register() in state " + state);
+            Log.w(TAG, "Cannot register user! WebSocket register() in state " + state);
             return;
         }
 
@@ -134,6 +161,39 @@ public class WebSocketChannelClient {
         } catch (JSONException e) {
             reportError("WebSocket register JSON error: " + e.getMessage());
         }
+    }
+
+    public void register2(final String from) {
+        this.from = from;
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                Log.d(TAG, "Registering user " + from);
+                checkIfCalledOnValidThread();
+                // this.clientID = clientID;
+                if (state != WebSocketConnectionState.CONNECTED) {
+                    Log.w(TAG, "Cannot register user! WebSocket register() in state " + state);
+                    return;
+                }
+
+                JSONObject json = new JSONObject();
+                try {
+                    json.put("id", "register"); //json.put("cmd", "register");
+                    json.put("name", from);
+                    //  json.put("clientid", clientID);
+                    Log.d(TAG, "C->WSS: " + json.toString());
+                    ws.sendTextMessage(json.toString());
+                    state = WebSocketConnectionState.REGISTERED;
+                    // Send any previously accumulated messages.
+                    for (String sendMessage : wsSendQueue) {
+                        send(sendMessage);
+                    }
+                    wsSendQueue.clear();
+                } catch (JSONException e) {
+                    reportError("WebSocket register JSON error: " + e.getMessage());
+                }
+            }
+        });
     }
 
     public void send(String message) {

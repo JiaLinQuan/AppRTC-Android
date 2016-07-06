@@ -32,6 +32,7 @@ import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import org.appspot.apprtc.util.LooperExecutor;
 import org.json.JSONArray;
 import org.json.JSONException;
 
@@ -545,7 +546,39 @@ public class ConnectActivity extends Activity {
     private boolean registerUser(String user, String roomServer) {
         Log.d(TAG, "Register user " + user + " at room server " + roomServer);
 
-        return true;
+        if (validateUrl(roomServer)) {
+            Uri uri = Uri.parse(roomServer);
+
+            WebSocketChannelClient wsClient = new WebSocketChannelClient(new LooperExecutor(), new WebSocketChannelClient.WebSocketChannelEvents() {
+                @Override
+                public void onWebSocketMessage(String message) {
+                    Log.d(TAG, "onWebSocketMessage: " + message);
+                }
+
+                @Override
+                public void onWebSocketClose() {
+
+                }
+
+                @Override
+                public void onWebSocketError(String description) {
+                    Log.d(TAG, "onWebSocketError: " + description);
+                }
+            });
+
+            wsClient.connect2(roomServer);
+            while (wsClient.getState() == WebSocketChannelClient.WebSocketConnectionState.NEW) {
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+            wsClient.register2(user);
+
+            return true;
+        }
+        return false;
     }
 
 
