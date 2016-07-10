@@ -16,6 +16,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -33,9 +34,16 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import org.appspot.apprtc.util.LooperExecutor;
+import org.java_websocket.WebSocket;
+import org.java_websocket.client.WebSocketClient;
+import org.java_websocket.drafts.Draft_17;
+import org.java_websocket.handshake.ServerHandshake;
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -547,9 +555,14 @@ public class ConnectActivity extends Activity {
         Log.d(TAG, "Register user " + user + " at room server " + roomServer);
 
         if (validateUrl(roomServer)) {
-            Uri uri = Uri.parse(roomServer);
+            URI uri = null;
+            try {
+                uri = new URI(roomServer + "/ws");
+            } catch (URISyntaxException e) {
+                e.printStackTrace();
+            }
 
-            WebSocketChannelClient wsClient = new WebSocketChannelClient(new LooperExecutor(), new WebSocketChannelClient.WebSocketChannelEvents() {
+            /*WebSocketChannelClient wsClient = new WebSocketChannelClient(new LooperExecutor(), new WebSocketChannelClient.WebSocketChannelEvents() {
                 @Override
                 public void onWebSocketMessage(String message) {
                     Log.d(TAG, "onWebSocketMessage: " + message);
@@ -567,14 +580,55 @@ public class ConnectActivity extends Activity {
             });
 
             wsClient.connect2(roomServer);
-            while (wsClient.getState() == WebSocketChannelClient.WebSocketConnectionState.NEW) {
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+            if (wsClient.getState() == WebSocketChannelClient.WebSocketConnectionState.CONNECTED) {
+                wsClient.register2(user);
+            } else {
+                Log.d(TAG, "Not yet connected");
+            }*/
+
+            final WebSocketClient websocket = new WebSocketClient(uri, new Draft_17()) {
+                @Override
+                public void onOpen(ServerHandshake serverHandshake) {
+                    Log.i("Websocket", "Opened");
                 }
+
+                @Override
+                public void onMessage(String s) {
+                    /*final String message = s;
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            TextView textView = (TextView)findViewById(R.id.messages);
+                            textView.setText(textView.getText() + "\n" + message);
+                        }
+                    });*/
+                    Log.i("Websocket", "Received: " + s);
+                }
+
+                @Override
+                public void onClose(int i, String s, boolean b) {
+                    Log.i("Websocket", "Closed: " + s);
+                }
+
+                @Override
+                public void onError(Exception e) {
+                    Log.i("Websocket", "Error: " + e.getMessage());
+                }
+            };
+
+            try {
+                if (websocket.connectBlocking()) {
+                    JSONObject json = new JSONObject();
+                    try {
+                        json.put("id", "register");
+                        json.put("name", user);
+                    } catch (JSONException e) {
+                        Log.e(TAG, "WebSocket register JSON error: " + e.getMessage());
+                    }
+                }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
-            wsClient.register2(user);
 
             return true;
         }
