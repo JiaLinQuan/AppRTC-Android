@@ -4,15 +4,12 @@ Android Studio project for AppRTCDemo of WebRTC project. The revision number of 
 https://chromium.googlesource.com/external/webrtc/+/250fc658c56cb3c6944bd0fd1b88973f2e6d1ced
 
 
-##This version was modified to work with websockets only and is currently presentable with the java version 
-of media server. see: https://github.com/inspiraluna/AppRTC-Kurento-Example
+##This version was modified to work with websockets only and is currently presentable with the java version of kurento media server at https://github.com/inspiraluna/AppRTC-Kurento-Example
 
 ##Todo:
 - on app start call "appConfig"  and "register username" from setttings
-- handle call/callResponse in android
-- accept/reject incoming calls
-
-##specials
+- handle call from browser to android
+- accept/reject incoming calls - with audio/visual alarm and ringtone
 - read registered users from registry / and display as users in Android App
 - request runtime permission for android 6 (marshmellow) devices 
 

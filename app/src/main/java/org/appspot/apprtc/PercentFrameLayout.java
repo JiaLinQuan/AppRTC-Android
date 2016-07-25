@@ -65,7 +65,7 @@ public class PercentFrameLayout extends ViewGroup {
     for (int i = 0; i < getChildCount(); ++i) {
       final View child = getChildAt(i);
       if (child.getVisibility() != GONE) {
-        child.measure(childWidthMeasureSpec, childHeightMeasureSpec);
+       // child.measure(childWidthMeasureSpec, childHeightMeasureSpec);
       }
     }
   }

@@ -10,9 +10,10 @@
 
 package org.appspot.apprtc;
 
-import org.appspot.apprtc.RoomParametersFetcher.RoomParametersFetcherEvents;
+
 import org.appspot.apprtc.WebSocketChannelClient.WebSocketChannelEvents;
 import org.appspot.apprtc.WebSocketChannelClient.WebSocketConnectionState;
+import org.appspot.apprtc.util.AppRTCUtils;
 import org.appspot.apprtc.util.LooperExecutor;
 
 import android.util.Log;
@@ -31,16 +32,15 @@ import java.util.LinkedList;
  * Uses the client<->server specifics of the apprtc AppEngine webapp.
  *
  * <p>To use: create an instance of this object (registering a message handler) and
- * call connectToRoom().  Once room connection is established
+ * call connectToWebsocket().  Once room connection is established
  * onConnectedToRoom() callback with room parameters is invoked.
  * Messages to other party (with local Ice candidates and answer SDP) can
  * be sent after WebSocket connection is established.
  */
-public class WebSocketRTCClient implements AppRTCClient,
-    WebSocketChannelEvents {
+public class WebSocketRTCClient implements AppRTCClient, WebSocketChannelEvents {
 
     private static final String TAG = "WebSocketRTCClient";
-    private RoomParametersFetcher roomParametersFetcher;
+
 
   private enum ConnectionState {
     NEW, CONNECTED, CLOSED, ERROR
@@ -50,29 +50,212 @@ public class WebSocketRTCClient implements AppRTCClient,
   };
   private final LooperExecutor executor;
   private boolean initiator;
-  private SignalingEvents events;
-  private WebSocketChannelClient wsClient;
-  private ConnectionState roomState;
-  private RoomConnectionParameters connectionParameters;
 
-  public WebSocketRTCClient(SignalingEvents events, LooperExecutor executor) {
-    this.events = events;
-    this.executor = executor;
-    roomState = ConnectionState.NEW;
-    executor.requestStart();
+    private WebSocketChannelClient wsClient;
+    private WebSocketConnectionState socketState;
+    private RoomConnectionParameters connectionParameters;
+
+
+    private SignalingEvents events;
+    public WebSocketRTCClient(SignalingEvents events, LooperExecutor executor) {
+        this.executor = executor;
+        this.socketState = WebSocketConnectionState.NEW;
+        this.events = events;
+
+     executor.requestStart();
   }
+    // --------------------------------------------------------------------
+    // WebSocketChannelEvents interface implementation.
+    // All events are called by WebSocketChannelClient on a local looper thread
+    // (passed to WebSocket client constructor).
+    @Override
+    public void onWebSocketMessage(final String msg){
+        try {
 
+            JSONObject json = new JSONObject(msg);
+
+            if (socketState != WebSocketConnectionState.REGISTERED) {
+                Log.e(TAG, "websocket still in non registered state.");
+
+                if (json.getString("params")!=null) {
+                    Log.i(TAG, "Got appConfig"+msg+" parsing into roomParameters");
+                    //this.roomParametersFetcher.parseAppConfig(msg);
+
+                        Log.i(TAG, "app config: " + msg);
+                        try {
+
+
+                            JSONObject appConfig = new JSONObject(msg);
+
+                            String result = appConfig.getString("result");
+                            Log.i(TAG, "client debug ");
+                            if (!result.equals("SUCCESS")) {
+                                return;
+                            }
+
+                            String params = appConfig.getString("params");
+                            appConfig = new JSONObject(params);
+
+
+                            LinkedList<PeerConnection.IceServer> iceServers = iceServersFromPCConfigJSON(appConfig.getString("pc_config"));
+
+                            AppRTCClient.SignalingParameters signalingParameters = new SignalingParameters(iceServers);
+
+
+                            wsClient.register(connectionParameters.from);
+                        } catch (JSONException e) {
+                         //   events.onSignalingParametersError("Room JSON parsing error: " + e.toString());
+                        }
+                    }
+                    socketState = WebSocketConnectionState.REGISTERED;
+                return;
+            }
+
+
+
+            String id = "";
+            String response = "";
+
+            if(json.has("id")) id = json.getString("id");
+
+            if(id.equals("registerResponse")){
+
+                response = json.getString("response"); //TODO if not accepted what todo?
+                String message = json.getString("message");
+
+                if(response.equals("rejected"))
+                    reportError("register rejected: " + message);
+
+                if(response.equals("skipped")) Log.e(TAG, "registration was skipped because: "+message);
+            }
+
+            if(id.equals("registeredUsers")){
+                response = json.getString("response"); //TODO if not accepted what todo?
+                Log.d(TAG, "what to do with the users coming from the system all the time? display it in the app?"+response);
+            }
+
+
+            if(id.equals("callResponse")){
+                response = json.getString("response");
+
+                if(response.startsWith("rejected")) {
+                    reportError("call rejected:" + response);
+                    //events.onChannelClose();
+                }else{ //could be an offer too! ?! (probably)
+                    Log.d(TAG, "sending sdpAnswer: "+response);
+                    SessionDescription sdp = new SessionDescription(
+                            SessionDescription.Type.ANSWER,json.getString("sdpAnswer"));
+
+                    events.onRemoteDescription(sdp);
+                }
+            }
+
+            if(id.equals("incomingCall")){ //looks like some reject messages! other wise create offer for
+                Log.d(TAG, "incomingCall "+json.toString());
+
+                SessionDescription sdp = new SessionDescription(SessionDescription.Type.OFFER,json.getString("sdp"));
+
+                events.onRemoteDescription(sdp);
+
+                //if call state is busy reply with json reponse rejected because bussy
+
+                //create confirm dialog (answer call from xy) if yes create webrtc connection and generateOffer for caller
+
+                //if no reply with json response rejected because
+            }
+
+            if(id.equals("startCommunication")){
+                Log.d(TAG, "startCommunication "+json.toString());
+
+                SessionDescription sdp = new SessionDescription(SessionDescription.Type.ANSWER,json.getString("sdp"));
+
+                events.onRemoteDescription(sdp);
+
+            }
+
+            if(id.equals("stopCommunication")){
+                Log.d(TAG, "stopCommunication "+json.toString());
+
+            }
+
+            if(id.equals("iceCandidate")){
+                Log.d(TAG, "iceCandidate "+json.toString());
+
+                JSONObject candidateJson = json.getJSONObject("candidate");
+
+
+                IceCandidate candidate = new IceCandidate(
+                        candidateJson.getString("sdpMid"),
+                        candidateJson.getInt("sdpMLineIndex"),
+                        candidateJson.getString("candidate"));
+
+                events.onRemoteIceCandidate(candidate);
+            }
+            if (id.equals("stop")) {
+                events.onChannelClose();
+            }
+
+          /*
+          if (msgText.length() > 0) {
+
+              json = new JSONObject(msgText);
+              String type = json.optString("type");
+
+          if (type.equals("candidate")) {
+
+            IceCandidate candidate = new IceCandidate(
+              json.getString("id"),
+              json.getInt("label"),
+              json.getString("candidate"));
+
+              events.onRemoteIceCandidate(candidate);
+
+          } else if (type.equals("answer")) {
+
+              if (initiator) {
+                SessionDescription sdp = new SessionDescription(
+                SessionDescription.Type.fromCanonicalForm(type),
+                json.getString("sdp"));
+                events.onRemoteDescription(sdp);
+          } else {
+            reportError("Received answer for call initiator: " + msg);
+          }
+        } else if (type.equals("offer")) {
+          if (!initiator) {
+            SessionDescription sdp = new SessionDescription(
+                SessionDescription.Type.fromCanonicalForm(type),
+                json.getString("sdp"));
+            events.onRemoteDescription(sdp);
+          } else {
+            reportError("Received offer for call receiver: " + msg);
+          }
+        } else if (type.equals("bye")) {
+          events.onChannelClose();
+        } else {
+          reportError("Unexpected WebSocket message: " + msg);
+        }
+      } else {
+        if (errorText != null && errorText.length() > 0) {
+          reportError("WebSocket error message: " + errorText);
+        } else {
+          //reportError("Unexpected WebSocket message: " + msg);
+        }
+      }*/
+        } catch (JSONException e) {
+            reportError("WebSocket message JSON parsing error: " + e.toString());
+        }
+    }
   // --------------------------------------------------------------------
   // AppRTCClient interface implementation.
   // Asynchronously connect to an AppRTC room URL using supplied connection
   // parameters, retrieves room parameters and connect to WebSocket server.
   @Override
-  public void connectToRoom(RoomConnectionParameters connectionParameters) {
+  public void connectToWebsocket(RoomConnectionParameters connectionParameters) {
     this.connectionParameters = connectionParameters;
     executor.execute(new Runnable() {
       @Override
       public void run() {
-        connectToRoomInternal();
+        connectToWebsocketInternal();
       }
     });
   }
@@ -88,91 +271,72 @@ public class WebSocketRTCClient implements AppRTCClient,
     executor.requestStop();
   }
 
-  // Connects to room - function runs on a local looper thread.
-  private void connectToRoomInternal() {
+  // Connects to websocket - function runs on a local looper thread.
+  private void connectToWebsocketInternal() {
+
       String connectionUrl = getConnectionUrl(connectionParameters);
 
-      roomState = ConnectionState.NEW;
+      socketState = WebSocketConnectionState.NEW;
       wsClient = new WebSocketChannelClient(executor, this);
       wsClient.connect(connectionUrl);
 
+      //socketState = WebSocketConnectionState.CONNECTED;
+   //   wsClient.getState() = socketState;
+
       Log.d(TAG, "wsClient connect " + connectionUrl);
 
-      RoomParametersFetcherEvents callbacks = new RoomParametersFetcherEvents() {
-      @Override
-      public void onSignalingParametersReady(
-          final SignalingParameters params) {
-        WebSocketRTCClient.this.executor.execute(new Runnable() {
-          @Override
-          public void run() {
-            WebSocketRTCClient.this.signalingParametersReady(params);
-          }
-        });
-      }
-
-      @Override
-      public void onSignalingParametersError(String description) {
-        WebSocketRTCClient.this.reportError(description);
-      }
-    };
-
-    this.roomParametersFetcher = new RoomParametersFetcher(connectionUrl, wsClient, callbacks);
-      this.roomParametersFetcher.makeRequest();
   }
 
   // Disconnect from room and send bye messages - runs on a local looper thread.
   private void disconnectFromRoomInternal() {
-    Log.d(TAG, "Disconnect. Room state: " + roomState);
-    if (roomState == ConnectionState.CONNECTED) {
+    Log.d(TAG, "Disconnect. Room state: " + socketState);
+    if (socketState == WebSocketConnectionState.CONNECTED) {
         Log.d(TAG, "Closing room.");
         JSONObject jsonMessage = new JSONObject();
         jsonPut(jsonMessage, "id" , "stop");
         wsClient.send(jsonMessage.toString());
     }
-    roomState = ConnectionState.CLOSED;
+    socketState = WebSocketConnectionState.CLOSED;
     if (wsClient != null) {
       wsClient.disconnect(true);
     }
   }
 
-  // Helper functions to get connection, post message and leave message URLs
+  // Helper functions to get connection, sendSocketMessage message and leave message URLs
   private String getConnectionUrl(RoomConnectionParameters connectionParameters) {
     return connectionParameters.roomUrl+"/ws";
   }
 
-  // Callback issued when room parameters are extracted. Runs on local
-  // looper thread.
-  private void signalingParametersReady(
-      final SignalingParameters signalingParameters) {
-    Log.d(TAG, "Room connection completed.");
-    if (connectionParameters.loopback
-        && (!signalingParameters.initiator
-            || signalingParameters.offerSdp != null)) {
-      reportError("Loopback room is busy.");
-      return;
-    }
-    if (!connectionParameters.loopback
-        && !signalingParameters.initiator
-        && signalingParameters.offerSdp == null) {
-      Log.w(TAG, "No offer SDP in room response.");
-    }
-      initiator = signalingParameters.initiator;
-      roomState = ConnectionState.CONNECTED;
 
-    // Fire connection and signaling parameters events.
-    events.onConnectedToRoom(signalingParameters);
 
-    // Connect and register WebSocket client.
-      wsClient.connect(signalingParameters.wssUrl);
-      wsClient.register(connectionParameters.from);
-  }
+    // Return the list of ICE servers described by a WebRTCPeerConnection
+    // configuration string.
+    private LinkedList<PeerConnection.IceServer> iceServersFromPCConfigJSON(String pcConfig) throws JSONException {
+        JSONObject json = new JSONObject(pcConfig);
+        Log.d(TAG, "current pcConfig: " + pcConfig);
+        JSONObject iceJson  = json.getJSONObject("iceServers");
+
+        LinkedList<PeerConnection.IceServer> turnServers =  new LinkedList<PeerConnection.IceServer>();
+        String username = iceJson.getString("username");
+        String password = iceJson.getString("password");
+        JSONArray turnUris = iceJson.getJSONArray("uris");
+
+        for (int i = 0; i < turnUris.length(); i++) {
+            String uri = turnUris.getString(i);
+            Log.d(TAG, "adding ice server: " + uri+" username:"+username+" password:"+password);
+            turnServers.add(new PeerConnection.IceServer(uri, username, password));
+        }
+
+        return turnServers;
+
+    }
 
   public void call(final SessionDescription sdp)  {
       executor.execute(new Runnable() {
           @Override
           public void run() {
-              if (roomState != ConnectionState.CONNECTED) {
-                  reportError("Sending offer SDP in non connected state.");
+              if (socketState != WebSocketConnectionState.REGISTERED) {
+                  reportError("Sending offer SDP in non registered state.");
                   return;
               }
 
@@ -229,7 +393,7 @@ public class WebSocketRTCClient implements AppRTCClient,
 
           if (initiator) {
           // Call initiator sends ice candidates to GAE server.
-              if (roomState != ConnectionState.CONNECTED) {
+              if (socketState != WebSocketConnectionState.CONNECTED) {
                 reportError("Sending ICE candidate in non connected state.");
                 return;
               }
@@ -246,160 +410,7 @@ public class WebSocketRTCClient implements AppRTCClient,
     });
   }
 
-  // --------------------------------------------------------------------
-  // WebSocketChannelEvents interface implementation.
-  // All events are called by WebSocketChannelClient on a local looper thread
-  // (passed to WebSocket client constructor).
-  @Override
-  public void onWebSocketMessage(final String msg){
-      try {
 
-          JSONObject json = new JSONObject(msg);
-
-          if (wsClient.getState() != WebSocketConnectionState.REGISTERED) {
-              Log.e(TAG, "Got WebSocket message in non registered state.");
-
-                if (json.getString("params")!=null) {
-                    Log.i(TAG, "Got appConfig"+msg+" parsing into roomParameters");
-                    this.roomParametersFetcher.roomHttpResponseParse(msg);
-                }
-              return;
-          }
-
-          String msgText = ""; //old
-          String errorText = null; //old
-
-          String id = ""; //kurentostyle
-          String response = ""; //kurentostyle
-
-          if(json.has("msg")) msgText = json.getString("msg");
-          if(json.has("error")) errorText = json.optString("error");
-          if(json.has("id")) id = json.getString("id");
-
-          if(id.equals("registerResponse")){
-
-                response = json.getString("response"); //TODO if not accepted what todo?
-                String message = json.getString("message");
-
-                if(response.equals("rejected"))
-                    reportError("register rejected: " + message);
-
-                if(response.equals("skipped")) Log.e(TAG, "registration was skipped because: "+message);
-          }
-
-          if(id.equals("callResponse")){
-              response = json.getString("response");
-
-              if(response.startsWith("rejected")) {
-                  reportError("call rejected:" + response);
-                  events.onChannelClose();
-              }else{
-                  Log.d(TAG, "sending sdpAnswer: "+response);
-                  SessionDescription sdp = new SessionDescription(
-                          SessionDescription.Type.ANSWER,json.getString("sdpAnswer"));
-
-                  events.onRemoteDescription(sdp);
-              }
-          }
-
-          if(id.equals("incomingCall")){ //looks like some reject messages! other wise create offer for
-              Log.d(TAG, "incomingCall "+json.toString());
-
-              SessionDescription sdp = new SessionDescription(
-                      SessionDescription.Type.OFFER,
-                      json.getString("sdp"));
-
-              events.onRemoteDescription(sdp);
-
-              //if call state is busy reply with json reponse rejected because bussy
-
-              //create confirm dialog (answer call from xy) if yes create webrtc connection and generateOffer for caller
-
-              //if no reply with json response rejected because
-          }
-
-          if(id.equals("startCommunication")){
-              Log.d(TAG, "startCommunication "+json.toString());
-
-              SessionDescription sdp = new SessionDescription(
-                      SessionDescription.Type.ANSWER,json.getString("sdp"));
-
-              events.onRemoteDescription(sdp);
-
-          }
-
-          if(id.equals("stopCommunication")){
-              Log.d(TAG, "stopCommunication "+json.toString());
-
-          }
-
-          if(id.equals("iceCandidate")){
-              Log.d(TAG, "iceCandidate "+json.toString());
-
-              JSONObject candidateJson = json.getJSONObject("candidate");
-
-
-              IceCandidate candidate = new IceCandidate(
-                      candidateJson.getString("sdpMid"),
-                      candidateJson.getInt("sdpMLineIndex"),
-                      candidateJson.getString("candidate"));
-
-             events.onRemoteIceCandidate(candidate);
-          }
-          if (id.equals("stop")) {
-              events.onChannelClose();
-          }
-
-          /*
-          if (msgText.length() > 0) {
-
-              json = new JSONObject(msgText);
-              String type = json.optString("type");
-
-          if (type.equals("candidate")) {
-
-            IceCandidate candidate = new IceCandidate(
-              json.getString("id"),
-              json.getInt("label"),
-              json.getString("candidate"));
-
-              events.onRemoteIceCandidate(candidate);
-
-          } else if (type.equals("answer")) {
-
-              if (initiator) {
-                SessionDescription sdp = new SessionDescription(
-                SessionDescription.Type.fromCanonicalForm(type),
-                json.getString("sdp"));
-                events.onRemoteDescription(sdp);
-          } else {
-            reportError("Received answer for call initiator: " + msg);
-          }
-        } else if (type.equals("offer")) {
-          if (!initiator) {
-            SessionDescription sdp = new SessionDescription(
-                SessionDescription.Type.fromCanonicalForm(type),
-                json.getString("sdp"));
-            events.onRemoteDescription(sdp);
-          } else {
-            reportError("Received offer for call receiver: " + msg);
-          }
-        } else if (type.equals("bye")) {
-          events.onChannelClose();
-        } else {
-          reportError("Unexpected WebSocket message: " + msg);
-        }
-      } else {
-        if (errorText != null && errorText.length() > 0) {
-          reportError("WebSocket error message: " + errorText);
-        } else {
-          //reportError("Unexpected WebSocket message: " + msg);
-        }
-      }*/
-    } catch (JSONException e) {
-      reportError("WebSocket message JSON parsing error: " + e.toString());
-    }
-  }
 
   @Override
   public void onWebSocketClose() {
@@ -418,8 +429,8 @@ public class WebSocketRTCClient implements AppRTCClient,
     executor.execute(new Runnable() {
       @Override
       public void run() {
-        if (roomState != ConnectionState.ERROR) {
-          roomState = ConnectionState.ERROR;
+        if (socketState != WebSocketConnectionState.ERROR) {
+          socketState = WebSocketConnectionState.ERROR;
           events.onChannelError(errorMessage);
         }
       }

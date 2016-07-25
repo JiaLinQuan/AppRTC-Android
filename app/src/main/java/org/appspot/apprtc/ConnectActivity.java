@@ -10,9 +10,6 @@
 
 package org.appspot.apprtc;
 
-import android.app.Activity;
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -41,18 +38,15 @@ import java.util.Random;
 /**
  * Handles the initial setup where the user selects which room to join.
  */
-public class ConnectActivity extends Activity {
+public class ConnectActivity extends RTCConnection {
+
   private static final String TAG = "ConnectActivity";
-  private static final int CONNECTION_REQUEST = 1;
   private static boolean commandLineRun = false;
 
   private ImageButton addRoomButton;
   private ImageButton removeRoomButton;
   private ImageButton connectButton;
   private ImageButton connectLoopbackButton;
-  private EditText roomEditText;
-  private ListView roomListView;
-  private SharedPreferences sharedPref;
   private String keyprefFrom;
   private String keyprefVideoCallEnabled;
   private String keyprefResolution;
@@ -74,12 +68,18 @@ public class ConnectActivity extends Activity {
   private String keyprefRoomServerUrl;
   private String keyprefRoom;
   private String keyprefRoomList;
+  private ListView roomListView;
+  private EditText roomEditText;
   private ArrayList<String> roomList;
   private ArrayAdapter<String> adapter;
+  private boolean loopback;
+  private Intent intent = null;
 
   @Override
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
+
+    setContentView(R.layout.activity_connect);
 
     // Get setting keys.
     PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
@@ -105,8 +105,130 @@ public class ConnectActivity extends Activity {
     keyprefRoomServerUrl = getString(R.string.pref_room_server_url_key);
     keyprefRoom = getString(R.string.pref_room_key);
     keyprefRoomList = getString(R.string.pref_room_list_key);
+    callFragment = new CallFragment();
+    hudFragment = new HudFragment();
+    from = sharedPref.getString(keyprefFrom, getString(R.string.pref_from_default));
+    String roomUrl = sharedPref.getString(
+            keyprefRoomServerUrl,getString(R.string.pref_room_server_url_default));
 
-    setContentView(R.layout.activity_connect);
+    // Video call enabled flag.
+    boolean videoCallEnabled = sharedPref.getBoolean(keyprefVideoCallEnabled,
+            Boolean.valueOf(getString(R.string.pref_videocall_default)));
+
+    // Get default codecs.
+    String videoCodec = sharedPref.getString(keyprefVideoCodec,getString(R.string.pref_videocodec_default));
+    String audioCodec = sharedPref.getString(keyprefAudioCodec,getString(R.string.pref_audiocodec_default));
+
+    // Check HW codec flag.
+    boolean hwCodec = sharedPref.getBoolean(keyprefHwCodecAcceleration,Boolean.valueOf(getString(R.string.pref_hwcodec_default)));
+
+    // Check Capture to texture.
+    boolean captureToTexture = sharedPref.getBoolean(keyprefCaptureToTexture,Boolean.valueOf(getString(R.string.pref_capturetotexture_default)));
+
+    // Check Disable Audio Processing flag.
+    boolean noAudioProcessing = sharedPref.getBoolean(keyprefNoAudioProcessingPipeline,Boolean.valueOf(getString(R.string.pref_noaudioprocessing_default)));
+
+    // Check Disable Audio Processing flag.
+    boolean aecDump = sharedPref.getBoolean(keyprefAecDump,Boolean.valueOf(getString(R.string.pref_aecdump_default)));
+
+    // Check OpenSL ES enabled flag.
+    boolean useOpenSLES = sharedPref.getBoolean(
+            keyprefOpenSLES,
+            Boolean.valueOf(getString(R.string.pref_opensles_default)));
+
+    // Get video resolution from settings.
+    int videoWidth = 0;
+    int videoHeight = 0;
+    String resolution = sharedPref.getString(keyprefResolution,
+            getString(R.string.pref_resolution_default));
+    String[] dimensions = resolution.split("[ x]+");
+    if (dimensions.length == 2) {
+      try {
+        videoWidth = Integer.parseInt(dimensions[0]);
+        videoHeight = Integer.parseInt(dimensions[1]);
+      } catch (NumberFormatException e) {
+        videoWidth = 0;
+        videoHeight = 0;
+        Log.e(TAG, "Wrong video resolution setting: " + resolution);
+      }
+    }
+
+    // Get camera fps from settings.
+    int cameraFps = 0;
+    String fps = sharedPref.getString(keyprefFps,
+            getString(R.string.pref_fps_default));
+    String[] fpsValues = fps.split("[ x]+");
+    if (fpsValues.length == 2) {
+      try {
+        cameraFps = Integer.parseInt(fpsValues[0]);
+      } catch (NumberFormatException e) {
+        Log.e(TAG, "Wrong camera fps setting: " + fps);
+      }
+    }
+
+    // Check capture quality slider flag.
+    boolean captureQualitySlider = sharedPref.getBoolean(keyprefCaptureQualitySlider,
+            Boolean.valueOf(getString(R.string.pref_capturequalityslider_default)));
+
+    // Get video and audio start bitrate.
+    int videoStartBitrate = 0;
+    String bitrateTypeDefault = getString(
+            R.string.pref_startvideobitrate_default);
+    String bitrateType = sharedPref.getString(
+            keyprefVideoBitrateType, bitrateTypeDefault);
+    if (!bitrateType.equals(bitrateTypeDefault)) {
+      String bitrateValue = sharedPref.getString(keyprefVideoBitrateValue,
+              getString(R.string.pref_startvideobitratevalue_default));
+      videoStartBitrate = Integer.parseInt(bitrateValue);
+    }
+    int audioStartBitrate = 0;
+    bitrateTypeDefault = getString(R.string.pref_startaudiobitrate_default);
+    bitrateType = sharedPref.getString(
+            keyprefAudioBitrateType, bitrateTypeDefault);
+    if (!bitrateType.equals(bitrateTypeDefault)) {
+      String bitrateValue = sharedPref.getString(keyprefAudioBitrateValue,
+              getString(R.string.pref_startaudiobitratevalue_default));
+      audioStartBitrate = Integer.parseInt(bitrateValue);
+    }
+
+    // Check statistics display option.
+    boolean displayHud = sharedPref.getBoolean(keyprefDisplayHud, Boolean.valueOf(getString(R.string.pref_displayhud_default)));
+
+    boolean tracing = sharedPref.getBoolean(keyprefTracing, Boolean.valueOf(getString(R.string.pref_tracing_default)));
+
+    // Start AppRTCDemo activity.
+
+
+    Log.d(TAG, "Connecting from " + from + " at URL " + roomUrl);
+
+    if (validateUrl(roomUrl)) {
+      Uri uri = Uri.parse(roomUrl);
+      intent = new Intent(this, ConnectActivity.class);
+      intent.setData(uri);
+      intent.putExtra(CallActivity.EXTRA_FROM, from);
+      intent.putExtra(CallActivity.EXTRA_TO, to);
+      intent.putExtra(CallActivity.EXTRA_LOOPBACK, loopback);
+      intent.putExtra(CallActivity.EXTRA_VIDEO_CALL, videoCallEnabled);
+      intent.putExtra(CallActivity.EXTRA_VIDEO_WIDTH, videoWidth);
+      intent.putExtra(CallActivity.EXTRA_VIDEO_HEIGHT, videoHeight);
+      intent.putExtra(CallActivity.EXTRA_VIDEO_FPS, cameraFps);
+      intent.putExtra(CallActivity.EXTRA_VIDEO_CAPTUREQUALITYSLIDER_ENABLED, captureQualitySlider);
+      intent.putExtra(CallActivity.EXTRA_VIDEO_BITRATE, videoStartBitrate);
+      intent.putExtra(CallActivity.EXTRA_VIDEOCODEC, videoCodec);
+      intent.putExtra(CallActivity.EXTRA_HWCODEC_ENABLED, hwCodec);
+      intent.putExtra(CallActivity.EXTRA_CAPTURETOTEXTURE_ENABLED, captureToTexture);
+      intent.putExtra(CallActivity.EXTRA_NOAUDIOPROCESSING_ENABLED,noAudioProcessing);
+      intent.putExtra(CallActivity.EXTRA_AECDUMP_ENABLED, aecDump);
+      intent.putExtra(CallActivity.EXTRA_OPENSLES_ENABLED, useOpenSLES);
+      intent.putExtra(CallActivity.EXTRA_AUDIO_BITRATE, audioStartBitrate);
+      intent.putExtra(CallActivity.EXTRA_AUDIOCODEC, audioCodec);
+      intent.putExtra(CallActivity.EXTRA_DISPLAY_HUD, displayHud);
+      intent.putExtra(CallActivity.EXTRA_TRACING, tracing);
+      intent.putExtra(CallActivity.EXTRA_CMDLINE, commandLineRun);
+      intent.putExtra(CallActivity.EXTRA_RUNTIME, runTimeMs);
+
+
+    }
 
     roomEditText = (EditText) findViewById(R.id.room_edittext);
     roomEditText.setOnEditorActionListener(
@@ -122,7 +244,7 @@ public class ConnectActivity extends Activity {
         }
     });
     roomEditText.requestFocus();
-
+    roomEditText = (EditText) findViewById(R.id.room_edittext);
     roomListView = (ListView) findViewById(R.id.room_listview);
     roomListView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
 
@@ -132,24 +254,55 @@ public class ConnectActivity extends Activity {
     removeRoomButton.setOnClickListener(removeRoomListener);
     connectButton = (ImageButton) findViewById(R.id.connect_button);
     connectButton.setOnClickListener(connectListener);
-    connectLoopbackButton =
-        (ImageButton) findViewById(R.id.connect_loopback_button);
+    connectLoopbackButton = (ImageButton) findViewById(R.id.connect_loopback_button);
     connectLoopbackButton.setOnClickListener(connectListener);
 
     // If an implicit VIEW intent is launching the app, go directly to that URL.
-    final Intent intent = getIntent();
-    if ("android.intent.action.VIEW".equals(intent.getAction())
-        && !commandLineRun) {
-      commandLineRun = true;
-      boolean loopback = intent.getBooleanExtra(
-          CallActivity.EXTRA_LOOPBACK, false);
-      int runTimeMs = intent.getIntExtra(
-          CallActivity.EXTRA_RUNTIME, 0);
-      String room = sharedPref.getString(keyprefRoom, "");
-      roomEditText.setText(room);
-      connectToUser(loopback, runTimeMs);
+    //final Intent intent = getIntent();
+    Uri wsurl = Uri.parse(roomUrl);
+    //intent.getData();
+    Log.d(TAG, "connecting to:"+wsurl.toString());
+    if (wsurl == null) {
+      logAndToast(getString(R.string.missing_wsurl));
+      Log.e(TAG, "Didn't get any URL in intent!");
+      setResult(RESULT_CANCELED);
+      finish();
       return;
     }
+    // from = intent.getStringExtra(EXTRA_FROM);
+    // to = intent.getStringExtra(EXTRA_TO);
+    if (from == null || from.length() == 0) {
+      logAndToast(getString(R.string.missing_from));
+      Log.e(TAG, "Incorrect from in intent!");
+      setResult(RESULT_CANCELED);
+      finish();
+      return;
+    }
+
+    // loopback = intent.getBooleanExtra(EXTRA_LOOPBACK, false);
+    // tracing = intent.getBooleanExtra(EXTRA_TRACING, false);
+
+    peerConnectionParameters = new PeerConnectionClient.PeerConnectionParameters(
+            videoCallEnabled,
+            loopback,
+            tracing,
+            videoWidth, videoHeight,cameraFps,videoStartBitrate,videoCodec,hwCodec,
+            captureToTexture,audioStartBitrate,audioCodec,noAudioProcessing,
+            aecDump,useOpenSLES);
+
+    roomConnectionParameters = new AppRTCClient.RoomConnectionParameters(
+            wsurl.toString(), from, to, loopback);
+
+    peerConnectionClient.createPeerConnectionFactory(
+          ConnectActivity.this, peerConnectionParameters, ConnectActivity.this);
+
+    commandLineRun = commandLineRun; //intent.getBooleanExtra(EXTRA_CMDLINE, false);
+    runTimeMs = runTimeMs; // intent.getIntExtra(EXTRA_RUNTIME, 0);
+    Log.i(TAG, "creating appRtcClient with roomUri:" + wsurl.toString()+" from:"+from+" to:"+to);
+    // Create connection client and connection parameters.
+
+    connectToWebsocket();
+
   }
 
   @Override
@@ -226,13 +379,13 @@ public class ConnectActivity extends Activity {
         loopback = true;
       }
       commandLineRun = false;
+     // appRtcClient.call(sdp);
       connectToUser(loopback, 0);
     }
   };
 
   private void connectToUser(boolean loopback, int runTimeMs) {
-    // Get room name (random for loopback).
-    String to;
+
     if (loopback) {
       to = Integer.toString((new Random()).nextInt(100000000));
     } else {
@@ -240,156 +393,18 @@ public class ConnectActivity extends Activity {
       if (to == null) {
         to = roomEditText.getText().toString();
       }
+      roomConnectionParameters.to = to;
     }
-    String from = sharedPref.getString(keyprefFrom, getString(R.string.pref_from_default));
-    String roomUrl = sharedPref.getString(
-        keyprefRoomServerUrl,getString(R.string.pref_room_server_url_default));
+    // Get room name (random for loopback).
+    //logAndToast("Creating peer connection, delay=" + delta + "ms");
+     // startActivityForResult(intent, CONNECTION_REQUEST);
 
-    // Video call enabled flag.
-    boolean videoCallEnabled = sharedPref.getBoolean(keyprefVideoCallEnabled,
-        Boolean.valueOf(getString(R.string.pref_videocall_default)));
+     Intent newIntent = new Intent(this, CallActivity.class);
+     newIntent.putExtras(intent);
 
-    // Get default codecs.
-    String videoCodec = sharedPref.getString(keyprefVideoCodec,
-        getString(R.string.pref_videocodec_default));
-    String audioCodec = sharedPref.getString(keyprefAudioCodec,
-        getString(R.string.pref_audiocodec_default));
+//     Log.e(TAG, signalingParam.toString());;
+     startActivity(newIntent);
 
-    // Check HW codec flag.
-    boolean hwCodec = sharedPref.getBoolean(keyprefHwCodecAcceleration,
-        Boolean.valueOf(getString(R.string.pref_hwcodec_default)));
-
-    // Check Capture to texture.
-    boolean captureToTexture = sharedPref.getBoolean(keyprefCaptureToTexture,
-        Boolean.valueOf(getString(R.string.pref_capturetotexture_default)));
-
-    // Check Disable Audio Processing flag.
-    boolean noAudioProcessing = sharedPref.getBoolean(
-        keyprefNoAudioProcessingPipeline,
-        Boolean.valueOf(getString(R.string.pref_noaudioprocessing_default)));
-
-    // Check Disable Audio Processing flag.
-    boolean aecDump = sharedPref.getBoolean(
-        keyprefAecDump,
-        Boolean.valueOf(getString(R.string.pref_aecdump_default)));
-
-    // Check OpenSL ES enabled flag.
-    boolean useOpenSLES = sharedPref.getBoolean(
-        keyprefOpenSLES,
-        Boolean.valueOf(getString(R.string.pref_opensles_default)));
-
-    // Get video resolution from settings.
-    int videoWidth = 0;
-    int videoHeight = 0;
-    String resolution = sharedPref.getString(keyprefResolution,
-        getString(R.string.pref_resolution_default));
-    String[] dimensions = resolution.split("[ x]+");
-    if (dimensions.length == 2) {
-      try {
-        videoWidth = Integer.parseInt(dimensions[0]);
-        videoHeight = Integer.parseInt(dimensions[1]);
-      } catch (NumberFormatException e) {
-        videoWidth = 0;
-        videoHeight = 0;
-        Log.e(TAG, "Wrong video resolution setting: " + resolution);
-      }
-    }
-
-    // Get camera fps from settings.
-    int cameraFps = 0;
-    String fps = sharedPref.getString(keyprefFps,
-        getString(R.string.pref_fps_default));
-    String[] fpsValues = fps.split("[ x]+");
-    if (fpsValues.length == 2) {
-      try {
-        cameraFps = Integer.parseInt(fpsValues[0]);
-      } catch (NumberFormatException e) {
-        Log.e(TAG, "Wrong camera fps setting: " + fps);
-      }
-    }
-
-    // Check capture quality slider flag.
-    boolean captureQualitySlider = sharedPref.getBoolean(keyprefCaptureQualitySlider,
-        Boolean.valueOf(getString(R.string.pref_capturequalityslider_default)));
-
-    // Get video and audio start bitrate.
-    int videoStartBitrate = 0;
-    String bitrateTypeDefault = getString(
-        R.string.pref_startvideobitrate_default);
-    String bitrateType = sharedPref.getString(
-        keyprefVideoBitrateType, bitrateTypeDefault);
-    if (!bitrateType.equals(bitrateTypeDefault)) {
-      String bitrateValue = sharedPref.getString(keyprefVideoBitrateValue,
-          getString(R.string.pref_startvideobitratevalue_default));
-      videoStartBitrate = Integer.parseInt(bitrateValue);
-    }
-    int audioStartBitrate = 0;
-    bitrateTypeDefault = getString(R.string.pref_startaudiobitrate_default);
-    bitrateType = sharedPref.getString(
-        keyprefAudioBitrateType, bitrateTypeDefault);
-    if (!bitrateType.equals(bitrateTypeDefault)) {
-      String bitrateValue = sharedPref.getString(keyprefAudioBitrateValue,
-          getString(R.string.pref_startaudiobitratevalue_default));
-      audioStartBitrate = Integer.parseInt(bitrateValue);
-    }
-
-    // Check statistics display option.
-    boolean displayHud = sharedPref.getBoolean(keyprefDisplayHud,
-        Boolean.valueOf(getString(R.string.pref_displayhud_default)));
-
-    boolean tracing = sharedPref.getBoolean(
-            keyprefTracing, Boolean.valueOf(getString(R.string.pref_tracing_default)));
-
-    // Start AppRTCDemo activity.
-    Log.d(TAG, "Connecting from " + from + " at URL " + roomUrl);
-    if (validateUrl(roomUrl)) {
-      Uri uri = Uri.parse(roomUrl);
-      Intent intent = new Intent(this, CallActivity.class);
-      intent.setData(uri);
-      intent.putExtra(CallActivity.EXTRA_FROM, from);
-      intent.putExtra(CallActivity.EXTRA_TO, to);
-      intent.putExtra(CallActivity.EXTRA_LOOPBACK, loopback);
-      intent.putExtra(CallActivity.EXTRA_VIDEO_CALL, videoCallEnabled);
-      intent.putExtra(CallActivity.EXTRA_VIDEO_WIDTH, videoWidth);
-      intent.putExtra(CallActivity.EXTRA_VIDEO_HEIGHT, videoHeight);
-      intent.putExtra(CallActivity.EXTRA_VIDEO_FPS, cameraFps);
-      intent.putExtra(CallActivity.EXTRA_VIDEO_CAPTUREQUALITYSLIDER_ENABLED,
-          captureQualitySlider);
-      intent.putExtra(CallActivity.EXTRA_VIDEO_BITRATE, videoStartBitrate);
-      intent.putExtra(CallActivity.EXTRA_VIDEOCODEC, videoCodec);
-      intent.putExtra(CallActivity.EXTRA_HWCODEC_ENABLED, hwCodec);
-      intent.putExtra(CallActivity.EXTRA_CAPTURETOTEXTURE_ENABLED, captureToTexture);
-      intent.putExtra(CallActivity.EXTRA_NOAUDIOPROCESSING_ENABLED,noAudioProcessing);
-      intent.putExtra(CallActivity.EXTRA_AECDUMP_ENABLED, aecDump);
-      intent.putExtra(CallActivity.EXTRA_OPENSLES_ENABLED, useOpenSLES);
-      intent.putExtra(CallActivity.EXTRA_AUDIO_BITRATE, audioStartBitrate);
-      intent.putExtra(CallActivity.EXTRA_AUDIOCODEC, audioCodec);
-      intent.putExtra(CallActivity.EXTRA_DISPLAY_HUD, displayHud);
-      intent.putExtra(CallActivity.EXTRA_TRACING, tracing);
-      intent.putExtra(CallActivity.EXTRA_CMDLINE, commandLineRun);
-      intent.putExtra(CallActivity.EXTRA_RUNTIME, runTimeMs);
-
-      startActivityForResult(intent, CONNECTION_REQUEST);
-    }
-  }
-
-
-  private boolean validateUrl(String url) {
-    //if (URLUtil.isHttpsUrl(url) || URLUtil.isHttpUrl(url)) {
-    if (isWSUrl(url) || isWSSUrl(url)) {
-      return true;
-    }
-
-    new AlertDialog.Builder(this)
-        .setTitle(getText(R.string.invalid_url_title))
-        .setMessage(getString(R.string.invalid_url_text, url))
-        .setCancelable(false)
-        .setNeutralButton(R.string.ok, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-              dialog.cancel();
-            }
-          }).create().show();
-    return false;
   }
 
   private final OnClickListener addRoomListener = new OnClickListener() {
@@ -427,21 +442,6 @@ public class ConnectActivity extends Activity {
     } else {
       return null;
     }
-  }
-
-  public static boolean isWSUrl(String url) {
-    return (null != url) &&
-            (url.length() > 4) &&
-            url.substring(0, 5).equalsIgnoreCase("ws://");
-  }
-
-  /**
-   * @return True iff the url is an https: url.
-   */
-  public static boolean isWSSUrl(String url) {
-    return (null != url) &&
-            (url.length() > 5) &&
-            url.substring(0, 6).equalsIgnoreCase("wss://");
   }
 
 }

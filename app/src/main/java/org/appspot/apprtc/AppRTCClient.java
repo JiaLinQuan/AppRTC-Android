@@ -27,7 +27,7 @@ public interface AppRTCClient {
   public static class RoomConnectionParameters {
     public final String roomUrl;
     public final String from;
-    public final String to;
+    public String to;
     public final boolean loopback;
 
     public RoomConnectionParameters(
@@ -38,6 +38,7 @@ public interface AppRTCClient {
       this.to = to;
       this.loopback = loopback;
     }
+
   }
 
   /**
@@ -45,7 +46,7 @@ public interface AppRTCClient {
    * parameters. Once connection is established onConnectedToRoom()
    * callback with room parameters is invoked.
    */
-  public void connectToRoom(RoomConnectionParameters connectionParameters);
+  public void connectToWebsocket(RoomConnectionParameters connectionParameters);
 
   /**
    * Send offer SDP to the other participant.
@@ -75,23 +76,11 @@ public interface AppRTCClient {
    * Struct holding the signaling parameters of an AppRTC room.
    */
   public static class SignalingParameters {
-    public final List<PeerConnection.IceServer> iceServers;
-    public final boolean initiator;
-    public final String wssUrl;
-  //  public final String wssPostUrl;
-    public final SessionDescription offerSdp;
-    public final List<IceCandidate> iceCandidates;
+    public static List<PeerConnection.IceServer> iceServers;
 
     public SignalingParameters(
-        List<PeerConnection.IceServer> iceServers,
-        boolean initiator,
-        String wssUrl,
-        SessionDescription offerSdp, List<IceCandidate> iceCandidates) {
+        List<PeerConnection.IceServer> iceServers) {
       this.iceServers = iceServers;
-      this.initiator = initiator;
-      this.wssUrl = wssUrl;
-      this.offerSdp = offerSdp;
-      this.iceCandidates = iceCandidates;
     }
   }
 

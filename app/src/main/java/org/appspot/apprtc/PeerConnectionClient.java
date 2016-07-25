@@ -48,6 +48,8 @@ import java.util.TimerTask;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static org.appspot.apprtc.AppRTCClient.*;
+
 /**
  * Peer connection client implementation.
  *
@@ -103,7 +105,7 @@ public class PeerConnectionClient {
   private Timer statsTimer;
   private VideoRenderer.Callbacks localRender;
   private VideoRenderer.Callbacks remoteRender;
-  private SignalingParameters signalingParameters;
+ // private SignalingParameters signalingParameters;
   private MediaConstraints pcConstraints;
   private MediaConstraints videoConstraints;
   private MediaConstraints audioConstraints;
@@ -260,15 +262,18 @@ public class PeerConnectionClient {
   public void createPeerConnection(
       final EglBase.Context renderEGLContext,
       final VideoRenderer.Callbacks localRender,
-      final VideoRenderer.Callbacks remoteRender,
-      final SignalingParameters signalingParameters) {
+      final VideoRenderer.Callbacks remoteRender) {
+
     if (peerConnectionParameters == null) {
       Log.e(TAG, "Creating peer connection without initializing factory.");
       return;
     }
+
     this.localRender = localRender;
     this.remoteRender = remoteRender;
-    this.signalingParameters = signalingParameters;
+  //  this.signalingParameters = signalingParameters;
+
+
     executor.execute(new Runnable() {
       @Override
       public void run() {
@@ -318,6 +323,7 @@ public class PeerConnectionClient {
 
     // Check if ISAC is used by default.
     preferIsac = false;
+
     if (peerConnectionParameters.audioCodec != null
         && peerConnectionParameters.audioCodec.equals(AUDIO_CODEC_ISAC)) {
       preferIsac = true;
@@ -447,8 +453,7 @@ public class PeerConnectionClient {
       factory.setVideoHwAccelerationOptions(renderEGLContext, renderEGLContext);
     }
 
-    PeerConnection.RTCConfiguration rtcConfig =
-        new PeerConnection.RTCConfiguration(signalingParameters.iceServers);
+    PeerConnection.RTCConfiguration rtcConfig = new PeerConnection.RTCConfiguration(SignalingParameters.iceServers);
     // TCP candidates are only useful when connecting to a server that supports
     // ICE-TCP.
     rtcConfig.tcpCandidatePolicy = PeerConnection.TcpCandidatePolicy.DISABLED;
@@ -459,7 +464,7 @@ public class PeerConnectionClient {
 
     peerConnection = factory.createPeerConnection(
         rtcConfig, pcConstraints, pcObserver);
-    isInitiator = false;
+    //isInitiator = false;
 
     // Set default WebRTC tracing and INFO libjingle logging.
     // NOTE: this _must_ happen while |factory| is alive!
@@ -729,8 +734,8 @@ public class PeerConnectionClient {
   }
 
   private VideoTrack createVideoTrack(VideoCapturerAndroid capturer) {
-    videoSource = factory.createVideoSource(capturer, videoConstraints);
 
+    videoSource = factory.createVideoSource(capturer, videoConstraints);
     localVideoTrack = factory.createVideoTrack(VIDEO_TRACK_ID, videoSource);
     localVideoTrack.setEnabled(renderVideo);
     localVideoTrack.addRenderer(new VideoRenderer(localRender));
