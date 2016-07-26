@@ -132,11 +132,7 @@ public class WebSocketRTCClient implements AppRTCClient, WebSocketChannelEvents 
 
             if(id.equals("registeredUsers")){
                 response = json.getString("response");
-
-
-              //  events.onIncomingCall();
                 events.onUserListUpdate();
-                Log.d(TAG, "what to do with the users coming from the system all the time? display it in the app?"+response);
             }
 
 
@@ -145,8 +141,8 @@ public class WebSocketRTCClient implements AppRTCClient, WebSocketChannelEvents 
 
                 if(response.startsWith("rejected")) {
                     reportError("call rejected:" + response);
-                    //events.onChannelClose();
-                }else{ //could be an offer too! ?! (probably)
+                    events.onChannelClose();
+                }else{
                     Log.d(TAG, "sending sdpAnswer: "+response);
                     SessionDescription sdp = new SessionDescription(
                             SessionDescription.Type.ANSWER,json.getString("sdpAnswer"));
@@ -157,8 +153,6 @@ public class WebSocketRTCClient implements AppRTCClient, WebSocketChannelEvents 
 
             if(id.equals("incomingCall")){ //looks like some reject messages! other wise create offer for
                 Log.d(TAG, "incomingCall "+json.toString());
-
-
                 events.onIncomingCall(json.getString("from"));
             }
 
@@ -166,8 +160,7 @@ public class WebSocketRTCClient implements AppRTCClient, WebSocketChannelEvents 
             if(id.equals("startCommunication")){
                 Log.d(TAG, "startCommunication "+json.toString());
                 SessionDescription sdp = new SessionDescription(SessionDescription.Type.ANSWER,json.getString("sdpAnswer"));
-                events.onRemoteDescription(sdp);
-                //events.onStartCommunication(sdp);
+                events.onStartCommunication(sdp);
             }
 
             if(id.equals("stopCommunication")){
@@ -192,52 +185,6 @@ public class WebSocketRTCClient implements AppRTCClient, WebSocketChannelEvents 
                 events.onChannelClose();
             }
 
-          /*
-          if (msgText.length() > 0) {
-
-              json = new JSONObject(msgText);
-              String type = json.optString("type");
-
-          if (type.equals("candidate")) {
-
-            IceCandidate candidate = new IceCandidate(
-              json.getString("id"),
-              json.getInt("label"),
-              json.getString("candidate"));
-
-              events.onRemoteIceCandidate(candidate);
-
-          } else if (type.equals("answer")) {
-
-              if (initiator) {
-                SessionDescription sdp = new SessionDescription(
-                SessionDescription.Type.fromCanonicalForm(type),
-                json.getString("sdp"));
-                events.onRemoteDescription(sdp);
-          } else {
-            reportError("Received answer for call initiator: " + msg);
-          }
-        } else if (type.equals("offer")) {
-          if (!initiator) {
-            SessionDescription sdp = new SessionDescription(
-                SessionDescription.Type.fromCanonicalForm(type),
-                json.getString("sdp"));
-            events.onRemoteDescription(sdp);
-          } else {
-            reportError("Received offer for call receiver: " + msg);
-          }
-        } else if (type.equals("bye")) {
-          events.onChannelClose();
-        } else {
-          reportError("Unexpected WebSocket message: " + msg);
-        }
-      } else {
-        if (errorText != null && errorText.length() > 0) {
-          reportError("WebSocket error message: " + errorText);
-        } else {
-          //reportError("Unexpected WebSocket message: " + msg);
-        }
-      }*/
         } catch (JSONException e) {
             reportError("WebSocket message JSON parsing error: " + e.toString());
         }
@@ -278,8 +225,6 @@ public class WebSocketRTCClient implements AppRTCClient, WebSocketChannelEvents 
       wsClient.connect(connectionUrl);
       socketState = WebSocketConnectionState.CONNECTED;
 
-   //   wsClient.getState() = socketState;
-
       Log.d(TAG, "wsClient connect " + connectionUrl);
 
   }
@@ -303,10 +248,8 @@ public class WebSocketRTCClient implements AppRTCClient, WebSocketChannelEvents 
 
   // Helper functions to get connection, sendSocketMessage message and leave message URLs
   private String getConnectionUrl(RoomConnectionParameters connectionParameters) {
-    return connectionParameters.roomUrl+"/ws";
+        return connectionParameters.roomUrl+"/ws";
   }
-
-
 
     // Return the list of ICE servers described by a WebRTCPeerConnection
     // configuration string.
@@ -327,7 +270,6 @@ public class WebSocketRTCClient implements AppRTCClient, WebSocketChannelEvents 
         }
 
         return turnServers;
-
     }
 
   public void call(final SessionDescription sdp)  {
@@ -347,20 +289,13 @@ public class WebSocketRTCClient implements AppRTCClient, WebSocketChannelEvents 
               jsonPut(json, "sdpOffer", sdp.description);
               wsClient.send(json.toString());
 
-              if (connectionParameters.loopback) {
-                  // In loopback mode rename this offer to answer and route it back.
-                  SessionDescription sdpAnswer = new SessionDescription(
-                          SessionDescription.Type.fromCanonicalForm("answer"),
-                          sdp.description);
-                  events.onRemoteDescription(sdpAnswer);
-              }
           }
       });
   }
 
   // Send local answer SDP to the other participant.
   @Override
-  public void sendAnswerSdp(final SessionDescription sdp) {
+  public void sendOfferSdp(final SessionDescription sdp) {
     executor.execute(new Runnable() {
       @Override
       public void run() {
@@ -396,21 +331,8 @@ public class WebSocketRTCClient implements AppRTCClient, WebSocketChannelEvents 
           jsonPut(json, "sdpMLineIndex", candidate.sdpMLineIndex);
 
 
-          if (initiator) {
-          // Call initiator sends ice candidates to GAE server.
-              if (socketState != WebSocketConnectionState.CONNECTED) {
-                reportError("Sending ICE candidate in non connected state.");
-                return;
-              }
-             wsClient.send(json.toString());
-        //  sendPostMessage(MessageType.MESSAGE, messageUrl, json.toString());
-          if (connectionParameters.loopback) {
-                events.onRemoteIceCandidate(candidate);
-          }
-        } else {
           // Call receiver sends ice candidates to websocket server.
           wsClient.send(json.toString());
-        }
       }
     });
   }

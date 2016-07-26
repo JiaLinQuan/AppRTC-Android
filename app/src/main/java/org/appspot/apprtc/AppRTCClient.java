@@ -64,7 +64,7 @@ public interface AppRTCClient {
   /**
    * Send answer SDP to the other participant.
    */
-  public void sendAnswerSdp(final SessionDescription sdp);
+  public void sendOfferSdp(final SessionDescription sdp);
 
   /**
    * Send Ice candidate to the other participant.
@@ -104,6 +104,7 @@ public interface AppRTCClient {
 
     public void onIncomingCall(String from);
 
+    public void onStartCommunication(final SessionDescription sdp);
     /**
      * Callback fired once remote SDP is received.
      */

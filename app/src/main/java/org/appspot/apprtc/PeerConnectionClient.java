@@ -117,6 +117,7 @@ public class PeerConnectionClient {
   // remote peer after both local and remote description are set.
   private LinkedList<IceCandidate> queuedRemoteCandidates;
   private PeerConnectionEvents events;
+ // AppRTCClient.RoomConnectionParameters roomConnectionParameters;
   private boolean isInitiator;
   private SessionDescription localSdp; // either offer or answer SDP
   private MediaStream mediaStream;
@@ -262,16 +263,16 @@ public class PeerConnectionClient {
   public void createPeerConnection(
       final EglBase.Context renderEGLContext,
       final VideoRenderer.Callbacks localRender,
-      final VideoRenderer.Callbacks remoteRender) {
+      final VideoRenderer.Callbacks remoteRender,
+      final boolean isInitiator) {
 
     if (peerConnectionParameters == null) {
       Log.e(TAG, "Creating peer connection without initializing factory.");
       return;
     }
-
+    this.isInitiator = isInitiator;
     this.localRender = localRender;
     this.remoteRender = remoteRender;
-  //  this.signalingParameters = signalingParameters;
 
 
     executor.execute(new Runnable() {
@@ -625,7 +626,8 @@ public class PeerConnectionClient {
       public void run() {
         if (peerConnection != null && !isError) {
           Log.d(TAG, "PC Create OFFER");
-        //  isInitiator = true;
+
+
           peerConnection.createOffer(sdpObserver, sdpMediaConstraints);
         }
       }
@@ -638,7 +640,7 @@ public class PeerConnectionClient {
       public void run() {
         if (peerConnection != null && !isError) {
           Log.d(TAG, "PC create ANSWER");
-          isInitiator = false;
+
           peerConnection.createAnswer(sdpObserver, sdpMediaConstraints);
         }
       }
@@ -1061,7 +1063,7 @@ public class PeerConnectionClient {
           } else {
             // For answering peer connection we set remote SDP and then
             // create answer and set local SDP.
-            if (peerConnection.getLocalDescription() != null) {
+            if (peerConnection.getLocalDescription() != null && peerConnection.getRemoteDescription()==null) {
               // We've just set our local SDP so time to send it, drain
               // remote and send local ICE candidates.
               Log.d(TAG, "Local SDP set succesfully");

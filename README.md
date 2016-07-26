@@ -8,14 +8,14 @@ https://chromium.googlesource.com/external/webrtc/+/250fc658c56cb3c6944bd0fd1b88
 
 ##Todo/Bugs
 - incoming call decide answer or hangup
+- accept/reject incoming calls - with audio/visual alarm and ringtone
 - when android gets called video does not appear
 - when android hangs up stop message is not send to partner (connect is still NEW! why?)
 - when clients disconnect new users are not sent out to other clients
+- read registered users from registry / and display as users in Android App
 - security considerations while connecting
 
 
-- accept/reject incoming calls - with audio/visual alarm and ringtone
-- read registered users from registry / and display as users in Android App
 - request runtime permission for android 6 (marshmellow) devices 
 
 

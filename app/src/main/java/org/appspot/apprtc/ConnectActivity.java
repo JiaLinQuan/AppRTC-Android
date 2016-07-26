@@ -29,6 +29,7 @@ import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import org.appspot.apprtc.util.LooperExecutor;
 import org.json.JSONArray;
 import org.json.JSONException;
 
@@ -105,8 +106,6 @@ public class ConnectActivity extends RTCConnection {
     keyprefRoomServerUrl = getString(R.string.pref_room_server_url_key);
     keyprefRoom = getString(R.string.pref_room_key);
     keyprefRoomList = getString(R.string.pref_room_list_key);
-    callFragment = new CallFragment();
-    hudFragment = new HudFragment();
     from = sharedPref.getString(keyprefFrom, getString(R.string.pref_from_default));
     String roomUrl = sharedPref.getString(
             keyprefRoomServerUrl,getString(R.string.pref_room_server_url_default));
@@ -293,13 +292,10 @@ public class ConnectActivity extends RTCConnection {
     roomConnectionParameters = new AppRTCClient.RoomConnectionParameters(
             wsurl.toString(), from, false, loopback);
 
-    peerConnectionClient.createPeerConnectionFactory(
-          ConnectActivity.this, peerConnectionParameters, ConnectActivity.this);
 
-    commandLineRun = commandLineRun; //intent.getBooleanExtra(EXTRA_CMDLINE, false);
-    runTimeMs = runTimeMs; // intent.getIntExtra(EXTRA_RUNTIME, 0);
     Log.i(TAG, "creating appRtcClient with roomUri:" + wsurl.toString()+" from:"+from);
     // Create connection client and connection parameters.
+    appRtcClient = new WebSocketRTCClient(this,new LooperExecutor());
 
     connectToWebsocket();
 
@@ -396,15 +392,12 @@ public class ConnectActivity extends RTCConnection {
       roomConnectionParameters.initiator = true;
       roomConnectionParameters.to = to;
     }
-    // Get room name (random for loopback).
-    //logAndToast("Creating peer connection, delay=" + delta + "ms");
-     // startActivityForResult(intent, CONNECTION_REQUEST);
 
      Intent newIntent = new Intent(this, CallActivity.class);
+     newIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
      newIntent.putExtras(intent);
+     startActivityForResult(newIntent, CONNECTION_REQUEST);
 
-//     Log.e(TAG, signalingParam.toString());;
-     startActivity(newIntent);
 
   }
 
@@ -445,4 +438,13 @@ public class ConnectActivity extends RTCConnection {
     }
   }
 
+  @Override
+  public void onChannelClose() {
+
+  }
+
+  @Override
+  public void onChannelError(String description) {
+
+  }
 }
