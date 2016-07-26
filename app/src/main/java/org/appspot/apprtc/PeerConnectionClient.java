@@ -625,7 +625,7 @@ public class PeerConnectionClient {
       public void run() {
         if (peerConnection != null && !isError) {
           Log.d(TAG, "PC Create OFFER");
-          isInitiator = true;
+        //  isInitiator = true;
           peerConnection.createOffer(sdpObserver, sdpMediaConstraints);
         }
       }

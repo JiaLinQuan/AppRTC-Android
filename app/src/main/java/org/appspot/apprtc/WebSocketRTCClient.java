@@ -16,6 +16,7 @@ import org.appspot.apprtc.WebSocketChannelClient.WebSocketConnectionState;
 import org.appspot.apprtc.util.AppRTCUtils;
 import org.appspot.apprtc.util.LooperExecutor;
 
+import android.content.Intent;
 import android.util.Log;
 
 import org.json.JSONArray;
@@ -130,7 +131,11 @@ public class WebSocketRTCClient implements AppRTCClient, WebSocketChannelEvents 
             }
 
             if(id.equals("registeredUsers")){
-                response = json.getString("response"); //TODO if not accepted what todo?
+                response = json.getString("response");
+
+
+              //  events.onIncomingCall();
+                events.onUserListUpdate();
                 Log.d(TAG, "what to do with the users coming from the system all the time? display it in the app?"+response);
             }
 
@@ -153,29 +158,21 @@ public class WebSocketRTCClient implements AppRTCClient, WebSocketChannelEvents 
             if(id.equals("incomingCall")){ //looks like some reject messages! other wise create offer for
                 Log.d(TAG, "incomingCall "+json.toString());
 
-                SessionDescription sdp = new SessionDescription(SessionDescription.Type.OFFER,json.getString("sdp"));
 
-                events.onRemoteDescription(sdp);
-
-                //if call state is busy reply with json reponse rejected because bussy
-
-                //create confirm dialog (answer call from xy) if yes create webrtc connection and generateOffer for caller
-
-                //if no reply with json response rejected because
+                events.onIncomingCall(json.getString("from"));
             }
+
 
             if(id.equals("startCommunication")){
                 Log.d(TAG, "startCommunication "+json.toString());
-
-                SessionDescription sdp = new SessionDescription(SessionDescription.Type.ANSWER,json.getString("sdp"));
-
+                SessionDescription sdp = new SessionDescription(SessionDescription.Type.ANSWER,json.getString("sdpAnswer"));
                 events.onRemoteDescription(sdp);
-
+                //events.onStartCommunication(sdp);
             }
 
             if(id.equals("stopCommunication")){
                 Log.d(TAG, "stopCommunication "+json.toString());
-
+                events.onChannelClose();
             }
 
             if(id.equals("iceCandidate")){
@@ -279,8 +276,8 @@ public class WebSocketRTCClient implements AppRTCClient, WebSocketChannelEvents 
       socketState = WebSocketConnectionState.NEW;
       wsClient = new WebSocketChannelClient(executor, this);
       wsClient.connect(connectionUrl);
+      socketState = WebSocketConnectionState.CONNECTED;
 
-      //socketState = WebSocketConnectionState.CONNECTED;
    //   wsClient.getState() = socketState;
 
       Log.d(TAG, "wsClient connect " + connectionUrl);
@@ -290,7 +287,9 @@ public class WebSocketRTCClient implements AppRTCClient, WebSocketChannelEvents 
   // Disconnect from room and send bye messages - runs on a local looper thread.
   private void disconnectFromRoomInternal() {
     Log.d(TAG, "Disconnect. Room state: " + socketState);
-    if (socketState == WebSocketConnectionState.CONNECTED) {
+    if (socketState == WebSocketConnectionState.CONNECTED
+            || socketState == WebSocketConnectionState.NEW
+            || socketState == WebSocketConnectionState.REGISTERED) {
         Log.d(TAG, "Closing room.");
         JSONObject jsonMessage = new JSONObject();
         jsonPut(jsonMessage, "id" , "stop");
@@ -365,13 +364,19 @@ public class WebSocketRTCClient implements AppRTCClient, WebSocketChannelEvents 
     executor.execute(new Runnable() {
       @Override
       public void run() {
+
         if (connectionParameters.loopback) {
           Log.e(TAG, "Sending answer in loopback mode.");
           return;
         }
-        JSONObject json = new JSONObject();
-        jsonPut(json, "sdp", sdp.description);
-        jsonPut(json, "type", "answer");
+
+          JSONObject json = new JSONObject();
+          jsonPut(json, "id","incomingCallResponse");
+          jsonPut(json, "from", connectionParameters.to);
+          jsonPut(json, "callResponse",  "accept");
+          jsonPut(json, "sdpOffer", sdp.description);
+
+
         wsClient.send(json.toString());
       }
     });

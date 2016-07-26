@@ -4,11 +4,13 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.FragmentTransaction;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.util.Log;
 import android.widget.Toast;
 
 import org.appspot.apprtc.util.LooperExecutor;
+import org.json.JSONObject;
 import org.webrtc.EglBase;
 import org.webrtc.IceCandidate;
 import org.webrtc.RendererCommon;
@@ -46,7 +48,7 @@ public class RTCConnection extends Activity implements
     public static final int CONNECTION_REQUEST = 1;
     public String keyprefRoom;
     public String keyprefRoomList;
-    public String to = "";
+
     public String from = "";
     public PeerConnectionClient peerConnectionClient = null;
     public Toast logToast;
@@ -88,7 +90,7 @@ public class RTCConnection extends Activity implements
     private static final int LOCAL_WIDTH_CONNECTING = 100;
     private static final int LOCAL_HEIGHT_CONNECTING = 100;
 
-    public AppRTCClient.RoomConnectionParameters roomConnectionParameters;
+    public static AppRTCClient.RoomConnectionParameters roomConnectionParameters;
     public PeerConnectionClient.PeerConnectionParameters peerConnectionParameters;
     public PercentFrameLayout localRenderLayout;
     public PercentFrameLayout remoteRenderLayout;
@@ -102,16 +104,46 @@ public class RTCConnection extends Activity implements
         }
 
 
+
         @Override
         public void onConnectedToRoom(final AppRTCClient.SignalingParameters params) {
 
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    onConnectedToRoomInternal(params);
+
+                    //onConnectedToRoomInternal(params);
                 }
             });
         }
+
+        @Override
+        public void onUserListUpdate() {
+
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                  //  onConnectedToRoomInternal(params);//TODO update array with users!
+                }
+            });
+        }
+
+        @Override
+        public void onIncomingCall(final String from) {
+
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+
+                    roomConnectionParameters.to = from;
+                    roomConnectionParameters.initiator = false;
+                    Intent intent = new Intent(RTCConnection.this, CallActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    startActivity(intent);
+                }
+            });
+        }
+
 
         @Override
         public void onRemoteDescription(final SessionDescription sdp) {
@@ -125,12 +157,12 @@ public class RTCConnection extends Activity implements
                     }
                     logAndToast("Received remote " + sdp.type + ", delay=" + delta + "ms");
                     peerConnectionClient.setRemoteDescription(sdp);
-                  /*  if (!signalingParam.initiator) {
+                    if (!roomConnectionParameters.initiator) {
                         logAndToast("Creating ANSWER...");
                         // Create answer. Answer SDP will be sent to offering client in
                         // PeerConnectionEvents.onLocalDescription event.
                         peerConnectionClient.createAnswer();
-                    }*/
+                    }
                 }
             });
         }
@@ -284,11 +316,11 @@ public class RTCConnection extends Activity implements
                 public void run() {
                     if (appRtcClient != null) {
                         logAndToast("Sending " + sdp.type + ", delay=" + delta + "ms");
-                       // if (signalingParam.initiator) {
+                        if (roomConnectionParameters.initiator) {
                             appRtcClient.call(sdp);
-                       /* } else {
+                        } else {
                             appRtcClient.sendAnswerSdp(sdp);
-                        }*/
+                        }
                     }
                 }
             });
@@ -444,7 +476,7 @@ public class RTCConnection extends Activity implements
         }
 
     public void updateVideoView() {
-        if(remoteRenderLayout!=null) remoteRenderLayout.setPosition(REMOTE_X, REMOTE_Y, REMOTE_WIDTH, REMOTE_HEIGHT);
+        remoteRenderLayout.setPosition(REMOTE_X, REMOTE_Y, REMOTE_WIDTH, REMOTE_HEIGHT);
         remoteRender.setScalingType(scalingType);
         remoteRender.setMirror(false);
 

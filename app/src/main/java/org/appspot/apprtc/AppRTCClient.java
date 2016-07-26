@@ -10,6 +10,7 @@
 
 package org.appspot.apprtc;
 
+import org.json.JSONObject;
 import org.webrtc.IceCandidate;
 import org.webrtc.PeerConnection;
 import org.webrtc.SessionDescription;
@@ -27,15 +28,18 @@ public interface AppRTCClient {
   public static class RoomConnectionParameters {
     public final String roomUrl;
     public final String from;
-    public String to;
+    public boolean initiator;
     public final boolean loopback;
+    public String to;
 
     public RoomConnectionParameters(
-        String roomUrl, String from, String to,
-         boolean loopback) {
+        String roomUrl,
+        String from,
+        boolean initiator,
+        boolean loopback) {
       this.roomUrl = roomUrl;
       this.from = from;
-      this.to = to;
+      this.initiator = initiator;
       this.loopback = loopback;
     }
 
@@ -96,6 +100,10 @@ public interface AppRTCClient {
      */
     public void onConnectedToRoom(final SignalingParameters params);
 
+    public void onUserListUpdate();
+
+    public void onIncomingCall(String from);
+
     /**
      * Callback fired once remote SDP is received.
      */
@@ -115,5 +123,7 @@ public interface AppRTCClient {
      * Callback fired once channel error happened.
      */
     public void onChannelError(final String description);
+
+
   }
 }

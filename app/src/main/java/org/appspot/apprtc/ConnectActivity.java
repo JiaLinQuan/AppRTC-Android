@@ -205,8 +205,8 @@ public class ConnectActivity extends RTCConnection {
       Uri uri = Uri.parse(roomUrl);
       intent = new Intent(this, ConnectActivity.class);
       intent.setData(uri);
-      intent.putExtra(CallActivity.EXTRA_FROM, from);
-      intent.putExtra(CallActivity.EXTRA_TO, to);
+     // intent.putExtra(CallActivity.EXTRA_FROM, from);
+     // intent.putExtra(CallActivity.EXTRA_TO, //to);
       intent.putExtra(CallActivity.EXTRA_LOOPBACK, loopback);
       intent.putExtra(CallActivity.EXTRA_VIDEO_CALL, videoCallEnabled);
       intent.putExtra(CallActivity.EXTRA_VIDEO_WIDTH, videoWidth);
@@ -291,14 +291,14 @@ public class ConnectActivity extends RTCConnection {
             aecDump,useOpenSLES);
 
     roomConnectionParameters = new AppRTCClient.RoomConnectionParameters(
-            wsurl.toString(), from, to, loopback);
+            wsurl.toString(), from, false, loopback);
 
     peerConnectionClient.createPeerConnectionFactory(
           ConnectActivity.this, peerConnectionParameters, ConnectActivity.this);
 
     commandLineRun = commandLineRun; //intent.getBooleanExtra(EXTRA_CMDLINE, false);
     runTimeMs = runTimeMs; // intent.getIntExtra(EXTRA_RUNTIME, 0);
-    Log.i(TAG, "creating appRtcClient with roomUri:" + wsurl.toString()+" from:"+from+" to:"+to);
+    Log.i(TAG, "creating appRtcClient with roomUri:" + wsurl.toString()+" from:"+from);
     // Create connection client and connection parameters.
 
     connectToWebsocket();
@@ -385,7 +385,7 @@ public class ConnectActivity extends RTCConnection {
   };
 
   private void connectToUser(boolean loopback, int runTimeMs) {
-
+    String to = "";
     if (loopback) {
       to = Integer.toString((new Random()).nextInt(100000000));
     } else {
@@ -393,6 +393,7 @@ public class ConnectActivity extends RTCConnection {
       if (to == null) {
         to = roomEditText.getText().toString();
       }
+      roomConnectionParameters.initiator = true;
       roomConnectionParameters.to = to;
     }
     // Get room name (random for loopback).
