@@ -10,7 +10,6 @@
 
 package org.appspot.apprtc;
 
-import org.json.JSONObject;
 import org.webrtc.IceCandidate;
 import org.webrtc.PeerConnection;
 import org.webrtc.SessionDescription;
@@ -30,7 +29,7 @@ public interface AppRTCClient {
     public final String from;
     public boolean initiator;
     public final boolean loopback;
-    public String to;
+    public Object to;
 
     public RoomConnectionParameters(
         String roomUrl,
@@ -100,7 +99,7 @@ public interface AppRTCClient {
      */
     public void onConnectedToRoom(final SignalingParameters params);
 
-    public void onUserListUpdate();
+    public void onUserListUpdate(String response);
 
     public void onIncomingCall(String from);
 

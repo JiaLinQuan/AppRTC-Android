@@ -71,8 +71,7 @@ public class ConnectActivity extends RTCConnection {
   private String keyprefRoomList;
   private ListView roomListView;
   private EditText roomEditText;
-  private ArrayList<String> roomList;
-  private ArrayAdapter<String> adapter;
+
   private boolean loopback;
   private Intent intent = null;
 
@@ -375,13 +374,12 @@ public class ConnectActivity extends RTCConnection {
         loopback = true;
       }
       commandLineRun = false;
-     // appRtcClient.call(sdp);
       connectToUser(loopback, 0);
     }
   };
 
   private void connectToUser(boolean loopback, int runTimeMs) {
-    String to = "";
+    Object to = "";
     if (loopback) {
       to = Integer.toString((new Random()).nextInt(100000000));
     } else {
@@ -415,7 +413,7 @@ public class ConnectActivity extends RTCConnection {
   private final OnClickListener removeRoomListener = new OnClickListener() {
     @Override
     public void onClick(View view) {
-      String selectedRoom = getSelectedItem();
+      Object selectedRoom = getSelectedItem();
       if (selectedRoom != null) {
         adapter.remove(selectedRoom);
         adapter.notifyDataSetChanged();
@@ -423,7 +421,7 @@ public class ConnectActivity extends RTCConnection {
     }
   };
 
-  private String getSelectedItem() {
+  private Object getSelectedItem() {
     int position = AdapterView.INVALID_POSITION;
     if (roomListView.getCheckedItemCount() > 0 && adapter.getCount() > 0) {
       position = roomListView.getCheckedItemPosition();

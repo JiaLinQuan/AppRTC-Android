@@ -2,19 +2,20 @@ package org.appspot.apprtc;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.FragmentTransaction;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.util.Log;
+import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
-import org.appspot.apprtc.util.LooperExecutor;
-
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.webrtc.IceCandidate;
 import org.webrtc.RendererCommon;
 import org.webrtc.SessionDescription;
 
+import java.util.ArrayList;
 
 
 public abstract class RTCConnection extends Activity implements
@@ -59,6 +60,9 @@ public abstract class RTCConnection extends Activity implements
     public RendererCommon.ScalingType scalingType;
     public boolean callControlFragmentVisible = true;
 
+    public ArrayList<String> roomList;
+    public ArrayAdapter adapter;
+
 
     // Peer connection statistics callback period in ms.
     public static final int STAT_CALLBACK_PERIOD = 1000;
@@ -97,12 +101,33 @@ public abstract class RTCConnection extends Activity implements
         }
 
         @Override
-        public void onUserListUpdate() {
+        public void onUserListUpdate(final String response) {
 
             runOnUiThread(new Runnable() {
+
+
                 @Override
                 public void run() {
+                    try {
+                    JSONArray mJSONArray = new JSONArray(response);
+                    roomList = new ArrayList();
+                        adapter.clear();
+                    adapter.notifyDataSetChanged();
 
+
+                    for(int i = 0; i < mJSONArray.length();i++){
+                        String username = mJSONArray.getString(i);
+                        if (username.length() > 0
+                                && !roomList.contains(username)
+                                && !username.equals(roomConnectionParameters.from)) {
+                        roomList.add(username);
+                        adapter.add(username);
+                        }
+                    }
+                        adapter.notifyDataSetChanged();
+                    }catch (JSONException e) {
+                    e.printStackTrace();
+                    }
                 }
             });
         }

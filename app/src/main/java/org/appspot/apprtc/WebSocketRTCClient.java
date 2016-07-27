@@ -30,7 +30,6 @@ import java.util.LinkedList;
 
 /**
  * Negotiates signaling for chatting with apprtc.appspot.com "rooms".
- * Uses the client<->server specifics of the apprtc AppEngine webapp.
  *
  * <p>To use: create an instance of this object (registering a message handler) and
  * call connectToWebsocket().  Once room connection is established
@@ -132,7 +131,7 @@ public class WebSocketRTCClient implements AppRTCClient, WebSocketChannelEvents 
 
             if(id.equals("registeredUsers")){
                 response = json.getString("response");
-                events.onUserListUpdate();
+                events.onUserListUpdate(response);
             }
 
 
