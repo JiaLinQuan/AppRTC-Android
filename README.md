@@ -7,16 +7,16 @@ https://chromium.googlesource.com/external/webrtc/+/250fc658c56cb3c6944bd0fd1b88
 ##This version was modified to work with websockets only and is currently presentable with the java version of kurento media server at https://github.com/inspiraluna/AppRTC-Kurento-Example
 
 ##Todo/Bugs
-
+- websocket in wss mode (secure) autobahn does work or not?
 - when android hangs up stop message is not send to partner (connect is still NEW! why?)
+- when stop message comes from peer android does not cancel the call
+- when peer sends stop message session is removed from server too - its an error.
 - incoming call decide answer or hangup
 - accept/reject incoming calls - with audio/visual alarm and ringtone
-- when clients disconnect users are not sent out to other clients
-- read registered users from registry / and display as users in Android App
-- security considerations while connecting
 
+- security considerations while connecting (!)
+- request runtime permission for android 6 (marshmellow) devices
 
-- request runtime permission for android 6 (marshmellow) devices 
 
 
 ##Common Mistakes
@@ -24,6 +24,8 @@ https://chromium.googlesource.com/external/webrtc/+/250fc658c56cb3c6944bd0fd1b88
 - kurento server not running
 
 ##Done:
+
+- 27.7.2016 - when clients disconnects users are not sent out to other clients
 - 27.7.2016 - user list gets updated
 - 26.7.2016 - when android gets called video does not appear
 - 26.7.2016 - handle call from browser to android
