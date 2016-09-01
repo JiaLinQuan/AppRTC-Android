@@ -185,36 +185,7 @@ public class CallActivity extends RTCConnection implements
 
   }
 
-  // Disconnect from remote resources, dispose of local resources, and exit.
-  public void disconnect() {
-    activityRunning = false;
-    if (appRtcClient != null) {
-      appRtcClient.disconnectFromRoom();
-      appRtcClient = null;
-    }
-    if (peerConnectionClient != null) {
-      peerConnectionClient.close();
-      peerConnectionClient = null;
-    }
-    if (localRender != null) {
-      localRender.release();
-      localRender = null;
-    }
-    if (remoteRender != null) {
-      remoteRender.release();
-      remoteRender = null;
-    }
-    if (audioManager != null) {
-      audioManager.close();
-      audioManager = null;
-    }
-    if (iceConnected && !isError) {
-      setResult(RESULT_OK);
-    } else {
-      setResult(RESULT_CANCELED);
-    }
-    finish();
-  }
+
 
   public void updateVideoView() {
     remoteRenderLayout.setPosition(REMOTE_X, REMOTE_Y, REMOTE_WIDTH, REMOTE_HEIGHT);
@@ -412,7 +383,17 @@ public class CallActivity extends RTCConnection implements
     peerConnectionClient.enableStatsEvents(true, STAT_CALLBACK_PERIOD);
   }
 
-
+    public void disconnect(){
+        if (localRender != null) {
+            localRender.release();
+            localRender = null;
+        }
+        if (remoteRender != null) {
+            remoteRender.release();
+            remoteRender = null;
+        }
+        super.disconnect();
+    }
 
   // Helper functions.
   public void toggleCallControlFragmentVisibility() {

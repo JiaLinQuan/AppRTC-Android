@@ -264,7 +264,29 @@ public abstract class RTCConnection extends Activity implements
             audioManager.init();
         }
 
+    // Disconnect from remote resources, dispose of local resources, and exit.
+    public void disconnect() {
+        activityRunning = false;
+        if (appRtcClient != null) {
+            appRtcClient.disconnectFromRoom();
+            appRtcClient = null;
+        }
+        if (peerConnectionClient != null) {
+            peerConnectionClient.close();
+            peerConnectionClient = null;
+        }
 
+        if (audioManager != null) {
+            audioManager.close();
+            audioManager = null;
+        }
+        if (iceConnected && !isError) {
+            setResult(RESULT_OK);
+        } else {
+            setResult(RESULT_CANCELED);
+        }
+        finish();
+    }
 
     private void onAudioManagerChangedState() {
         // TODO(henrika): disable video if AppRTCAudioManager.AudioDevice.EARPIECE

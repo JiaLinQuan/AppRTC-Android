@@ -438,7 +438,7 @@ public class ConnectActivity extends RTCConnection {
 
   @Override
   public void onChannelClose() {
-
+    disconnect();
   }
 
   @Override

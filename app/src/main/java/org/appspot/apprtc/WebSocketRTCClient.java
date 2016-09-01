@@ -83,8 +83,6 @@ public class WebSocketRTCClient implements AppRTCClient, WebSocketChannelEvents 
 
                         Log.i(TAG, "app config: " + msg);
                         try {
-
-
                             JSONObject appConfig = new JSONObject(msg);
 
                             String result = appConfig.getString("result");
@@ -255,20 +253,22 @@ public class WebSocketRTCClient implements AppRTCClient, WebSocketChannelEvents 
     private LinkedList<PeerConnection.IceServer> iceServersFromPCConfigJSON(String pcConfig) throws JSONException {
         JSONObject json = new JSONObject(pcConfig);
         Log.d(TAG, "current pcConfig: " + pcConfig);
-        JSONObject iceJson  = json.getJSONObject("iceServers");
+        LinkedList<PeerConnection.IceServer> iceServers = new LinkedList<PeerConnection.IceServer>();
+        JSONArray iceServersArray = json.getJSONArray("iceServers");
+        for (int i = 0; i < iceServersArray.length(); i++) {
+            JSONObject iceJson  = iceServersArray.getJSONObject(i);
 
-        LinkedList<PeerConnection.IceServer> turnServers =  new LinkedList<PeerConnection.IceServer>();
-        String username = iceJson.getString("username");
-        String password = iceJson.getString("password");
-        JSONArray turnUris = iceJson.getJSONArray("uris");
+            String username = iceJson.getString("username");
+            String password = iceJson.getString("password");
+            JSONArray iceUris = iceJson.getJSONArray("urls");
 
-        for (int i = 0; i < turnUris.length(); i++) {
-            String uri = turnUris.getString(i);
-            Log.d(TAG, "adding ice server: " + uri+" username:"+username+" password:"+password);
-            turnServers.add(new PeerConnection.IceServer(uri, username, password));
+            for (int j = 0; j < iceUris.length(); j++) {
+                String uri = iceUris.getString(j);
+                Log.d(TAG, "adding ice server: " + uri + " username:" + username + " password:" + password);
+                iceServers.add(new PeerConnection.IceServer(uri, username, password));
+            }
         }
-
-        return turnServers;
+        return iceServers;
     }
 
   public void call(final SessionDescription sdp)  {
