@@ -1,30 +1,30 @@
-# AppRTCDemo
-
-Android Studio project for AppRTCDemo of WebRTC project. The revision number of this build is 11801.
-https://chromium.googlesource.com/external/webrtc/+/250fc658c56cb3c6944bd0fd1b88973f2e6d1ced
+# AppRTCDemo for Android
 
 
-##This version was modified to work with websockets only and is currently presentable with the java version of kurento media server at https://github.com/inspiraluna/AppRTC-Kurento-Example
+##About
+Android Studio project is a native prototype in order to communicate with kurentos media server. It works in conjunction with two other projects:
+- AppRTC-Kurento (Kurento Signaling Server in Java (NodeJS version exists but not fully implemented here)
+- AppRTC-iOS (the iOS counterpart of this project)
+
+!!!This version was modified to work with websockets and kurento java api!!!
 
 ##Todo/Bugs
-- websocket in wss mode (secure) autobahn does work or not?
 - when android hangs up stop message is not send to partner (connect is still NEW! why?)
 - when stop message comes from peer android does not cancel the call
 - when peer sends stop message session is removed from server too - its an error.
 - incoming call decide answer or hangup
 - accept/reject incoming calls - with audio/visual alarm and ringtone
 
+##Bugs
+- websocket in wss mode (secure) autobahn does work or not?
 - security considerations while connecting (!)
 - request runtime permission for android 6 (marshmellow) devices
-
-
 
 ##Common Mistakes
 - smartphone not in same network as browser, media kurento server
 - kurento server not running
 
 ##Done:
-
 - 27.7.2016 - when clients disconnects users are not sent out to other clients
 - 27.7.2016 - user list gets updated
 - 26.7.2016 - when android gets called video does not appear
