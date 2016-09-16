@@ -143,10 +143,10 @@ public class WebSocketChannelClient {
           executor.execute(new Runnable() {
             @Override
             public void run() {
-              if (state != WebSocketConnectionState.CLOSED) {
+             // if (state != WebSocketConnectionState.CONNECTED || state != WebSocketConnectionState.CLOSED || state != WebSocketConnectionState.NEW) {
                 state = WebSocketConnectionState.CLOSED;
-                events.onWebSocketClose();
-              }
+               // events.onWebSocketClose();
+            //  }
             }
           });
         }

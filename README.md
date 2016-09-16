@@ -1,12 +1,11 @@
-# AppRTCDemo for Android
-
+# AppRTCDemo - Android
 
 ##About
 Android Studio project is a native prototype in order to communicate with kurentos media server. It works in conjunction with two other projects:
-- AppRTC-Kurento (Kurento Signaling Server in Java (NodeJS version exists but not fully implemented here)
-- AppRTC-iOS (the iOS counterpart of this project)
 
-!!!This version was modified to work with websockets and kurento java api!!!
+There are also:
+- a pure websocket AppRTC for Kurento: AppRTC-Kurento and
+- a pure websocket AppRTC for Android: AppRTC-iOS 
 
 ##Todo/Bugs
 - when android hangs up stop message is not send to partner (connect is still NEW! why?)
@@ -16,7 +15,11 @@ Android Studio project is a native prototype in order to communicate with kurent
 - accept/reject incoming calls - with audio/visual alarm and ringtone
 
 ##Bugs
+- if websocket url is wrong it cannot be changed - (app is crashing)
+
+##Improvements
 - websocket in wss mode (secure) autobahn does work or not?
+	https://github.com/TooTallNate/Java-WebSocket
 - security considerations while connecting (!)
 - request runtime permission for android 6 (marshmellow) devices
 
@@ -25,6 +28,7 @@ Android Studio project is a native prototype in order to communicate with kurent
 - kurento server not running
 
 ##Done:
+- 16.9.2016 - if websocket url is wrong android crashes and url cnanot be changed anymore
 - 27.7.2016 - when clients disconnects users are not sent out to other clients
 - 27.7.2016 - user list gets updated
 - 26.7.2016 - when android gets called video does not appear
