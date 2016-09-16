@@ -15,9 +15,6 @@ import org.appspot.apprtc.util.LooperExecutor;
 import android.util.Log;
 
 import org.appspot.apprtc.RoomParametersFetcher.RoomParametersFetcherEvents;
-import de.tavendo.autobahn.WebSocketConnection;
-import de.tavendo.autobahn.WebSocketException;
-import de.tavendo.autobahn.WebSocketHandler;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -25,6 +22,10 @@ import org.json.JSONObject;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.LinkedList;
+
+import de.tavendo.autobahn.WebSocketConnection;
+import de.tavendo.autobahn.WebSocketConnectionHandler;
+import de.tavendo.autobahn.WebSocketException;
 
 /**
  * WebSocket client implementation.
@@ -96,7 +97,7 @@ public class WebSocketChannelClient {
 
     final WebSocketChannelClient thisWebSocketChannelClient = this;
     try {
-      ws.connect(wsServerUrl, new WebSocketHandler() {
+      ws.connect(new URI(wsServerUrl), new WebSocketConnectionHandler() {
 
         @Override
         public void onOpen() {
@@ -134,8 +135,8 @@ public class WebSocketChannelClient {
         }
 
         @Override
-        public void onClose(int code, String reason) {
-          Log.d(TAG, "WebSocket connection closed. Code: " + code + ". Reason: " + reason + ". State: " + state);
+        public void onClose(WebSocketCloseNotification code, String reason) {
+          Log.d(TAG, "WebSocket connection closed. Code: " + code.toString() + ". Reason: " + reason + ". State: " + state);
           synchronized (closeEventLock) {
             closeEvent = true;
             closeEventLock.notify();

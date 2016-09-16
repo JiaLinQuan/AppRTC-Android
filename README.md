@@ -7,6 +7,10 @@ There are also:
 - a pure websocket AppRTC for Kurento: AppRTC-Kurento and
 - a pure websocket AppRTC for Android: AppRTC-iOS 
 
+##Common Mistakes
+- smartphone not in same network as browser, media kurento server
+- kurento server not running?
+
 ##Todo/Bugs
 - when android hangs up stop message is not send to partner (connect is still NEW! why?)
 - when stop message comes from peer android does not cancel the call
@@ -18,16 +22,18 @@ There are also:
 - if websocket url is wrong it cannot be changed - (app is crashing)
 
 ##Improvements
-- websocket in wss mode (secure) autobahn does work or not?
-	https://github.com/TooTallNate/Java-WebSocket
 - security considerations while connecting (!)
 - request runtime permission for android 6 (marshmellow) devices
 
-##Common Mistakes
-- smartphone not in same network as browser, media kurento server
-- kurento server not running
+
 
 ##Done:
+- 16.9.2016 - websocket in wss mode (secure) autobahn does work or not?
+				tried: https://github.com/palmerc/SecureWebSockets  (from: https://github.com/crossbario/autobahn-android/pull/14)
+					- tomcat crashes
+				https://github.com/TooTallNate/Java-WebSocket
+				https://github.com/TooTallNate/Java-WebSocket/issues/141
+	http://www.juliankrone.com/connect-and-transfer-data-with-secure-websockets-in-android/
 - 16.9.2016 - if websocket url is wrong android crashes and url cnanot be changed anymore
 - 27.7.2016 - when clients disconnects users are not sent out to other clients
 - 27.7.2016 - user list gets updated
