@@ -36,4 +36,5 @@ android {
 
 dependencies {
   compile files('libs/libjingle_peerconnection.jar')
+  compile files('libs/java_websocket.jar')
 }

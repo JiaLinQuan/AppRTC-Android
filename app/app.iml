@@ -106,5 +106,6 @@
     <orderEntry type="jdk" jdkName="Android API 22 Platform" jdkType="Android SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" exported="" name="libjingle_peerconnection" level="project" />
+    <orderEntry type="library" exported="" name="java_websocket" level="project" />
   </component>
 </module>
