@@ -18,12 +18,24 @@ There are also:
 - incoming call decide answer or hangup
 - accept/reject incoming calls - with audio/visual alarm and ringtone
 
+##Tests
+- test socket stays connected in background mode.
+- test reconnect when app goes offline or wifi off (see also: https://github.com/palmerc/SecureWebSockets/issues/13)
+
+
 ##Bugs
-- if websocket url is wrong it cannot be changed - (app is crashing)
+- new secure websocket crashes / disconnects / error on tomcat but works on glassfish 
+	- tomcat problem? Check if server is working correctly: 
+		- https://cryptoreport.thawte.com/checker/views/certCheck.jsp ok
+		- http://www.websocket.org/echo.html
+	- android problem? see: - https://github.com/palmerc/SecureWebSockets
+- security check BEAST attack on production server
 
 ##Improvements
 - security considerations while connecting (!)
 - request runtime permission for android 6 (marshmellow) devices
+
+
 
 
 
