@@ -16,16 +16,35 @@ import android.util.Log;
 
 import org.appspot.apprtc.RoomParametersFetcher.RoomParametersFetcherEvents;
 
+import org.java_websocket.client.DefaultSSLWebSocketClientFactory;
+import org.java_websocket.drafts.Draft_17;
+import org.java_websocket.handshake.ServerHandshake;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.security.KeyManagementException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
 import java.util.LinkedList;
+import org.java_websocket.client.WebSocketClient;
 
-import de.tavendo.autobahn.WebSocketConnection;
-import de.tavendo.autobahn.WebSocketConnectionHandler;
-import de.tavendo.autobahn.WebSocketException;
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
+import javax.net.ssl.X509TrustManager;
+import javax.security.cert.X509Certificate;
 
 /**
  * WebSocket client implementation.
@@ -40,7 +59,7 @@ public class WebSocketChannelClient {
   private static final int CLOSE_TIMEOUT = 1000;
   private final WebSocketChannelEvents events;
   private final LooperExecutor executor;
-  private WebSocketConnection ws;
+  private WebSocketClient ws;
   private String wsServerUrl;
   private String postServerUrl;
   private String from;
@@ -75,7 +94,34 @@ public class WebSocketChannelClient {
     wsSendQueue = new LinkedList<String>();
     state = WebSocketConnectionState.NEW;
   }
+  public void trustAllHosts() {
+    // Create a trust manager that does not validate certificate chains
+    TrustManager[] trustAllCerts = new TrustManager[]{new X509TrustManager() {
+      @Override
+      public void checkClientTrusted(java.security.cert.X509Certificate[] chain, String authType) throws CertificateException {
 
+      }
+
+      @Override
+      public void checkServerTrusted(java.security.cert.X509Certificate[] chain, String authType) throws CertificateException {
+
+      }
+
+      public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+        return new java.security.cert.X509Certificate[]{};
+      }
+
+    }};
+    
+    // Install the all-trusting trust manager
+    try {
+      SSLContext sc = SSLContext.getInstance("TLS");
+      sc.init(null, trustAllCerts, new java.security.SecureRandom());
+      ws.setWebSocketFactory(new DefaultSSLWebSocketClientFactory(sc));
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+  }
   public WebSocketConnectionState getState() {
     return state;
   }
@@ -88,19 +134,13 @@ public class WebSocketChannelClient {
       return true;
     }
     wsServerUrl = wsUrl;
-    //postServerUrl = postUrl;
     closeEvent = false;
 
-    Log.i(TAG, "Connecting WebSocket to: " + wsUrl ); //json.getString("appConfigResponse")
-    ws = new WebSocketConnection();
-
-
-    final WebSocketChannelClient thisWebSocketChannelClient = this;
+    Log.i(TAG, "Connecting WebSocket to: " + wsUrl );
     try {
-      ws.connect(new URI(wsServerUrl), new WebSocketConnectionHandler() {
-
+        ws = new WebSocketClient(new URI(wsUrl), new Draft_17()) {
         @Override
-        public void onOpen() {
+        public void onOpen(ServerHandshake handshakedata) {
           Log.d(TAG, "Status: Connected to " + wsUrl);
           Log.d(TAG, "WebSocket connection opened to: " + wsServerUrl);
           executor.execute(new Runnable() {
@@ -108,21 +148,17 @@ public class WebSocketChannelClient {
             public void run() {
               state = WebSocketConnectionState.CONNECTED;
               // Check if we have pending register request.
-
               if(state!=WebSocketConnectionState.REGISTERED) {
-                RoomParametersFetcher roomParametersFetcher = new RoomParametersFetcher(thisWebSocketChannelClient);
+                RoomParametersFetcher roomParametersFetcher = new RoomParametersFetcher(ws);
                 roomParametersFetcher.makeRequest();
               }
-
-
             }
           });
         }
 
         @Override
-        public void onTextMessage(String payload) {
-          Log.d(TAG, "WSS->C: " + payload);
-          final String message = payload;
+        public void onMessage(final String message) {
+          Log.d(TAG, "WSS->C: " + message);
           executor.execute(new Runnable() {
             @Override
             public void run() {
@@ -134,34 +170,85 @@ public class WebSocketChannelClient {
           });
         }
 
+
+
         @Override
-        public void onClose(WebSocketCloseNotification code, String reason) {
-          Log.d(TAG, "WebSocket connection closed. Code: " + code.toString() + ". Reason: " + reason + ". State: " + state);
+        public void onClose(int code, String reason, boolean remote) {
+
+          Log.d(TAG, (remote?"Remote(!) ":"")+"WebSocket connection closed. Code: " + code + ". Reason: " + reason + ". State: " + state);
           synchronized (closeEventLock) {
             closeEvent = true;
             closeEventLock.notify();
           }
+
           executor.execute(new Runnable() {
             @Override
             public void run() {
-             // if (state != WebSocketConnectionState.CONNECTED || state != WebSocketConnectionState.CLOSED || state != WebSocketConnectionState.NEW) {
-                state = WebSocketConnectionState.CLOSED;
-               // events.onWebSocketClose();
-            //  }
+              state = WebSocketConnectionState.CLOSED;
             }
           });
         }
-      });
 
-    } catch (WebSocketException e) {
+        @Override
+        public void onError(Exception ex) {
+          reportError("WebSocket connection error: " + ex.getMessage());
+        }
+      };
+      trustAllHosts();
+      ws.connect();
+/*
+      // load up the key store
+      String STORETYPE = "JKS";
+      String KEYSTORE = "keystore.jks";
+      String STOREPASSWORD = "storepassword";
+      String KEYPASSWORD = "keypassword";
+
+      KeyStore ks = KeyStore.getInstance( STORETYPE );
+      File kf = new File( KEYSTORE );
+
+      try {
+          ks.load( new FileInputStream( kf ), STOREPASSWORD.toCharArray() );
+          KeyManagerFactory kmf = KeyManagerFactory.getInstance( "SunX509" );
+          kmf.init( ks, KEYPASSWORD.toCharArray() );
+          TrustManagerFactory tmf = TrustManagerFactory.getInstance( "SunX509" );
+          tmf.init( ks );
+
+          SSLContext sslContext = null;
+          sslContext = SSLContext.getInstance( "TLS" );
+          sslContext.init( kmf.getKeyManagers(), tmf.getTrustManagers(), null );
+
+          SSLSocketFactory factory = sslContext.getSocketFactory();// (SSLSocketFactory) SSLSocketFactory.getDefault();
+          ws.setWebSocketFactory(new DefaultSSLWebSocketClientFactory(sslContext));
+          ws.connectBlocking();
+
+          BufferedReader reader = new BufferedReader( new InputStreamReader( System.in ) );
+          while ( true ) {
+            String line = reader.readLine();
+            if( line.equals( "close" ) ) {
+              ws.close();
+            } else {
+              ws.send( line );
+            }
+          }
+
+      } catch (IOException e) {
+        reportError("WebSocket connection error: " + e.getMessage());
+      } catch (NoSuchAlgorithmException e) {
+        reportError("WebSocket connection error: " + e.getMessage());
+      } catch (CertificateException e) {
+        reportError("WebSocket connection error: " + e.getMessage());
+      } catch (InterruptedException e) {
+        reportError("WebSocket connection error: " + e.getMessage());
+      } catch (UnrecoverableKeyException e) {
+        reportError("WebSocket connection error: " + e.getMessage());
+      } catch (KeyStoreException e) {
+        reportError("WebSocket connection error: " + e.getMessage());
+      } catch (KeyManagementException e) {
+        reportError("WebSocket connection error: " + e.getMessage());
+      } */
+
+    } catch (URISyntaxException e) {
       reportError("WebSocket connection error: " + e.getMessage());
-      return false;
-    } catch (Exception e) {
-      reportError("WebSocket connection error: ");
-      return false;
-    }catch(Error e2) {
-      reportError("WebSocket connection error: "+e2.getMessage());
-      return false;
     }
     return true;
   }
@@ -183,7 +270,7 @@ public class WebSocketChannelClient {
         json.put("id", "register");
         json.put("name", from);
         Log.d(TAG, "C->WSS: " + json.toString());
-        ws.sendTextMessage(json.toString());
+        ws.send(json.toString());
 
         // Send any previously accumulated messages.
         for (String sendMessage : wsSendQueue) {
@@ -204,7 +291,7 @@ public class WebSocketChannelClient {
         // is registered.
         Log.d(TAG, "WS ACC: " + message);
        // wsSendQueue.add(message);
-        ws.sendTextMessage(message);
+        ws.send(message);
         return;
       case ERROR:
       case CLOSED:
@@ -216,7 +303,7 @@ public class WebSocketChannelClient {
         // json.put("msg", message);
         //message = json.toString();
         Log.d(TAG, "C->WSS: " + message);
-        ws.sendTextMessage(message);
+        ws.send(message);
         break;
     }
     return;
@@ -226,7 +313,7 @@ public class WebSocketChannelClient {
   // connection is opened.
   public void sendSocketMessage(String message) {
     checkIfCalledOnValidThread();
-    ws.sendTextMessage(message);
+    ws.send(message);
   }
 
   public void disconnect(boolean waitForComplete) {
@@ -241,7 +328,7 @@ public class WebSocketChannelClient {
     }
     // Close WebSocket in CONNECTED or ERROR states only.
     if (state == WebSocketConnectionState.CONNECTED  || state == WebSocketConnectionState.ERROR) {
-      ws.disconnect();
+      ws.close();
       state = WebSocketConnectionState.CLOSED;
 
       // Wait for websocket close event to prevent websocket library from

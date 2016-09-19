@@ -29,8 +29,6 @@ import org.webrtc.SessionDescription;
 import java.net.URISyntaxException;
 import java.util.LinkedList;
 
-import de.tavendo.autobahn.WebSocketException;
-
 /**
  * Negotiates signaling for chatting with apprtc.appspot.com "rooms".
  *
@@ -226,18 +224,9 @@ public class WebSocketRTCClient implements AppRTCClient, WebSocketChannelEvents 
 
       socketState = WebSocketConnectionState.NEW;
 
-     // try {
       wsClient = new WebSocketChannelClient(executor, this);
       wsClient.connect(connectionUrl);
       socketState = WebSocketConnectionState.CONNECTED;
-
-      //} catch (URISyntaxException e) {
-        //  reportError("URI error: " + e.getMessage());
-      //} catch (WebSocketException e) {
-        //  reportError("WebSocket connection error: " + e.getMessage());
-     // }
-
-
 
       Log.d(TAG, "wsClient connect " + connectionUrl);
 

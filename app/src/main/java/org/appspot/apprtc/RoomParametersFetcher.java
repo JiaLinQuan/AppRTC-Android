@@ -15,6 +15,7 @@ package org.appspot.apprtc;
 import android.util.Log;
 
 
+import org.java_websocket.client.WebSocketClient;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -30,7 +31,7 @@ import java.util.Scanner;
 public class RoomParametersFetcher {
   private static final String TAG = "RoomParametersFetcher";
 
-  private final WebSocketChannelClient wsClient;
+  private final WebSocketClient wsClient;
 
 
   /**
@@ -49,16 +50,15 @@ public class RoomParametersFetcher {
   //  public void onSignalingParametersError(final String description);
   }
 
-  public RoomParametersFetcher(WebSocketChannelClient wsClient) {
+  public RoomParametersFetcher(WebSocketClient wsClient) {
     this.wsClient = wsClient;
-  //  this.events = events;
   }
 
   public void makeRequest() {
       JSONObject json = new JSONObject();
       WebSocketRTCClient.jsonPut(json, "id", "appConfig");
-      wsClient.sendSocketMessage(json.toString());
-      Log.d(TAG, "made json request " + json.toString()+" ws:"+wsClient.getState());
+      wsClient.send(json.toString());
+      Log.d(TAG, "made json request " + json.toString()+" ws:"+wsClient.getReadyState());
   }
 
 
@@ -70,7 +70,7 @@ public class RoomParametersFetcher {
       Log.d(TAG, "Request TURN from websocket: ");
       JSONObject json = new JSONObject();
       WebSocketRTCClient.jsonPut(json, "id", "turn");
-      wsClient.sendSocketMessage(json.toString());
+      wsClient.send(json.toString());
   }
 
 
