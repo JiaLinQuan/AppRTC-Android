@@ -112,7 +112,7 @@ public class WebSocketChannelClient {
       }
 
     }};
-    
+
     // Install the all-trusting trust manager
     try {
       SSLContext sc = SSLContext.getInstance("TLS");

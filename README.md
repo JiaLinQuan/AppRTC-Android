@@ -12,11 +12,13 @@ There are also:
 - kurento server not running?
 
 ##Todo/Bugs
+- incoming call: Decision: answer or hangup?
 - when android hangs up stop message is not send to partner (connect is still NEW! why?)
 - when stop message comes from peer android does not cancel the call
-- when peer sends stop message session is removed from server too - its an error.
-- incoming call decide answer or hangup
-- accept/reject incoming calls - with audio/visual alarm and ringtone
+
+##Nice2Have
+- ringtone / alarm for incoming call
+
 
 ##Tests
 - test socket stays connected in background mode.
@@ -34,9 +36,6 @@ There are also:
 ##Improvements
 - security considerations while connecting (!)
 - request runtime permission for android 6 (marshmellow) devices
-
-
-
 
 
 ##Done:
