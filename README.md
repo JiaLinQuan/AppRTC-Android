@@ -19,32 +19,30 @@ There are also:
 ##Nice2Have
 - ringtone / alarm for incoming call
 
-
 ##Tests
 - test socket stays connected in background mode.
 - test reconnect when app goes offline or wifi off (see also: https://github.com/palmerc/SecureWebSockets/issues/13)
 
-
 ##Bugs
-- new secure websocket crashes / disconnects / error on tomcat but works on glassfish 
-	- tomcat problem? Check if server is working correctly: 
-		- https://cryptoreport.thawte.com/checker/views/certCheck.jsp ok
-		- http://www.websocket.org/echo.html
-	- android problem? see: - https://github.com/palmerc/SecureWebSockets
 - security check BEAST attack on production server
 
 ##Improvements
 - security considerations while connecting (!)
 - request runtime permission for android 6 (marshmellow) devices
 
-
 ##Done:
+- 20.09.2016 - fixed bug: new secure websocket crashes / disconnects / error on tomcat but works on glassfish 
+				- tomcat problem? Check if server is working correctly: 
+				- https://cryptoreport.thawte.com/checker/views/certCheck.jsp ok
+				- http://www.websocket.org/echo.html
+	- android problem? see: - https://github.com/palmerc/SecureWebSockets
+
 - 16.9.2016 - websocket in wss mode (secure) autobahn does work or not?
 				tried: https://github.com/palmerc/SecureWebSockets  (from: https://github.com/crossbario/autobahn-android/pull/14)
 					- tomcat crashes
 				https://github.com/TooTallNate/Java-WebSocket
 				https://github.com/TooTallNate/Java-WebSocket/issues/141
-	http://www.juliankrone.com/connect-and-transfer-data-with-secure-websockets-in-android/
+				http://www.juliankrone.com/connect-and-transfer-data-with-secure-websockets-in-android/
 - 16.9.2016 - if websocket url is wrong android crashes and url cnanot be changed anymore
 - 27.7.2016 - when clients disconnects users are not sent out to other clients
 - 27.7.2016 - user list gets updated
@@ -58,4 +56,4 @@ There are also:
 - 26.6.2016 -	add "from" User to Setting of Android App
 - 26.6.2016 - use room names as to (change label)
 - 25.6.2016 - add appConfig to java websocket server
- 25.6.2016 - change rest /join to websockets
+- 25.6.2016 - change rest /join to websockets
