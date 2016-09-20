@@ -1,7 +1,7 @@
 # AppRTCDemo - Android
 
 ##About
-Android Studio project is a native prototype in order to communicate with kurentos media server. It works in conjunction with two other projects:
+This project is a native prototype in order to communicate with kurentos media server. It works in conjunction with two other projects:
 
 There are also:
 - a pure websocket AppRTC for Kurento: AppRTC-Kurento and
