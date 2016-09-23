@@ -43,14 +43,16 @@ public class WebSocketRTCClient implements AppRTCClient, WebSocketChannelEvents 
     private static final String TAG = "WebSocketRTCClient";
 
 
-  private enum ConnectionState {
-    NEW, CONNECTED, CLOSED, ERROR
-  };
-  private enum MessageType {
-    MESSAGE, LEAVE
-  };
-  private final LooperExecutor executor;
-  private boolean initiator;
+    private enum ConnectionState {
+        NEW, CONNECTED, CLOSED, ERROR
+    };
+
+    private enum MessageType {
+        MESSAGE, LEAVE
+    };
+
+    private final LooperExecutor executor;
+    private boolean initiator;
 
     private WebSocketChannelClient wsClient;
     private WebSocketConnectionState socketState;
@@ -206,16 +208,32 @@ public class WebSocketRTCClient implements AppRTCClient, WebSocketChannelEvents 
     });
   }
 
-  @Override
-  public void disconnectFromRoom() {
-    executor.execute(new Runnable() {
-      @Override
-      public void run() {
-        disconnectFromRoomInternal();
+    @Override
+    public void disconnectFromRoom() {
+        executor.execute(new Runnable() {
+          @Override
+          public void run() {
+            disconnectFromRoomInternal();
+          }
+        });
+        executor.requestStop();
       }
-    });
-    executor.requestStop();
-  }
+
+    @Override
+    public void reconnect() {
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+
+                disconnectFromRoomInternal();
+                try {
+                    connectToWebsocketInternal();
+                }catch(Exception e){
+                    reportError("WebSocketerror: " + e.toString());
+                }
+            }
+        });
+    }
 
   // Connects to websocket - function runs on a local looper thread.
   private void connectToWebsocketInternal() {

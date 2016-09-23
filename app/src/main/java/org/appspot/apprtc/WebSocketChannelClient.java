@@ -138,8 +138,9 @@ public class WebSocketChannelClient {
 
     Log.i(TAG, "Connecting WebSocket to: " + wsUrl );
     try {
-        ws = new WebSocketClient(new URI(wsUrl), new Draft_17()) {
-        @Override
+          ws = new WebSocketClient(new URI(wsUrl), new Draft_17()) {
+
+          @Override
         public void onOpen(ServerHandshake handshakedata) {
           Log.d(TAG, "Status: Connected to " + wsUrl);
           Log.d(TAG, "WebSocket connection opened to: " + wsServerUrl);
@@ -196,56 +197,6 @@ public class WebSocketChannelClient {
       };
       trustAllHosts();
       ws.connect();
-/*
-      // load up the key store
-      String STORETYPE = "JKS";
-      String KEYSTORE = "keystore.jks";
-      String STOREPASSWORD = "storepassword";
-      String KEYPASSWORD = "keypassword";
-
-      KeyStore ks = KeyStore.getInstance( STORETYPE );
-      File kf = new File( KEYSTORE );
-
-      try {
-          ks.load( new FileInputStream( kf ), STOREPASSWORD.toCharArray() );
-          KeyManagerFactory kmf = KeyManagerFactory.getInstance( "SunX509" );
-          kmf.init( ks, KEYPASSWORD.toCharArray() );
-          TrustManagerFactory tmf = TrustManagerFactory.getInstance( "SunX509" );
-          tmf.init( ks );
-
-          SSLContext sslContext = null;
-          sslContext = SSLContext.getInstance( "TLS" );
-          sslContext.init( kmf.getKeyManagers(), tmf.getTrustManagers(), null );
-
-          SSLSocketFactory factory = sslContext.getSocketFactory();// (SSLSocketFactory) SSLSocketFactory.getDefault();
-          ws.setWebSocketFactory(new DefaultSSLWebSocketClientFactory(sslContext));
-          ws.connectBlocking();
-
-          BufferedReader reader = new BufferedReader( new InputStreamReader( System.in ) );
-          while ( true ) {
-            String line = reader.readLine();
-            if( line.equals( "close" ) ) {
-              ws.close();
-            } else {
-              ws.send( line );
-            }
-          }
-
-      } catch (IOException e) {
-        reportError("WebSocket connection error: " + e.getMessage());
-      } catch (NoSuchAlgorithmException e) {
-        reportError("WebSocket connection error: " + e.getMessage());
-      } catch (CertificateException e) {
-        reportError("WebSocket connection error: " + e.getMessage());
-      } catch (InterruptedException e) {
-        reportError("WebSocket connection error: " + e.getMessage());
-      } catch (UnrecoverableKeyException e) {
-        reportError("WebSocket connection error: " + e.getMessage());
-      } catch (KeyStoreException e) {
-        reportError("WebSocket connection error: " + e.getMessage());
-      } catch (KeyManagementException e) {
-        reportError("WebSocket connection error: " + e.getMessage());
-      } */
 
     } catch (URISyntaxException e) {
       reportError("WebSocket connection error: " + e.getMessage());

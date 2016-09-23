@@ -15,6 +15,9 @@ There are also:
 - incoming call: Decision: answer or hangup?
 - when android hangs up stop message is not send to partner (connect is still NEW! why?)
 - when stop message comes from peer android does not cancel the call
+- mic on/off
+- video on/off
+- camera switch	
 
 ##Nice2Have
 - ringtone / alarm for incoming call
@@ -31,6 +34,7 @@ There are also:
 - request runtime permission for android 6 (marshmellow) devices
 
 ##Done:
+- 23.09.2016 - fixed  "settings change" issue: https://github.com/Le-Space/mscrtc-android/issues/1
 - 20.09.2016 - fixed bug: new secure websocket crashes / disconnects / error on tomcat but works on glassfish 
 				- tomcat problem? Check if server is working correctly: 
 				- https://cryptoreport.thawte.com/checker/views/certCheck.jsp ok
@@ -43,7 +47,7 @@ There are also:
 				https://github.com/TooTallNate/Java-WebSocket
 				https://github.com/TooTallNate/Java-WebSocket/issues/141
 				http://www.juliankrone.com/connect-and-transfer-data-with-secure-websockets-in-android/
-- 16.9.2016 - if websocket url is wrong android crashes and url cnanot be changed anymore
+- 16.9.2016 - if websocket url is wrong android crashes and url cannot be changed anymore
 - 27.7.2016 - when clients disconnects users are not sent out to other clients
 - 27.7.2016 - user list gets updated
 - 26.7.2016 - when android gets called video does not appear

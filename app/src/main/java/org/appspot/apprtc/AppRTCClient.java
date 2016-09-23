@@ -25,21 +25,23 @@ public interface AppRTCClient {
    * Struct holding the connection parameters of an AppRTC room.
    */
   public static class RoomConnectionParameters {
-    public final String roomUrl;
-    public final String from;
+
+    public String roomUrl;
+    public String from;
     public boolean initiator;
     public final boolean loopback;
     public Object to;
 
     public RoomConnectionParameters(
+
         String roomUrl,
         String from,
         boolean initiator,
         boolean loopback) {
-      this.roomUrl = roomUrl;
-      this.from = from;
-      this.initiator = initiator;
-      this.loopback = loopback;
+          this.roomUrl = roomUrl;
+          this.from = from;
+          this.initiator = initiator;
+          this.loopback = loopback;
     }
 
   }
@@ -70,6 +72,10 @@ public interface AppRTCClient {
    */
   public void sendLocalIceCandidate(final IceCandidate candidate);
 
+  /**
+   * Disconnect from room.
+   */
+  public void reconnect();
   /**
    * Disconnect from room.
    */

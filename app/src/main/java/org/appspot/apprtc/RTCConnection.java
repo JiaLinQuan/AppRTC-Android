@@ -262,6 +262,7 @@ public abstract class RTCConnection extends Activity implements
             // MODE_IN_COMMUNICATION for best possible VoIP performance.
             Log.d(TAG, "Initializing the audio manager...");
             audioManager.init();
+
         }
 
     // Disconnect from remote resources, dispose of local resources, and exit.
@@ -269,7 +270,7 @@ public abstract class RTCConnection extends Activity implements
         activityRunning = false;
         if (appRtcClient != null) {
             appRtcClient.disconnectFromRoom();
-            appRtcClient = null;
+           // appRtcClient = null;
         }
         if (peerConnectionClient != null) {
             peerConnectionClient.close();

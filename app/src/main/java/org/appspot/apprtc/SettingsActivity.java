@@ -15,12 +15,13 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
 import android.preference.Preference;
+import android.widget.Toast;
 
 /**
  * Settings activity for AppRTC.
  */
-public class SettingsActivity extends Activity
-    implements OnSharedPreferenceChangeListener{
+public class SettingsActivity extends  RTCConnection
+        implements OnSharedPreferenceChangeListener{
   private SettingsFragment settingsFragment;
 
 
@@ -83,7 +84,7 @@ public class SettingsActivity extends Activity
   }
 
   @Override
-  protected void onResume() {
+  public void onResume() {
     super.onResume();
     // Set summary to be the user-description for the selected value
     SharedPreferences sharedPreferences =
@@ -118,7 +119,7 @@ public class SettingsActivity extends Activity
   }
 
   @Override
-  protected void onPause() {
+  public void onPause() {
     super.onPause();
     SharedPreferences sharedPreferences =
         settingsFragment.getPreferenceScreen().getSharedPreferences();
@@ -128,6 +129,16 @@ public class SettingsActivity extends Activity
   @Override
   public void onSharedPreferenceChanged(SharedPreferences sharedPreferences,
       String key) {
+
+    if(key.equals(keyPrefRoomServerUrl) || key.equals(keyPrefFrom)){
+      Toast logToast = Toast.makeText(this, "connection settings changed", Toast.LENGTH_SHORT);
+      logToast.show();
+      if(key.equals(keyPrefFrom)) roomConnectionParameters.from = sharedPreferences.getString(key, "");
+      if(key.equals(keyPrefRoomServerUrl)) roomConnectionParameters.roomUrl = sharedPreferences.getString(key, "");
+
+      appRtcClient.reconnect();
+    }
+
     if (key.equals(keyprefResolution)
         || key.equals(keyprefFps)
         || key.equals(keyprefStartVideoBitrateType)
@@ -203,4 +214,15 @@ public class SettingsActivity extends Activity
       bitratePreferenceValue.setEnabled(true);
     }
   }
+
+  @Override
+  public void onChannelClose() {
+      //do nothing here.
+  }
+
+  @Override
+  public void onChannelError(String description) {
+
+  }
+
 }
