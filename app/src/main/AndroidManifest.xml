@@ -40,11 +40,11 @@
 
         <data
             android:scheme="https"
-            android:host="192.168.43.251:8443/call"
+            android:host="webrtc.a-fkd.de/jWebrtc"
             />
         <data
             android:scheme="http"
-            android:host="192.168.43.251:8443/call"
+            android:host="webrtc.a-fkd.de/jWebrtc"
             />
       </intent-filter>
     </activity>
