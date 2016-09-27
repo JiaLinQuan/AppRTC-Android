@@ -32,7 +32,18 @@ android {
   lintOptions {
     abortOnError false
   }
+
+  splits {
+    abi {
+      enable true
+      reset()
+      include 'x86', 'armeabi-v7a'
+      universalApk true
+    }
+  }
 }
+
+
 
 dependencies {
   compile files('libs/libjingle_peerconnection.jar')

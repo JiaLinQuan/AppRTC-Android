@@ -197,8 +197,9 @@ public class WebSocketChannelClient {
         }
       };
 
-      if(wsUrl.startsWith("wss:") ||  wsUrl.startsWith("WSS:"))
+      if(wsUrl.startsWith("wss:")==true ||  wsUrl.startsWith("WSS:")==true) {
         trustAllHosts();
+      }
         ws.connect();
 
     } catch (URISyntaxException e) {
