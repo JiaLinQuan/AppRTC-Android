@@ -228,8 +228,8 @@ public class ConnectActivity extends RTCConnection {
 
     }
 
-    roomEditText = (EditText) findViewById(R.id.room_edittext);
-    roomEditText.setOnEditorActionListener(
+    //roomEditText = (EditText) findViewById(R.id.room_edittext);
+    /*roomEditText.setOnEditorActionListener(
       new TextView.OnEditorActionListener() {
         @Override
         public boolean onEditorAction(
@@ -240,20 +240,20 @@ public class ConnectActivity extends RTCConnection {
           }
           return false;
         }
-    });
-    roomEditText.requestFocus();
-    roomEditText = (EditText) findViewById(R.id.room_edittext);
+    });*/
+    //roomEditText.requestFocus();
+    //roomEditText = (EditText) findViewById(R.id.room_edittext);
     roomListView = (ListView) findViewById(R.id.room_listview);
     roomListView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
 
-    addRoomButton = (ImageButton) findViewById(R.id.add_room_button);
-    addRoomButton.setOnClickListener(addRoomListener);
-    removeRoomButton = (ImageButton) findViewById(R.id.remove_room_button);
-    removeRoomButton.setOnClickListener(removeRoomListener);
+    //addRoomButton = (ImageButton) findViewById(R.id.add_room_button);
+    //addRoomButton.setOnClickListener(addRoomListener);
+    //removeRoomButton = (ImageButton) findViewById(R.id.remove_room_button);
+    //removeRoomButton.setOnClickListener(removeRoomListener);
     connectButton = (ImageButton) findViewById(R.id.connect_button);
     connectButton.setOnClickListener(connectListener);
-    connectLoopbackButton = (ImageButton) findViewById(R.id.connect_loopback_button);
-    connectLoopbackButton.setOnClickListener(connectListener);
+    //connectLoopbackButton = (ImageButton) findViewById(R.id.connect_loopback_button);
+    //connectLoopbackButton.setOnClickListener(connectListener);
 
     // If an implicit VIEW intent is launching the app, go directly to that URL.
     //final Intent intent = getIntent();
@@ -321,19 +321,19 @@ public class ConnectActivity extends RTCConnection {
   @Override
   public void onPause() {
     super.onPause();
-    String room = roomEditText.getText().toString();
-    String roomListJson = new JSONArray(roomList).toString();
-    SharedPreferences.Editor editor = sharedPref.edit();
-    editor.putString(keyprefRoom, room);
-    editor.putString(keyprefRoomList, roomListJson);
-    editor.commit();
+    //String room = roomEditText.getText().toString();
+    //String roomListJson = new JSONArray(roomList).toString();
+    //SharedPreferences.Editor editor = sharedPref.edit();
+    //editor.putString(keyprefRoom, room);
+    //editor.putString(keyprefRoomList, roomListJson);
+    //editor.commit();
   }
 
   @Override
   public void onResume() {
     super.onResume();
     String room = sharedPref.getString(keyprefRoom, "");
-    roomEditText.setText(room);
+    //roomEditText.setText(room);
     roomList = new ArrayList<String>();
     String roomListJson = sharedPref.getString(keyprefRoomList, null);
     if (roomListJson != null) {
@@ -369,10 +369,6 @@ public class ConnectActivity extends RTCConnection {
   private final OnClickListener connectListener = new OnClickListener() {
     @Override
     public void onClick(View view) {
-      boolean loopback = false;
-      if (view.getId() == R.id.connect_loopback_button) {
-        loopback = true;
-      }
       commandLineRun = false;
       connectToUser(loopback, 0);
     }
