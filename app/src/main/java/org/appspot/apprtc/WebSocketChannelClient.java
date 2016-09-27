@@ -119,6 +119,7 @@ public class WebSocketChannelClient {
       sc.init(null, trustAllCerts, new java.security.SecureRandom());
       ws.setWebSocketFactory(new DefaultSSLWebSocketClientFactory(sc));
     } catch (Exception e) {
+      Log.i(TAG, "SSLContextProblem: " + e.getMessage() );
       e.printStackTrace();
     }
   }
@@ -195,8 +196,10 @@ public class WebSocketChannelClient {
           reportError("WebSocket connection error: " + ex.getMessage());
         }
       };
-      trustAllHosts();
-      ws.connect();
+
+      if(wsUrl.startsWith("wss:") ||  wsUrl.startsWith("WSS:"))
+        trustAllHosts();
+        ws.connect();
 
     } catch (URISyntaxException e) {
       reportError("WebSocket connection error: " + e.getMessage());
