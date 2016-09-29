@@ -8,8 +8,9 @@ There are also:
 - a pure websocket AppRTC for Android: AppRTC-iOS 
 
 ##Common Mistakes
-- smartphone not in same network as browser, media kurento server
-- kurento server not running?
+- (production) wrong url for webservice.
+- (development environment) smartphone not in same network as browser, media kurento server 
+- (development environment) kurento server not running?
 
 ##Todo/Bugs
 - incoming call: Decision: answer or hangup?
@@ -23,10 +24,16 @@ There are also:
 - ringtone / alarm for incoming call
 
 ##Tests
-- test socket stays connected in background mode.
-- test reconnect when app goes offline or wifi off (see also: https://github.com/palmerc/SecureWebSockets/issues/13)
+- (not tested yet) does app goes in stand by mode during video broadcast
+- (not tested yet) test reconnect when app goes offline or wifi off (see also: https://github.com/palmerc/SecureWebSockets/issues/13)
+- (ok) test socket stays connected in background mode. 
 
 ##Bugs
+- BUG-27.9.2016 Websocket does not connect on Android 5.1 
+	- reading https://www.varvet.com/blog/using-websockets-in-native-ios-and-android-apps/
+	- possible problem Android 5.0 Lollipop with wss: 
+		https://github.com/TooTallNate/Java-WebSocket/issues/293
+		https://github.com/andrepew/Java-WebSocket/tree/1.3.0-Android-SSL-Fix
 - security check BEAST attack on production server
 
 ##Improvements
@@ -34,6 +41,8 @@ There are also:
 - request runtime permission for android 6 (marshmellow) devices
 
 ##Done:
+- 27.09.2016 - ws and wss now possible in case of a not working wss in lollipopp.
+- 27.09.2016 - test socket stays connected in background mode. ok
 - 23.09.2016 - fixed  "settings change" issue: https://github.com/Le-Space/mscrtc-android/issues/1
 - 20.09.2016 - fixed bug: new secure websocket crashes / disconnects / error on tomcat but works on glassfish 
 				- tomcat problem? Check if server is working correctly: 
