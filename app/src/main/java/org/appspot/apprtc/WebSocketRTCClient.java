@@ -135,7 +135,6 @@ public class WebSocketRTCClient implements AppRTCClient, WebSocketChannelEvents 
                 events.onUserListUpdate(response);
             }
 
-
             if(id.equals("callResponse")){
                 response = json.getString("response");
 
@@ -156,7 +155,6 @@ public class WebSocketRTCClient implements AppRTCClient, WebSocketChannelEvents 
                 events.onIncomingCall(json.getString("from"));
             }
 
-
             if(id.equals("startCommunication")){
                 Log.d(TAG, "startCommunication "+json.toString());
                 SessionDescription sdp = new SessionDescription(SessionDescription.Type.ANSWER,json.getString("sdpAnswer"));
@@ -172,7 +170,6 @@ public class WebSocketRTCClient implements AppRTCClient, WebSocketChannelEvents 
                 Log.d(TAG, "iceCandidate "+json.toString());
 
                 JSONObject candidateJson = json.getJSONObject("candidate");
-
 
                 IceCandidate candidate = new IceCandidate(
                         candidateJson.getString("sdpMid"),
@@ -261,10 +258,11 @@ public class WebSocketRTCClient implements AppRTCClient, WebSocketChannelEvents 
         jsonPut(jsonMessage, "id" , "stop");
         wsClient.send(jsonMessage.toString());
     }
-    socketState = WebSocketConnectionState.CLOSED;
-    if (wsClient != null) {
-      wsClient.disconnect(true);
-    }
+
+   // if (wsClient != null) { //don't disconnect the whole websocket anymore
+      //wsClient.disconnect(true);
+      //  socketState = WebSocketConnectionState.CLOSED;
+   // }
   }
 
   // Helper functions to get connection, sendSocketMessage message and leave message URLs

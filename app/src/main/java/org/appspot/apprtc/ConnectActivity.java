@@ -203,8 +203,6 @@ public class ConnectActivity extends RTCConnection {
       Uri uri = Uri.parse(roomUrl);
       intent = new Intent(this, ConnectActivity.class);
       intent.setData(uri);
-     // intent.putExtra(CallActivity.EXTRA_FROM, from);
-     // intent.putExtra(CallActivity.EXTRA_TO, //to);
       intent.putExtra(CallActivity.EXTRA_LOOPBACK, loopback);
       intent.putExtra(CallActivity.EXTRA_VIDEO_CALL, videoCallEnabled);
       intent.putExtra(CallActivity.EXTRA_VIDEO_WIDTH, videoWidth);
@@ -224,36 +222,13 @@ public class ConnectActivity extends RTCConnection {
       intent.putExtra(CallActivity.EXTRA_TRACING, tracing);
       intent.putExtra(CallActivity.EXTRA_CMDLINE, commandLineRun);
       intent.putExtra(CallActivity.EXTRA_RUNTIME, runTimeMs);
-
-
     }
 
-    //roomEditText = (EditText) findViewById(R.id.room_edittext);
-    /*roomEditText.setOnEditorActionListener(
-      new TextView.OnEditorActionListener() {
-        @Override
-        public boolean onEditorAction(
-            TextView textView, int i, KeyEvent keyEvent) {
-          if (i == EditorInfo.IME_ACTION_DONE) {
-            addRoomButton.performClick();
-            return true;
-          }
-          return false;
-        }
-    });*/
-    //roomEditText.requestFocus();
-    //roomEditText = (EditText) findViewById(R.id.room_edittext);
     roomListView = (ListView) findViewById(R.id.room_listview);
     roomListView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
 
-    //addRoomButton = (ImageButton) findViewById(R.id.add_room_button);
-    //addRoomButton.setOnClickListener(addRoomListener);
-    //removeRoomButton = (ImageButton) findViewById(R.id.remove_room_button);
-    //removeRoomButton.setOnClickListener(removeRoomListener);
     connectButton = (ImageButton) findViewById(R.id.connect_button);
     connectButton.setOnClickListener(connectListener);
-    //connectLoopbackButton = (ImageButton) findViewById(R.id.connect_loopback_button);
-    //connectLoopbackButton.setOnClickListener(connectListener);
 
     // If an implicit VIEW intent is launching the app, go directly to that URL.
     //final Intent intent = getIntent();
@@ -267,8 +242,7 @@ public class ConnectActivity extends RTCConnection {
       finish();
       return;
     }
-    // from = intent.getStringExtra(EXTRA_FROM);
-    // to = intent.getStringExtra(EXTRA_TO);
+
     if (from == null || from.length() == 0) {
       logAndToast(getString(R.string.missing_from));
       Log.e(TAG, "Incorrect from in intent!");
@@ -276,9 +250,6 @@ public class ConnectActivity extends RTCConnection {
       finish();
       return;
     }
-
-    // loopback = intent.getBooleanExtra(EXTRA_LOOPBACK, false);
-    // tracing = intent.getBooleanExtra(EXTRA_TRACING, false);
 
     peerConnectionParameters = new PeerConnectionClient.PeerConnectionParameters(
             videoCallEnabled,
@@ -291,13 +262,11 @@ public class ConnectActivity extends RTCConnection {
     roomConnectionParameters = new AppRTCClient.RoomConnectionParameters(
             wsurl.toString(), from, false, loopback);
 
-
     Log.i(TAG, "creating appRtcClient with roomUri:" + wsurl.toString()+" from:"+from);
     // Create connection client and connection parameters.
     appRtcClient = new WebSocketRTCClient(this,new LooperExecutor());
 
     connectToWebsocket();
-
   }
 
   @Override
@@ -375,23 +344,16 @@ public class ConnectActivity extends RTCConnection {
   };
 
   private void connectToUser(boolean loopback, int runTimeMs) {
-    Object to = "";
-    if (loopback) {
-      to = Integer.toString((new Random()).nextInt(100000000));
-    } else {
-      to = getSelectedItem();
-      if (to == null) {
-        to = roomEditText.getText().toString();
-      }
+
+      Object to = getSelectedItem();
       roomConnectionParameters.initiator = true;
       roomConnectionParameters.to = to;
-    }
 
      Intent newIntent = new Intent(this, CallActivity.class);
      newIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+     newIntent.putExtra("keep", true);
      newIntent.putExtras(intent);
      startActivityForResult(newIntent, CONNECTION_REQUEST);
-
 
   }
 
@@ -434,7 +396,11 @@ public class ConnectActivity extends RTCConnection {
 
   @Override
   public void onChannelClose() {
-    disconnect();
+    Intent newIntent = new Intent(this, CallActivity.class);
+    newIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+    newIntent.putExtra("keep", false);
+    newIntent.putExtras(intent);
+   // disconnect(false);
   }
 
   @Override

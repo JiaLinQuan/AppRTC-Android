@@ -164,10 +164,28 @@ public class CallActivity extends RTCConnection implements
       (new Handler()).postDelayed(new Runnable() {
         @Override
         public void run() {
-          disconnect();
+          disconnect(false);
         }
       }, runTimeMs);
     }
+
+    // Create and audio manager that will take care of audio routing,
+    // audio modes, audio device enumeration etc.
+    //  if(audioManager!=null) {
+    audioManager = AppRTCAudioManager.create(this, new Runnable() {
+                  // This method will be called each time the audio state (number and
+                  // type of devices) has been changed.
+                  @Override
+                  public void run() {
+                      onAudioManagerChangedState();
+                  }
+              }
+    );
+
+    // Store existing audio settings and change audio mode to
+    // MODE_IN_COMMUNICATION for best possible VoIP performance.
+    Log.d(TAG, "Initializing the audio manager...");
+    audioManager.init();
 
     peerConnectionClient = PeerConnectionClient.getInstance();
     peerConnectionClient.createPeerConnectionFactory(
@@ -181,10 +199,13 @@ public class CallActivity extends RTCConnection implements
     // Create offer. Offer SDP will be sent to answering client in
     // PeerConnectionEvents.onLocalDescription event.
     peerConnectionClient.createOffer();
-
-
   }
 
+
+    private void onAudioManagerChangedState() {
+        // TODO(henrika): disable video if AppRTCAudioManager.AudioDevice.EARPIECE
+        // is active.
+    }
 
 
   public void updateVideoView() {
@@ -213,8 +234,6 @@ public class CallActivity extends RTCConnection implements
       peerConnectionClient.switchCamera();
     }
   }
-
-
 
   @Override
   public void onCaptureFormatChange(int width, int height, int framerate) {
@@ -283,7 +302,8 @@ public class CallActivity extends RTCConnection implements
   }
   @Override
   protected void onDestroy() {
-    disconnect();
+
+    disconnect(true);
     if (logToast != null) {
       logToast.cancel();
     }
@@ -295,7 +315,7 @@ public class CallActivity extends RTCConnection implements
   // CallFragment.OnCallEvents interface implementation.
   @Override
   public void onCallHangUp() {
-    disconnect();
+    disconnect(true);
   }
 
   @Override
@@ -318,7 +338,7 @@ public class CallActivity extends RTCConnection implements
       public void run() {
         logAndToast("ICE disconnected");
         iceConnected = false;
-        disconnect();
+        disconnect(false);
       }
     });
   }
@@ -340,7 +360,7 @@ public class CallActivity extends RTCConnection implements
       @Override
       public void run() {
         logAndToast("Remote end hung up; dropping PeerConnection");
-        disconnect();
+        disconnect(false);
       }
     });
   }
@@ -353,7 +373,7 @@ public class CallActivity extends RTCConnection implements
   private void disconnectWithErrorMessage(final String errorMessage) {
     if (commandLineRun || !activityRunning) {
       Log.e(TAG, "Critical error: " + errorMessage);
-      disconnect();
+      disconnect(true);
     } else {
       new AlertDialog.Builder(this)
               .setTitle(getText(R.string.channel_error_title))
@@ -363,7 +383,7 @@ public class CallActivity extends RTCConnection implements
                 @Override
                 public void onClick(DialogInterface dialog, int id) {
                   dialog.cancel();
-                  disconnect();
+                  disconnect(true);
                 }
               }).create().show();
     }
@@ -383,7 +403,8 @@ public class CallActivity extends RTCConnection implements
     peerConnectionClient.enableStatsEvents(true, STAT_CALLBACK_PERIOD);
   }
 
-    public void disconnect(){
+    public void disconnect(boolean sendRemoteHangup){
+
         if (localRender != null) {
             localRender.release();
             localRender = null;
@@ -392,7 +413,38 @@ public class CallActivity extends RTCConnection implements
             remoteRender.release();
             remoteRender = null;
         }
-        super.disconnect();
+
+        if (audioManager != null) {
+            audioManager.close();
+            audioManager = null;
+        }
+
+
+        if (appRtcClient != null && sendRemoteHangup) {
+            appRtcClient.disconnectFromRoom(); //send bye message to peer only when initiator
+            // appRtcClient = null;
+        }
+
+        if(appRtcClient != null) appRtcClient = null;
+
+        if (peerConnectionClient != null) {
+            peerConnectionClient.close();
+            peerConnectionClient = null;
+        }
+
+       // super.disconnect(sendRemoteHangup);
+
+       // if (iceConnected && !isError) {
+
+      //  } else {
+        //    setResult(RESULT_CANCELED);
+        //}
+        if(activityRunning){
+            activityRunning=false;
+            setResult(RESULT_OK);
+            finish();
+        }
+
     }
 
   // Helper functions.

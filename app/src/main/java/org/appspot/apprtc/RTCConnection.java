@@ -237,61 +237,21 @@ public abstract class RTCConnection extends Activity implements
     }
 
 
-        public void connectToWebsocket() {
-            if (appRtcClient == null) {
-                Log.e(TAG, "AppRTC client is not allocated for a call.");
-                return;
-            }
-            callStartedTimeMs = System.currentTimeMillis();
-
-            // Start room connection.
-            appRtcClient.connectToWebsocket(roomConnectionParameters);
-
-            // Create and audio manager that will take care of audio routing,
-            // audio modes, audio device enumeration etc.
-            audioManager = AppRTCAudioManager.create(this, new Runnable() {
-                        // This method will be called each time the audio state (number and
-                        // type of devices) has been changed.
-                        @Override
-                        public void run() {
-                            onAudioManagerChangedState();
-                        }
-                    }
-            );
-            // Store existing audio settings and change audio mode to
-            // MODE_IN_COMMUNICATION for best possible VoIP performance.
-            Log.d(TAG, "Initializing the audio manager...");
-            audioManager.init();
-
+    public void connectToWebsocket() {
+        if (appRtcClient == null) {
+            Log.e(TAG, "AppRTC client is not allocated for a call.");
+            return;
         }
+        callStartedTimeMs = System.currentTimeMillis();
 
-    // Disconnect from remote resources, dispose of local resources, and exit.
-    public void disconnect() {
-        activityRunning = false;
-        if (appRtcClient != null) {
-            appRtcClient.disconnectFromRoom();
-           // appRtcClient = null;
-        }
-        if (peerConnectionClient != null) {
-            peerConnectionClient.close();
-            peerConnectionClient = null;
-        }
+        // Start room connection.
+        appRtcClient.connectToWebsocket(roomConnectionParameters);
 
-        if (audioManager != null) {
-            audioManager.close();
-            audioManager = null;
-        }
-        if (iceConnected && !isError) {
-            setResult(RESULT_OK);
-        } else {
-            setResult(RESULT_CANCELED);
-        }
-        finish();
     }
 
-    private void onAudioManagerChangedState() {
-        // TODO(henrika): disable video if AppRTCAudioManager.AudioDevice.EARPIECE
-        // is active.
+    // Disconnect from remote resources, dispose of local resources, and exit.
+    public void disconnect(boolean sendRemoteHangup) {
+        disconnect(sendRemoteHangup);
     }
 
     public boolean validateUrl(String url) {
