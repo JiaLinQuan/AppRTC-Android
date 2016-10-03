@@ -322,11 +322,11 @@ public class ConnectActivity extends RTCConnection {
   public void onPause() {
     super.onPause();
     //String room = roomEditText.getText().toString();
-    //String roomListJson = new JSONArray(roomList).toString();
-    //SharedPreferences.Editor editor = sharedPref.edit();
+    String roomListJson = new JSONArray(roomList).toString();
+    SharedPreferences.Editor editor = sharedPref.edit();
     //editor.putString(keyprefRoom, room);
-    //editor.putString(keyprefRoomList, roomListJson);
-    //editor.commit();
+    editor.putString(keyprefRoomList, roomListJson);
+    editor.commit();
   }
 
   @Override

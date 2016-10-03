@@ -9,13 +9,13 @@ There are also:
 
 ##Common Mistakes
 - (production) wrong url for webservice.
-- (development environment) smartphone not in same network as browser, media kurento server 
-- (development environment) kurento server not running?
+- (development) smartphone not in same network as browser, media kurento server 
+- (development) kurento server not running?
 
 ##Todo/Bugs
-- incoming call: Decision: answer or hangup?
 - when android hangs up stop message is not send to partner (connect is still NEW! why?)
 - when stop message comes from peer android does not cancel the call
+- incoming call: Decision: answer or hangup?
 - mic on/off
 - video on/off
 - camera switch	
@@ -41,6 +41,8 @@ There are also:
 - request runtime permission for android 6 (marshmellow) devices
 
 ##Done:
+- 03.10.2016 - fixed problem with missing libjingle through an emulator related inclusion of x86-libs, which didn't turn out to be that good for android-native .apk
+- 03.10.2016 - fixed problem with current-user list 
 - 27.09.2016 - ws and wss now possible in case of a not working wss in lollipopp.
 - 27.09.2016 - test socket stays connected in background mode. ok
 - 23.09.2016 - fixed  "settings change" issue: https://github.com/Le-Space/mscrtc-android/issues/1
