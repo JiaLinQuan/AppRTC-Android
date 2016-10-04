@@ -15,7 +15,11 @@ package org.appspot.apprtc;
 
 import android.app.AlertDialog;
 import android.app.FragmentTransaction;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
@@ -32,6 +36,8 @@ import org.webrtc.RendererCommon.ScalingType;
 import org.webrtc.SessionDescription;
 import org.webrtc.StatsReport;
 import org.webrtc.SurfaceViewRenderer;
+
+import static android.app.Activity.RESULT_CANCELED;
 
 
 /**
@@ -71,7 +77,7 @@ public class CallActivity extends RTCConnection implements
   private ScalingType scalingType;
   private Toast logToast;
   private boolean commandLineRun;
-
+  private boolean sendDisconnectToPeer = true;
   private long callStartedTimeMs = 0;
   // Controls
   public CallFragment callFragment;
@@ -136,6 +142,9 @@ public class CallActivity extends RTCConnection implements
     remoteRender.init(rootEglBase.getEglBaseContext(), null);
     localRender.setZOrderMediaOverlay(true);
     updateVideoView();
+
+      setResult(RESULT_CANCELED);
+      registerReceiver(broadcast_reciever, new IntentFilter("finish_CallActivity"));
 
     // Check for mandatory permissions.
     for (String permission : MANDATORY_PERMISSIONS) {
@@ -303,13 +312,13 @@ public class CallActivity extends RTCConnection implements
   @Override
   protected void onDestroy() {
 
-    disconnect(true);
+    disconnect(sendDisconnectToPeer);
     if (logToast != null) {
       logToast.cancel();
     }
     activityRunning = false;
     rootEglBase.release();
-    super.onDestroy();
+      super.onDestroy();
   }
 
   // CallFragment.OnCallEvents interface implementation.
@@ -422,26 +431,20 @@ public class CallActivity extends RTCConnection implements
 
         if (appRtcClient != null && sendRemoteHangup) {
             appRtcClient.disconnectFromRoom(); //send bye message to peer only when initiator
+            sendDisconnectToPeer = false;
             // appRtcClient = null;
         }
 
-        if(appRtcClient != null) appRtcClient = null;
+       //DON'T DO THAT if(appRtcClient != null) appRtcClient = null;
 
         if (peerConnectionClient != null) {
             peerConnectionClient.close();
             peerConnectionClient = null;
         }
 
-       // super.disconnect(sendRemoteHangup);
-
-       // if (iceConnected && !isError) {
-
-      //  } else {
-        //    setResult(RESULT_CANCELED);
-        //}
         if(activityRunning){
             activityRunning=false;
-            setResult(RESULT_OK);
+            setResult(RESULT_OK); //okey means send stop to client!
             finish();
         }
 
@@ -465,6 +468,19 @@ public class CallActivity extends RTCConnection implements
     ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
     ft.commit();
   }
+
+    BroadcastReceiver broadcast_reciever = new BroadcastReceiver() {
+
+        @Override
+        public void onReceive(Context arg0, Intent intent) {
+            String action = intent.getAction();
+            if (action.equals("finish_CallActivity")) {
+                sendDisconnectToPeer = false;
+                finish();
+            }
+        }
+    };
+
 
 
 

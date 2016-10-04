@@ -115,9 +115,9 @@ public class WebSocketChannelClient {
 
     // Install the all-trusting trust manager
     try {
-      SSLContext sc = SSLContext.getInstance("TLS");
-      sc.init(null, trustAllCerts, new java.security.SecureRandom());
-      ws.setWebSocketFactory(new DefaultSSLWebSocketClientFactory(sc));
+        SSLContext sc = SSLContext.getInstance("TLS");
+        sc.init(null, trustAllCerts, new java.security.SecureRandom());
+        ws.setWebSocketFactory(new DefaultSSLWebSocketClientFactory(sc));
     } catch (Exception e) {
       Log.i(TAG, "SSLContextProblem: " + e.getMessage() );
       e.printStackTrace();
@@ -141,22 +141,22 @@ public class WebSocketChannelClient {
     try {
           ws = new WebSocketClient(new URI(wsUrl), new Draft_17()) {
 
-          @Override
-        public void onOpen(ServerHandshake handshakedata) {
-          Log.d(TAG, "Status: Connected to " + wsUrl);
-          Log.d(TAG, "WebSocket connection opened to: " + wsServerUrl);
-          executor.execute(new Runnable() {
             @Override
-            public void run() {
-              state = WebSocketConnectionState.CONNECTED;
-              // Check if we have pending register request.
-              if(state!=WebSocketConnectionState.REGISTERED) {
-                RoomParametersFetcher roomParametersFetcher = new RoomParametersFetcher(ws);
-                roomParametersFetcher.makeRequest();
+          public void onOpen(ServerHandshake handshakedata) {
+            Log.d(TAG, "Status: Connected to " + wsUrl);
+            Log.d(TAG, "WebSocket connection opened to: " + wsServerUrl);
+            executor.execute(new Runnable() {
+              @Override
+              public void run() {
+                state = WebSocketConnectionState.CONNECTED;
+                // Check if we have pending register request.
+                if(state!=WebSocketConnectionState.REGISTERED) {
+                  RoomParametersFetcher roomParametersFetcher = new RoomParametersFetcher(ws);
+                  roomParametersFetcher.makeRequest();
+                }
               }
-            }
-          });
-        }
+            });
+          }
 
         @Override
         public void onMessage(final String message) {

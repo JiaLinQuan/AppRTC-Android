@@ -213,7 +213,7 @@ public class WebSocketRTCClient implements AppRTCClient, WebSocketChannelEvents 
             disconnectFromRoomInternal();
           }
         });
-        executor.requestStop();
+      //  executor.requestStop();
       }
 
     @Override

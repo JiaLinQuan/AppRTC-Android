@@ -251,7 +251,7 @@ public abstract class RTCConnection extends Activity implements
 
     // Disconnect from remote resources, dispose of local resources, and exit.
     public void disconnect(boolean sendRemoteHangup) {
-        disconnect(sendRemoteHangup);
+     //   disconnect(sendRemoteHangup);
     }
 
     public boolean validateUrl(String url) {

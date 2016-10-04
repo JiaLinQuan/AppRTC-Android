@@ -396,11 +396,8 @@ public class ConnectActivity extends RTCConnection {
 
   @Override
   public void onChannelClose() {
-    Intent newIntent = new Intent(this, CallActivity.class);
-    newIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-    newIntent.putExtra("keep", false);
-    newIntent.putExtras(intent);
-   // disconnect(false);
+      Intent intent = new Intent("finish_CallActivity");
+      sendBroadcast(intent);
   }
 
   @Override
