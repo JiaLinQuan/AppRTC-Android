@@ -13,15 +13,22 @@ There are also:
 - (development) kurento server not running?
 
 ##Todo/Bugs
-- when android hangs up stop message is not send to partner (connect is still NEW! why?)
-- when stop message comes from peer android does not cancel the call
-- incoming call: Decision: answer or hangup?
+- produces echo while communicating with chrome
+	Android-AECM https://github.com/lhc180/webrtc-based-android-aecm
+	Pakistani Echo in WebRTC https://www.webrtc-experiment.com/pdf/Echo-in-WebRTC-Why.pdf
+	http://stackoverflow.com/questions/12818721/webrtc-aec-on-android
+	http://gingertech.net/2014/03/19/apprtc-googles-webrtc-test-app-and-its-parameters/
+	https://groups.google.com/forum/#!topic/easyrtc/zCUurD4tA2E
+- don't let android go into idle mode during a call (who can test this in Android 5.0)
+- incoming call: decision: answer or hangup?
 - mic on/off
 - video on/off
 - camera switch	
 
 ##Nice2Have
 - ringtone / alarm for incoming call
+- check URL if correct 
+- check username if already registered 
 
 ##Tests
 - (not tested yet) does app goes in stand by mode during video broadcast
@@ -29,11 +36,7 @@ There are also:
 - (ok) test socket stays connected in background mode. 
 
 ##Bugs
-- BUG-27.9.2016 Websocket does not connect on Android 5.1 
-	- reading https://www.varvet.com/blog/using-websockets-in-native-ios-and-android-apps/
-	- possible problem Android 5.0 Lollipop with wss: 
-		https://github.com/TooTallNate/Java-WebSocket/issues/293
-		https://github.com/andrepew/Java-WebSocket/tree/1.3.0-Android-SSL-Fix
+
 - security check BEAST attack on production server
 
 ##Improvements
@@ -41,6 +44,13 @@ There are also:
 - request runtime permission for android 6 (marshmellow) devices
 
 ##Done:
+- 04.10.2016 - BUG-27.9.2016 Websocket does not connect on Android 5.1 
+			 - reading https://www.varvet.com/blog/using-websockets-in-native-ios-and-android-apps/
+			 - possible problem Android 5.0 Lollipop with wss: 
+					https://github.com/TooTallNate/Java-WebSocket/issues/293
+					https://github.com/andrepew/Java-WebSocket/tree/1.3.0-Android-SSL-Fix
+- 04.10.2016 - when android hangs up stop message is not send to partner 
+- 04.10.2016 - when stop message comes from peer android does not cancel the call
 - 03.10.2016 - fixed problem with missing libjingle through an emulator related inclusion of x86-libs, which didn't turn out to be that good for android-native .apk
 - 03.10.2016 - fixed problem with current-user list 
 - 27.09.2016 - ws and wss now possible in case of a not working wss in lollipopp.
