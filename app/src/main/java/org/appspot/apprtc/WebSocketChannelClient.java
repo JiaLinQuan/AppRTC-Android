@@ -10,41 +10,25 @@
 
 package org.appspot.apprtc;
 
-import org.appspot.apprtc.util.LooperExecutor;
-
 import android.util.Log;
 
-import org.appspot.apprtc.RoomParametersFetcher.RoomParametersFetcherEvents;
+import com.neovisionaries.ws.client.WebSocket;
+import com.neovisionaries.ws.client.WebSocketAdapter;
+import com.neovisionaries.ws.client.WebSocketException;
+import com.neovisionaries.ws.client.WebSocketFactory;
+import com.neovisionaries.ws.client.WebSocketState;
 
-import org.java_websocket.client.DefaultSSLWebSocketClientFactory;
-import org.java_websocket.drafts.Draft_17;
-import org.java_websocket.handshake.ServerHandshake;
+import org.appspot.apprtc.util.LooperExecutor;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.security.KeyManagementException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.CertificateException;
 import java.util.LinkedList;
-import org.java_websocket.client.WebSocketClient;
+import java.util.List;
+import java.util.Map;
 
-import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSocketFactory;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.TrustManagerFactory;
-import javax.net.ssl.X509TrustManager;
-import javax.security.cert.X509Certificate;
+
 
 /**
  * WebSocket client implementation.
@@ -55,11 +39,106 @@ import javax.security.cert.X509Certificate;
  */
 
 public class WebSocketChannelClient {
+
+/*
+  public class OwnSSLWebSocketClientFactory implements WebSocketClient.WebSocketClientFactory {
+
+    protected SSLContext sslcontext;
+    protected ExecutorService exec;
+
+    public OwnSSLWebSocketClientFactory( SSLContext sslContext ) {
+      this( sslContext, Executors.newSingleThreadScheduledExecutor() );
+    }
+
+    public OwnSSLWebSocketClientFactory( SSLContext sslContext , ExecutorService exec ) {
+      if( sslContext == null || exec == null )
+        throw new IllegalArgumentException();
+      this.sslcontext = sslContext;
+      this.exec = exec;
+    }
+
+    public SSLSocketFactory setSSLSocketFactory(){
+      return this.sslcontext.getSocketFactory();
+    }
+
+    @Override
+    public ByteChannel wrapChannel(SocketChannel channel, SelectionKey key, String host, int port ) throws IOException {
+      SSLEngine e = sslcontext.createSSLEngine( host, port );
+      e.setUseClientMode( true );
+      return new SSLSocketChannel2( channel, e, exec, key );
+    }
+
+    @Override
+    public WebSocketImpl createWebSocket(WebSocketAdapter a, Draft d, Socket c ) {
+      return new WebSocketImpl( a, d, c );
+    }
+
+    @Override
+    public WebSocketImpl createWebSocket(WebSocketAdapter a, List<Draft> d, Socket s ) {
+      return new WebSocketImpl( a, d, s );
+    }
+
+  }
+  public class TLSSocketFactory extends SSLSocketFactory  {
+
+    private SSLSocketFactory internalSSLSocketFactory;
+
+    public TLSSocketFactory() throws KeyManagementException, NoSuchAlgorithmException {
+      SSLContext context = SSLContext.getInstance("TLS");
+      context.init(null, null, null);
+      internalSSLSocketFactory = context.getSocketFactory();
+    }
+
+    @Override
+    public String[] getDefaultCipherSuites() {
+      return new String[]{"RC4-MD5", "DES-CBC-SHA", "DES-CBC3-SHA"};
+     // return internalSSLSocketFactory.getDefaultCipherSuites();
+    }
+
+    @Override
+    public String[] getSupportedCipherSuites() {
+      return new String[]{"RC4-MD5", "DES-CBC-SHA", "DES-CBC3-SHA"};
+     ///   return internalSSLSocketFactory.getSupportedCipherSuites();
+    }
+
+    @Override
+    public Socket createSocket(Socket s, String host, int port, boolean autoClose) throws IOException {
+      return enableTLSOnSocket(internalSSLSocketFactory.createSocket(s, host, port, autoClose));
+    }
+
+    @Override
+    public Socket createSocket(String host, int port) throws IOException, UnknownHostException {
+      return enableTLSOnSocket(internalSSLSocketFactory.createSocket(host, port));
+    }
+
+    @Override
+    public Socket createSocket(String host, int port, InetAddress localHost, int localPort) throws IOException, UnknownHostException {
+      return enableTLSOnSocket(internalSSLSocketFactory.createSocket(host, port, localHost, localPort));
+    }
+
+    @Override
+    public Socket createSocket(InetAddress host, int port) throws IOException {
+      return enableTLSOnSocket(internalSSLSocketFactory.createSocket(host, port));
+    }
+
+    @Override
+    public Socket createSocket(InetAddress address, int port, InetAddress localAddress, int localPort) throws IOException {
+      return enableTLSOnSocket(internalSSLSocketFactory.createSocket(address, port, localAddress, localPort));
+    }
+
+    private Socket enableTLSOnSocket(Socket socket) {
+      if(socket != null && (socket instanceof SSLSocket)) {
+        ((SSLSocket)socket).setEnabledProtocols(new String[] {"TLSv1.1", "TLSv1.2"});
+      }
+      return socket;
+    }
+  }*/
+
   private static final String TAG = "WSChannelRTCClient";
   private static final int CLOSE_TIMEOUT = 1000;
   private final WebSocketChannelEvents events;
   private final LooperExecutor executor;
-  private WebSocketClient ws;
+  private WebSocket ws;
   private String wsServerUrl;
   private String postServerUrl;
   private String from;
@@ -94,33 +173,37 @@ public class WebSocketChannelClient {
     wsSendQueue = new LinkedList<String>();
     state = WebSocketConnectionState.NEW;
   }
-  public void trustAllHosts() {
-    // Create a trust manager that does not validate certificate chains
-    TrustManager[] trustAllCerts = new TrustManager[]{new X509TrustManager() {
-      @Override
-      public void checkClientTrusted(java.security.cert.X509Certificate[] chain, String authType) throws CertificateException {
 
-      }
 
-      @Override
-      public void checkServerTrusted(java.security.cert.X509Certificate[] chain, String authType) throws CertificateException {
-
-      }
-
-      public java.security.cert.X509Certificate[] getAcceptedIssuers() {
-        return new java.security.cert.X509Certificate[]{};
-      }
-
-    }};
+  public boolean trustAllHosts() {
 
     // Install the all-trusting trust manager
     try {
-        SSLContext sc = SSLContext.getInstance("TLS");
-        sc.init(null, trustAllCerts, new java.security.SecureRandom());
-        ws.setWebSocketFactory(new DefaultSSLWebSocketClientFactory(sc));
+     // SSLContext sslContext = SSLContext.get
+      SSLContext sslContext = SSLContext.getDefault();
+
+      //sslContext.getSocketFactory().
+     // sslContext
+      /*String ciphers[] = sslContext.getSocketFactory().getDefaultCipherSuites();
+      for(int x = 0;x<ciphers.length;x++){
+        Log.i(TAG, "DefaultCipherSuites: " + ciphers[x]);
+      }*/
+
+
+      // Create a WebSocketFactory instance.
+      WebSocketFactory factory = new WebSocketFactory();
+// Create a custom SSL context.
+      //SSLContext context = NaiveSSLContext.getInstance("TLS"); //siehe https://gist.github.com/TakahikoKawasaki/d07de2218b4b81bf65ac
+
+// Set the custom SSL context.
+      factory.setSSLContext(sslContext);
+
+
+      return true;
     } catch (Exception e) {
       Log.i(TAG, "SSLContextProblem: " + e.getMessage() );
       e.printStackTrace();
+      return false;
     }
   }
   public WebSocketConnectionState getState() {
@@ -139,50 +222,51 @@ public class WebSocketChannelClient {
 
     Log.i(TAG, "Connecting WebSocket to: " + wsUrl );
     try {
-          ws = new WebSocketClient(new URI(wsUrl), new Draft_17()) {
+          ws = new WebSocketFactory().createSocket(wsUrl);
 
-            @Override
-          public void onOpen(ServerHandshake handshakedata) {
-            Log.d(TAG, "Status: Connected to " + wsUrl);
-            Log.d(TAG, "WebSocket connection opened to: " + wsServerUrl);
+      ws.addListener(new WebSocketAdapter() {
+        @Override
+        public void onTextMessage(WebSocket websocket, final String message) throws Exception {
+          Log.d(TAG, "WSS->C: " + message);
             executor.execute(new Runnable() {
               @Override
               public void run() {
-                state = WebSocketConnectionState.CONNECTED;
-                // Check if we have pending register request.
-                if(state!=WebSocketConnectionState.REGISTERED) {
-                  RoomParametersFetcher roomParametersFetcher = new RoomParametersFetcher(ws);
-                  roomParametersFetcher.makeRequest();
+                if (state == WebSocketConnectionState.CONNECTED
+                        || state == WebSocketConnectionState.REGISTERED) {
+                  events.onWebSocketMessage(message);
                 }
               }
             });
-          }
+        }
 
         @Override
-        public void onMessage(final String message) {
-          Log.d(TAG, "WSS->C: " + message);
+        public void onConnected(WebSocket websocket, Map<String, List<String>> headers) throws Exception {
+          super.onConnected(websocket, headers);
+          Log.d(TAG, "Status: Connected to " + wsUrl);
+          Log.d(TAG, "WebSocket connection opened to: " + wsServerUrl);
           executor.execute(new Runnable() {
             @Override
             public void run() {
-              if (state == WebSocketConnectionState.CONNECTED
-                      || state == WebSocketConnectionState.REGISTERED) {
-                events.onWebSocketMessage(message);
+              state = WebSocketConnectionState.CONNECTED;
+              // Check if we have pending register request.
+              if(state!=WebSocketConnectionState.REGISTERED) {
+                RoomParametersFetcher roomParametersFetcher = new RoomParametersFetcher(ws);
+                roomParametersFetcher.makeRequest();
               }
             }
           });
         }
 
-
-
         @Override
-        public void onClose(int code, String reason, boolean remote) {
+        public void onStateChanged(WebSocket websocket, WebSocketState newState) throws Exception {
+          super.onStateChanged(websocket, newState);
 
-          Log.d(TAG, (remote?"Remote(!) ":"")+"WebSocket connection closed. Code: " + code + ". Reason: " + reason + ". State: " + state);
+          Log.d(TAG, ("WebSocket connection closed. Code: " + newState.name()));
+
           synchronized (closeEventLock) {
             closeEvent = true;
             closeEventLock.notify();
           }
-
           executor.execute(new Runnable() {
             @Override
             public void run() {
@@ -192,19 +276,42 @@ public class WebSocketChannelClient {
         }
 
         @Override
-        public void onError(Exception ex) {
-          reportError("WebSocket connection error: " + ex.getMessage());
+        public void onConnectError(WebSocket websocket, WebSocketException exception) throws Exception {
+          super.onConnectError(websocket, exception);
+          reportError("WebSocket onError : " + exception.getMessage());
         }
-      };
 
-      if(wsUrl.startsWith("wss:")==true ||  wsUrl.startsWith("WSS:")==true) {
-        trustAllHosts();
-      }
-        ws.connect();
+        @Override
+        public void onError(WebSocket websocket, WebSocketException cause) throws Exception {
+          super.onError(websocket, cause);
+          reportError("WebSocket onError : " + cause.getMessage());
+        }
 
-    } catch (URISyntaxException e) {
+        @Override
+        public void onSendingHandshake(WebSocket websocket, String requestLine, List<String[]> headers) throws Exception {
+          super.onSendingHandshake(websocket, requestLine, headers);
+        }
+
+        @Override
+        public void onUnexpectedError(WebSocket websocket, WebSocketException cause) throws Exception {
+          super.onUnexpectedError(websocket, cause);
+          reportError("WebSocket onUnexpectedError : " + cause.getMessage());
+        }
+      });
+
+
+      } catch (IOException e) {
+      e.printStackTrace();
       reportError("WebSocket connection error: " + e.getMessage());
-    }
+      return false;
+    } ;
+
+      try {
+        ws.connect();
+      } catch (WebSocketException e) {
+        e.printStackTrace();
+        reportError("WebSocket connection error: " + e.getMessage());
+      }
     return true;
   }
 
@@ -225,7 +332,7 @@ public class WebSocketChannelClient {
         json.put("id", "register");
         json.put("name", from);
         Log.d(TAG, "C->WSS: " + json.toString());
-        ws.send(json.toString());
+        ws.sendText(json.toString());
 
         // Send any previously accumulated messages.
         for (String sendMessage : wsSendQueue) {
@@ -245,8 +352,7 @@ public class WebSocketChannelClient {
         // Store outgoing messages and send them after websocket client
         // is registered.
         Log.d(TAG, "WS ACC: " + message);
-       // wsSendQueue.add(message);
-        ws.send(message);
+          ws.sendText(message);
         return;
       case ERROR:
       case CLOSED:
@@ -258,7 +364,7 @@ public class WebSocketChannelClient {
         // json.put("msg", message);
         //message = json.toString();
         Log.d(TAG, "C->WSS: " + message);
-        ws.send(message);
+        ws.sendText(message);
         break;
     }
     return;
@@ -268,7 +374,7 @@ public class WebSocketChannelClient {
   // connection is opened.
   public void sendSocketMessage(String message) {
     checkIfCalledOnValidThread();
-    ws.send(message);
+    ws.sendText(message);
   }
 
   public void disconnect(boolean waitForComplete) {
@@ -283,7 +389,7 @@ public class WebSocketChannelClient {
     }
     // Close WebSocket in CONNECTED or ERROR states only.
     if (state == WebSocketConnectionState.CONNECTED  || state == WebSocketConnectionState.ERROR) {
-      ws.close();
+      ws.disconnect();
       state = WebSocketConnectionState.CLOSED;
 
       // Wait for websocket close event to prevent websocket library from

@@ -10,6 +10,7 @@
 
 package org.appspot.apprtc;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -39,7 +40,7 @@ import java.util.Random;
 /**
  * Handles the initial setup where the user selects which room to join.
  */
-public class ConnectActivity extends RTCConnection {
+public class ConnectActivity extends RTCConnection  {  // implements ProviderInstaller.ProviderInstallListener
 
   private static final String TAG = "ConnectActivity";
   private static boolean commandLineRun = false;
@@ -404,4 +405,5 @@ public class ConnectActivity extends RTCConnection {
   public void onChannelError(String description) {
 
   }
+
 }

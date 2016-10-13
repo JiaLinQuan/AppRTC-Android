@@ -15,7 +15,8 @@ package org.appspot.apprtc;
 import android.util.Log;
 
 
-import org.java_websocket.client.WebSocketClient;
+import com.neovisionaries.ws.client.WebSocket;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -31,34 +32,18 @@ import java.util.Scanner;
 public class RoomParametersFetcher {
   private static final String TAG = "RoomParametersFetcher";
 
-  private final WebSocketClient wsClient;
+  private final WebSocket wsClient;
 
 
-  /**
-   * Room parameters fetcher callbacks.
-   */
-  public static interface RoomParametersFetcherEvents {
-    /**
-     * Callback fired once the room's signaling parameters
-     * SignalingParameters are extracted.
-     */
-  //  public void onSignalingParametersReady(final SignalingParameters params);
-
-    /**
-     * Callback for room parameters extraction error.
-     */
-  //  public void onSignalingParametersError(final String description);
-  }
-
-  public RoomParametersFetcher(WebSocketClient wsClient) {
+  public RoomParametersFetcher(WebSocket wsClient) {
     this.wsClient = wsClient;
   }
 
   public void makeRequest() {
       JSONObject json = new JSONObject();
       WebSocketRTCClient.jsonPut(json, "id", "appConfig");
-      wsClient.send(json.toString());
-      Log.d(TAG, "made json request " + json.toString()+" ws:"+wsClient.getReadyState());
+      wsClient.sendText(json.toString());
+      Log.d(TAG, "made json request " + json.toString()+" ws:"+wsClient.getState().name());
   }
 
 
@@ -70,7 +55,7 @@ public class RoomParametersFetcher {
       Log.d(TAG, "Request TURN from websocket: ");
       JSONObject json = new JSONObject();
       WebSocketRTCClient.jsonPut(json, "id", "turn");
-      wsClient.send(json.toString());
+      wsClient.sendText(json.toString());
   }
 
 
