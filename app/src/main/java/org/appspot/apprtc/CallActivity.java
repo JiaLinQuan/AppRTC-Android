@@ -46,7 +46,8 @@ import static android.app.Activity.RESULT_CANCELED;
  */
 public class CallActivity extends RTCConnection implements
         CallFragment.OnCallEvents,
-        PeerConnectionClient.PeerConnectionEvents{
+        PeerConnectionClient.PeerConnectionEvents,
+        WebSocketChannelClient.WebSocketChannelEvents{
 
 
   private static final String TAG = "CallActivity";
@@ -481,7 +482,13 @@ public class CallActivity extends RTCConnection implements
         }
     };
 
+    @Override
+    public void onWebSocketMessage(String message) {
 
+    }
 
+    @Override
+    public void onWebSocketClose() {
 
+    }
 }

@@ -13,7 +13,6 @@ There are also:
 - (development) kurento server not running?
 
 ##Todo/Bugs
-- crashes when changing protocoll between ws to wss and back on 5.0
 - don't let android go into idle mode during a call (who can test this in Android 5.0)
 - incoming call: decision: answer or hangup?
 - mic on/off
@@ -29,8 +28,6 @@ There are also:
 
 ##Nice2Have
 - ringtone / alarm for incoming call
-- check URL if correct 
-- check username if already registered 
 
 ##Tests
 - (not tested yet) does app goes in stand by mode during video broadcast
@@ -42,6 +39,13 @@ There are also:
 - request runtime permission for android 6 (marshmellow) devices
 
 ##Done:
+- 14.10.2016 - better error handling while switching connection parameters
+	- wrong url
+	- no internet
+	- already registered user
+	- other error
+- 14.10.2016 -reload userlist after reconnection.
+- 14.10.2016 -crashes when changing protocoll between ws to wss and back on 5.0
 - 13.10.2016 - change websocket library to https://github.com/TakahikoKawasaki/nv-websocket-client in order to fix ssl bug in android 5.02
 - 13.10.2016 - ssl handshake exception on android lollipop (5.02)
 				analyze ssl server 

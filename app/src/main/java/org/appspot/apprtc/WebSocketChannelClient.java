@@ -40,100 +40,6 @@ import javax.net.ssl.SSLContext;
 
 public class WebSocketChannelClient {
 
-/*
-  public class OwnSSLWebSocketClientFactory implements WebSocketClient.WebSocketClientFactory {
-
-    protected SSLContext sslcontext;
-    protected ExecutorService exec;
-
-    public OwnSSLWebSocketClientFactory( SSLContext sslContext ) {
-      this( sslContext, Executors.newSingleThreadScheduledExecutor() );
-    }
-
-    public OwnSSLWebSocketClientFactory( SSLContext sslContext , ExecutorService exec ) {
-      if( sslContext == null || exec == null )
-        throw new IllegalArgumentException();
-      this.sslcontext = sslContext;
-      this.exec = exec;
-    }
-
-    public SSLSocketFactory setSSLSocketFactory(){
-      return this.sslcontext.getSocketFactory();
-    }
-
-    @Override
-    public ByteChannel wrapChannel(SocketChannel channel, SelectionKey key, String host, int port ) throws IOException {
-      SSLEngine e = sslcontext.createSSLEngine( host, port );
-      e.setUseClientMode( true );
-      return new SSLSocketChannel2( channel, e, exec, key );
-    }
-
-    @Override
-    public WebSocketImpl createWebSocket(WebSocketAdapter a, Draft d, Socket c ) {
-      return new WebSocketImpl( a, d, c );
-    }
-
-    @Override
-    public WebSocketImpl createWebSocket(WebSocketAdapter a, List<Draft> d, Socket s ) {
-      return new WebSocketImpl( a, d, s );
-    }
-
-  }
-  public class TLSSocketFactory extends SSLSocketFactory  {
-
-    private SSLSocketFactory internalSSLSocketFactory;
-
-    public TLSSocketFactory() throws KeyManagementException, NoSuchAlgorithmException {
-      SSLContext context = SSLContext.getInstance("TLS");
-      context.init(null, null, null);
-      internalSSLSocketFactory = context.getSocketFactory();
-    }
-
-    @Override
-    public String[] getDefaultCipherSuites() {
-      return new String[]{"RC4-MD5", "DES-CBC-SHA", "DES-CBC3-SHA"};
-     // return internalSSLSocketFactory.getDefaultCipherSuites();
-    }
-
-    @Override
-    public String[] getSupportedCipherSuites() {
-      return new String[]{"RC4-MD5", "DES-CBC-SHA", "DES-CBC3-SHA"};
-     ///   return internalSSLSocketFactory.getSupportedCipherSuites();
-    }
-
-    @Override
-    public Socket createSocket(Socket s, String host, int port, boolean autoClose) throws IOException {
-      return enableTLSOnSocket(internalSSLSocketFactory.createSocket(s, host, port, autoClose));
-    }
-
-    @Override
-    public Socket createSocket(String host, int port) throws IOException, UnknownHostException {
-      return enableTLSOnSocket(internalSSLSocketFactory.createSocket(host, port));
-    }
-
-    @Override
-    public Socket createSocket(String host, int port, InetAddress localHost, int localPort) throws IOException, UnknownHostException {
-      return enableTLSOnSocket(internalSSLSocketFactory.createSocket(host, port, localHost, localPort));
-    }
-
-    @Override
-    public Socket createSocket(InetAddress host, int port) throws IOException {
-      return enableTLSOnSocket(internalSSLSocketFactory.createSocket(host, port));
-    }
-
-    @Override
-    public Socket createSocket(InetAddress address, int port, InetAddress localAddress, int localPort) throws IOException {
-      return enableTLSOnSocket(internalSSLSocketFactory.createSocket(address, port, localAddress, localPort));
-    }
-
-    private Socket enableTLSOnSocket(Socket socket) {
-      if(socket != null && (socket instanceof SSLSocket)) {
-        ((SSLSocket)socket).setEnabledProtocols(new String[] {"TLSv1.1", "TLSv1.2"});
-      }
-      return socket;
-    }
-  }*/
-
   private static final String TAG = "WSChannelRTCClient";
   private static final int CLOSE_TIMEOUT = 1000;
   private final WebSocketChannelEvents events;
@@ -179,26 +85,11 @@ public class WebSocketChannelClient {
 
     // Install the all-trusting trust manager
     try {
-     // SSLContext sslContext = SSLContext.get
       SSLContext sslContext = SSLContext.getDefault();
-
-      //sslContext.getSocketFactory().
-     // sslContext
-      /*String ciphers[] = sslContext.getSocketFactory().getDefaultCipherSuites();
-      for(int x = 0;x<ciphers.length;x++){
-        Log.i(TAG, "DefaultCipherSuites: " + ciphers[x]);
-      }*/
-
-
       // Create a WebSocketFactory instance.
       WebSocketFactory factory = new WebSocketFactory();
-// Create a custom SSL context.
-      //SSLContext context = NaiveSSLContext.getInstance("TLS"); //siehe https://gist.github.com/TakahikoKawasaki/d07de2218b4b81bf65ac
-
-// Set the custom SSL context.
+      // Set the custom SSL context.
       factory.setSSLContext(sslContext);
-
-
       return true;
     } catch (Exception e) {
       Log.i(TAG, "SSLContextProblem: " + e.getMessage() );
@@ -213,31 +104,34 @@ public class WebSocketChannelClient {
   public boolean connect(final String wsUrl) {
     Log.i(TAG, "connect called: " + wsUrl);
     checkIfCalledOnValidThread();
+
     if (state != WebSocketConnectionState.NEW) {
       Log.e(TAG, "WebSocket is already connected.");
       return true;
     }
+
     wsServerUrl = wsUrl;
     closeEvent = false;
 
     Log.i(TAG, "Connecting WebSocket to: " + wsUrl );
+
     try {
           ws = new WebSocketFactory().createSocket(wsUrl);
 
-      ws.addListener(new WebSocketAdapter() {
-        @Override
-        public void onTextMessage(WebSocket websocket, final String message) throws Exception {
-          Log.d(TAG, "WSS->C: " + message);
-            executor.execute(new Runnable() {
-              @Override
-              public void run() {
-                if (state == WebSocketConnectionState.CONNECTED
-                        || state == WebSocketConnectionState.REGISTERED) {
-                  events.onWebSocketMessage(message);
+          ws.addListener(new WebSocketAdapter() {
+          @Override
+          public void onTextMessage(WebSocket websocket, final String message) throws Exception {
+            Log.d(TAG, "WSS->C: " + message);
+              executor.execute(new Runnable() {
+                @Override
+                public void run() {
+                  if (state == WebSocketConnectionState.CONNECTED
+                          || state == WebSocketConnectionState.REGISTERED) {
+                    events.onWebSocketMessage(message);
+                  }
                 }
-              }
-            });
-        }
+              });
+          }
 
         @Override
         public void onConnected(WebSocket websocket, Map<String, List<String>> headers) throws Exception {
@@ -384,8 +278,6 @@ public class WebSocketChannelClient {
       // Send "bye" to WebSocket server.
       send("{\"id\": \"stop\"}");
       state = WebSocketConnectionState.CONNECTED;
-      // Send http DELETE to http WebSocket server.
-      //TODO sendWSSMessage("DELETE", "");
     }
     // Close WebSocket in CONNECTED or ERROR states only.
     if (state == WebSocketConnectionState.CONNECTED  || state == WebSocketConnectionState.ERROR) {

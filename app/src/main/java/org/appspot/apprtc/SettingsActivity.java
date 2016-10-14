@@ -22,6 +22,8 @@ import android.widget.Toast;
  */
 public class SettingsActivity extends  RTCConnection
         implements OnSharedPreferenceChangeListener{
+
+
   private SettingsFragment settingsFragment;
 
 
@@ -225,4 +227,13 @@ public class SettingsActivity extends  RTCConnection
 
   }
 
+  @Override
+  public void onWebSocketMessage(String message) {
+
+  }
+
+  @Override
+  public void onWebSocketClose() {
+
+  }
 }

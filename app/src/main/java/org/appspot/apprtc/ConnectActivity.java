@@ -403,7 +403,16 @@ public class ConnectActivity extends RTCConnection  {  // implements ProviderIns
 
   @Override
   public void onChannelError(String description) {
-
+    logAndToast(description);
   }
 
+  @Override
+  public void onWebSocketMessage(String message) {
+    //do nothing
+  }
+
+  @Override
+  public void onWebSocketClose() {
+
+  }
 }

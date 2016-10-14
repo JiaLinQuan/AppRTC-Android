@@ -19,7 +19,8 @@ import java.util.ArrayList;
 
 
 public abstract class RTCConnection extends Activity implements
-            AppRTCClient.SignalingEvents {
+        AppRTCClient.SignalingEvents,
+        WebSocketChannelClient.WebSocketChannelEvents {
 
     public static final String EXTRA_FROM = "de.lespace.mscwebrtc.FROM";
     public static final String EXTRA_TO = "de.lespace.mscwebrtc.TO";
@@ -138,7 +139,6 @@ public abstract class RTCConnection extends Activity implements
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-
                     roomConnectionParameters.to = from;
                     roomConnectionParameters.initiator = false;
                     Intent intent = new Intent(RTCConnection.this, CallActivity.class);
@@ -190,8 +190,6 @@ public abstract class RTCConnection extends Activity implements
             logToast.show();
         }
 
-
-
         @Override
         public void onRemoteIceCandidate(final IceCandidate candidate) {
             runOnUiThread(new Runnable() {
@@ -207,14 +205,22 @@ public abstract class RTCConnection extends Activity implements
             });
         }
 
+    @Override
+    public void onWebSocketError(String description) {
+        logAndToast(description);
+    }
 
     // -----Implementation of AppRTCClient.AppRTCSignalingEvents ---------------
-        // All callbacks are invoked from websocket signaling looper thread and
-        // are routed to UI thread.
+    // All callbacks are invoked from websocket signaling looper thread and
+    // are routed to UI thread.
+
     private void onConnectedToRoomInternal(final AppRTCClient.SignalingParameters params) {
         final long delta = System.currentTimeMillis() - callStartedTimeMs;
-
         signalingParam = params;
+    }
+
+    public void onChannelError(final String description){
+        logAndToast(description);
     }
 
     // Activity interfaces
@@ -236,7 +242,6 @@ public abstract class RTCConnection extends Activity implements
         }
     }
 
-
     public void connectToWebsocket() {
         if (appRtcClient == null) {
             Log.e(TAG, "AppRTC client is not allocated for a call.");
@@ -246,12 +251,11 @@ public abstract class RTCConnection extends Activity implements
 
         // Start room connection.
         appRtcClient.connectToWebsocket(roomConnectionParameters);
-
     }
 
     // Disconnect from remote resources, dispose of local resources, and exit.
     public void disconnect(boolean sendRemoteHangup) {
-     //   disconnect(sendRemoteHangup);
+
     }
 
     public boolean validateUrl(String url) {
