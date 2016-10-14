@@ -37,8 +37,6 @@ import org.webrtc.SessionDescription;
 import org.webrtc.StatsReport;
 import org.webrtc.SurfaceViewRenderer;
 
-import static android.app.Activity.RESULT_CANCELED;
-
 
 /**
  * Activity for peer connection call setup, call waiting
@@ -105,6 +103,7 @@ public class CallActivity extends RTCConnection implements
         | LayoutParams.FLAG_DISMISS_KEYGUARD
         | LayoutParams.FLAG_SHOW_WHEN_LOCKED
         | LayoutParams.FLAG_TURN_SCREEN_ON);
+
     getWindow().getDecorView().setSystemUiVisibility(
         View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
         | View.SYSTEM_UI_FLAG_FULLSCREEN
@@ -431,7 +430,7 @@ public class CallActivity extends RTCConnection implements
 
 
         if (appRtcClient != null && sendRemoteHangup) {
-            appRtcClient.disconnectFromRoom(); //send bye message to peer only when initiator
+            appRtcClient.disconnectFromWebservice(); //send bye message to peer only when initiator
             sendDisconnectToPeer = false;
             // appRtcClient = null;
         }

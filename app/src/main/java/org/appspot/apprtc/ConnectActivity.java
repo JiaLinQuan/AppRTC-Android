@@ -10,37 +10,32 @@
 
 package org.appspot.apprtc;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.inputmethod.EditorInfo;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
-import android.widget.TextView;
 
 import org.appspot.apprtc.util.LooperExecutor;
 import org.json.JSONArray;
 import org.json.JSONException;
 
 import java.util.ArrayList;
-import java.util.Random;
 
 /**
  * Handles the initial setup where the user selects which room to join.
  */
-public class ConnectActivity extends RTCConnection  {  // implements ProviderInstaller.ProviderInstallListener
+public class ConnectActivity extends RTCConnection  {
 
   private static final String TAG = "ConnectActivity";
   private static boolean commandLineRun = false;
@@ -81,7 +76,6 @@ public class ConnectActivity extends RTCConnection  {  // implements ProviderIns
     super.onCreate(savedInstanceState);
 
     setContentView(R.layout.activity_connect);
-
     // Get setting keys.
     PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
     sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
@@ -176,8 +170,7 @@ public class ConnectActivity extends RTCConnection  {  // implements ProviderIns
     String bitrateType = sharedPref.getString(
             keyprefVideoBitrateType, bitrateTypeDefault);
     if (!bitrateType.equals(bitrateTypeDefault)) {
-      String bitrateValue = sharedPref.getString(keyprefVideoBitrateValue,
-              getString(R.string.pref_startvideobitratevalue_default));
+      String bitrateValue = sharedPref.getString(keyprefVideoBitrateValue,getString(R.string.pref_startvideobitratevalue_default));
       videoStartBitrate = Integer.parseInt(bitrateValue);
     }
     int audioStartBitrate = 0;

@@ -76,10 +76,15 @@ public interface AppRTCClient {
    * Disconnect from room.
    */
   public void reconnect();
+
+  /**
+   * Send stop message to peer
+   */
+  public void sendStopToPeer();
   /**
    * Disconnect from room.
    */
-  public void disconnectFromRoom();
+  public void disconnectFromWebservice();
 
   /**
    * Struct holding the signaling parameters of an AppRTC room.

@@ -143,7 +143,7 @@ public class WebSocketRTCClient implements AppRTCClient, WebSocketChannelEvents 
                 response = json.getString("response");
 
                 if(response.startsWith("rejected")) {
-                    reportError("call rejected:" + response);
+                    Log.d(TAG, "call got rejected: "+response);
                     signalingEvents.onChannelClose();
                 }else{
                     Log.d(TAG, "sending sdpAnswer: "+response);
@@ -210,8 +210,24 @@ public class WebSocketRTCClient implements AppRTCClient, WebSocketChannelEvents 
     });
   }
 
+    public void sendStopToPeer(){
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    JSONObject jsonMessage = new JSONObject();
+                    jsonPut(jsonMessage, "id" , "stop");
+
+                    wsClient.send(jsonMessage.toString());
+                }catch(Exception e){
+                    reportError("WebSocketerror: " + e.toString());
+                }
+            }
+        });
+    }
+
     @Override
-  public void disconnectFromRoom() {
+  public void disconnectFromWebservice() {
         executor.execute(new Runnable() {
           @Override
           public void run() {

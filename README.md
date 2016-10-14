@@ -14,12 +14,16 @@ There are also:
 
 ##Todo/Bugs
 - don't let android go into idle mode during a call (who can test this in Android 5.0)
-- incoming call: decision: answer or hangup?
+	- http://stackoverflow.com/questions/3723634/how-do-i-prevent-an-android-device-from-going-to-sleep-programmatically
+	- https://developer.android.com/reference/android/os/PowerManager.html
+	- https://github.com/commonsguy/cw-advandroid/tree/master/SystemServices/Alarm/	
+
 - mic on/off
 - video on/off
 - camera switch	
 - produces echo while communicating with chrome
-	Android-AECM https://github.com/lhc180/webrtc-based-android-aecm
+	- test with non-opus codec
+	- Echo Cancellation: Android-AECM https://github.com/lhc180/webrtc-based-android-aecm
 	Pakistani Echo in WebRTC https://www.webrtc-experiment.com/pdf/Echo-in-WebRTC-Why.pdf
 	http://stackoverflow.com/questions/12818721/webrtc-aec-on-android
 	http://gingertech.net/2014/03/19/apprtc-googles-webrtc-test-app-and-its-parameters/
@@ -30,7 +34,7 @@ There are also:
 - ringtone / alarm for incoming call
 
 ##Tests
-- (not tested yet) does app goes in stand by mode during video broadcast
+- (not tested yet) does app go in stand by mode during video broadcast
 - (not tested yet) test reconnect when app goes offline or wifi off (see also: https://github.com/palmerc/SecureWebSockets/issues/13)
 - (ok) test socket stays connected in background mode. 
 
@@ -39,6 +43,7 @@ There are also:
 - request runtime permission for android 6 (marshmellow) devices
 
 ##Done:
+- 14.10.2016 - incoming call: decision: answer or hangup?
 - 14.10.2016 - better error handling while switching connection parameters
 	- wrong url
 	- no internet

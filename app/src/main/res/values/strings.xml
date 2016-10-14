@@ -11,6 +11,10 @@
     <string name="invalid_url_title">Invalid URL</string>
     <string name="invalid_url_text">The URL you entered resulted in an invalid URL: %1$s
     </string>
+    <string name="calldialog_title">Incoming call</string>
+    <string name="calldialog_question">Answer call?</string>
+    <string name="calldialog_answer">Answer</string>
+    <string name="calldialog_hangung">Hangup</string>
     <string name="channel_error_title">Connection error</string>
     <string name="connecting_to">Connecting to: %1$s</string>
     <string name="missing_wsurl">FATAL ERROR: Missing ws url to connect to</string>

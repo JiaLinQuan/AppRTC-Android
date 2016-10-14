@@ -97,6 +97,7 @@ public class WebSocketChannelClient {
       return false;
     }
   }
+
   public WebSocketConnectionState getState() {
     return state;
   }
@@ -232,6 +233,7 @@ public class WebSocketChannelClient {
         for (String sendMessage : wsSendQueue) {
           send(sendMessage);
         }
+
         wsSendQueue.clear();
     } catch (JSONException e) {
       reportError("WebSocket register JSON error: " + e.getMessage());
@@ -253,10 +255,6 @@ public class WebSocketChannelClient {
         Log.e(TAG, "WebSocket send() in error or closed state : " + message);
         return;
       case REGISTERED:
-        JSONObject json = new JSONObject();
-        // json.put("cmd", "send");
-        // json.put("msg", message);
-        //message = json.toString();
         Log.d(TAG, "C->WSS: " + message);
         ws.sendText(message);
         break;

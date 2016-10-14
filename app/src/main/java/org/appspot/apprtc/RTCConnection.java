@@ -2,15 +2,19 @@ package org.appspot.apprtc;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Dialog;
+import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Bundle;
 import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 import org.webrtc.IceCandidate;
 import org.webrtc.RendererCommon;
 import org.webrtc.SessionDescription;
@@ -89,64 +93,63 @@ public abstract class RTCConnection extends Activity implements
 
 
 
-        @Override
-        public void onConnectedToRoom(final AppRTCClient.SignalingParameters params) {
+    @Override
+    public void onConnectedToRoom(final AppRTCClient.SignalingParameters params) {
 
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
 
-                    //onConnectedToRoomInternal(params);
+                //onConnectedToRoomInternal(params);
+            }
+        });
+    }
+
+    @Override
+    public void onChannelClose() {
+
+    }
+
+    @Override
+    public void onUserListUpdate(final String response) {
+
+        runOnUiThread(new Runnable() {
+
+
+            @Override
+            public void run() {
+                try {
+                JSONArray mJSONArray = new JSONArray(response);
+                roomList = new ArrayList();
+                    adapter.clear();
+                adapter.notifyDataSetChanged();
+
+
+                for(int i = 0; i < mJSONArray.length();i++){
+                    String username = mJSONArray.getString(i);
+                    if (username.length() > 0
+                            && !roomList.contains(username)
+                            && !username.equals(roomConnectionParameters.from)) {
+                    roomList.add(username);
+                    adapter.add(username);
+                    }
                 }
-            });
-        }
-
-        @Override
-        public void onUserListUpdate(final String response) {
-
-            runOnUiThread(new Runnable() {
-
-
-                @Override
-                public void run() {
-                    try {
-                    JSONArray mJSONArray = new JSONArray(response);
-                    roomList = new ArrayList();
-                        adapter.clear();
                     adapter.notifyDataSetChanged();
-
-
-                    for(int i = 0; i < mJSONArray.length();i++){
-                        String username = mJSONArray.getString(i);
-                        if (username.length() > 0
-                                && !roomList.contains(username)
-                                && !username.equals(roomConnectionParameters.from)) {
-                        roomList.add(username);
-                        adapter.add(username);
-                        }
-                    }
-                        adapter.notifyDataSetChanged();
-                    }catch (JSONException e) {
-                    e.printStackTrace();
-                    }
+                }catch (JSONException e) {
+                e.printStackTrace();
                 }
-            });
-        }
+            }
+        });
+    }
 
-        @Override
-        public void onIncomingCall(final String from) {
+    @Override
+    public void onIncomingCall(final String from) {
+        roomConnectionParameters.to = from;
+        roomConnectionParameters.initiator = false;
+        DialogFragment newFragment = new CallDialogFragment();
 
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    roomConnectionParameters.to = from;
-                    roomConnectionParameters.initiator = false;
-                    Intent intent = new Intent(RTCConnection.this, CallActivity.class);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                    startActivity(intent);
-                }
-            });
-        }
+        newFragment.show(getFragmentManager(), "incomingcall");
+    }
 
         @Override
         public void onStartCommunication(final SessionDescription sdp) {
@@ -292,4 +295,39 @@ public abstract class RTCConnection extends Activity implements
                 url.substring(0, 6).equalsIgnoreCase("wss://");
     }
 
+    public static class CallDialogFragment extends DialogFragment {
+
+        public CallDialogFragment(){
+
+        }
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
+            // Build the dialog and set up the button click handlers
+            // 1. Instantiate an AlertDialog.Builder with its constructor
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+
+// 2. Chain together various setter methods to set the dialog characteristics
+            builder.setMessage(R.string.calldialog_question).setTitle(R.string.calldialog_title);
+            // Add the buttons
+            builder.setPositiveButton(R.string.calldialog_answer, new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+
+                    Intent intent = new Intent(getActivity(),CallActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    startActivity(intent);
+                }
+            });
+            builder.setNegativeButton(R.string.calldialog_hangung, new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    // User cancelled the dialog send stop message to peer.
+                    appRtcClient.sendStopToPeer();;
+                }
+            });
+
+// 3. Get the AlertDialog from create()
+            AlertDialog dialog = builder.create();
+
+            return builder.create();
+        }
+    }
 }
