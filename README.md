@@ -13,14 +13,13 @@ There are also:
 - (development) kurento server not running?
 
 ##Todo/Bugs
-- don't let android go into idle mode during a call (who can test this in Android 5.0)
-	- http://stackoverflow.com/questions/3723634/how-do-i-prevent-an-android-device-from-going-to-sleep-programmatically
-	- https://developer.android.com/reference/android/os/PowerManager.html
-	- https://github.com/commonsguy/cw-advandroid/tree/master/SystemServices/Alarm/	
-
+- user registers but does not unregister when closing application. enable ping pong?
+- goes in background - comes back and does not fetch new user list
 - mic on/off
-- video on/off
-- camera switch	
+- video on/off with camera switch.
+- (p3) add "audio call" and "video call" button
+- (p3) add "answer with audio" and answer "answer with video" button during incoming call  
+
 - produces echo while communicating with chrome
 	- test with non-opus codec
 	- Echo Cancellation: Android-AECM https://github.com/lhc180/webrtc-based-android-aecm
@@ -28,12 +27,17 @@ There are also:
 	http://stackoverflow.com/questions/12818721/webrtc-aec-on-android
 	http://gingertech.net/2014/03/19/apprtc-googles-webrtc-test-app-and-its-parameters/
 	https://groups.google.com/forum/#!topic/easyrtc/zCUurD4tA2E
+- don't let android go into idle mode during a call (who can test this in Android 5.0)
+- http://stackoverflow.com/questions/3723634/how-do-i-prevent-an-android-device-from-going-to-sleep-programmatically
+- https://developer.android.com/reference/android/os/PowerManager.html
+- https://github.com/commonsguy/cw-advandroid/tree/master/SystemServices/Alarm/	
 - security check BEAST attack on production server
 
 ##Nice2Have
 - ringtone / alarm for incoming call
 
 ##Tests
+- Handsfree speaker test switch with earpiece 
 - (not tested yet) does app go in stand by mode during video broadcast
 - (not tested yet) test reconnect when app goes offline or wifi off (see also: https://github.com/palmerc/SecureWebSockets/issues/13)
 - (ok) test socket stays connected in background mode. 
@@ -43,6 +47,7 @@ There are also:
 - request runtime permission for android 6 (marshmellow) devices
 
 ##Done:
+- 20.10.2016 - camera switch works (no implementation needed)	
 - 14.10.2016 - incoming call: decision: answer or hangup?
 - 14.10.2016 - better error handling while switching connection parameters
 	- wrong url
