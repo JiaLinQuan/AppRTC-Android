@@ -81,20 +81,23 @@ public class WebSocketChannelClient {
   }
 
 
-  public boolean trustAllHosts() {
+  public WebSocketFactory getFactory(boolean trustAll) {
 
     // Install the all-trusting trust manager
     try {
+
       SSLContext sslContext = SSLContext.getDefault();
       // Create a WebSocketFactory instance.
       WebSocketFactory factory = new WebSocketFactory();
       // Set the custom SSL context.
-      factory.setSSLContext(sslContext);
-      return true;
+        if(trustAll) factory.setSSLContext(NaiveSSLContext.getInstance("TLS"));
+        else
+          factory.setSSLContext(sslContext);
+      return factory;
     } catch (Exception e) {
       Log.i(TAG, "SSLContextProblem: " + e.getMessage() );
       e.printStackTrace();
-      return false;
+      return null;
     }
   }
 
@@ -117,7 +120,11 @@ public class WebSocketChannelClient {
     Log.i(TAG, "Connecting WebSocket to: " + wsUrl );
 
     try {
-          ws = new WebSocketFactory().createSocket(wsUrl);
+
+          if(wsUrl.contains("192.168"))
+             ws = getFactory(true).createSocket(wsUrl);
+          else
+              ws = getFactory(true).createSocket(wsUrl);
 
           ws.addListener(new WebSocketAdapter() {
           @Override
@@ -277,8 +284,8 @@ public class WebSocketChannelClient {
       send("{\"id\": \"stop\"}");
       state = WebSocketConnectionState.CONNECTED;
     }
-    // Close WebSocket in CONNECTED or ERROR states only.
-    if (state == WebSocketConnectionState.CONNECTED  || state == WebSocketConnectionState.ERROR) {
+    // Close WebSocket ERROR states only.
+    if (state == WebSocketConnectionState.ERROR) {
       ws.disconnect();
       state = WebSocketConnectionState.CLOSED;
 
