@@ -13,10 +13,11 @@ There are also:
 - (development) kurento server not running?
 
 ##Todo/Bugs
-- user registers but does not unregister when closing application. enable ping pong?
+- app seems to go offline (disconnects the websocket) after a couple of minutes even if its not in the background
+
 - goes in background - comes back and does not fetch new user list
-- mic on/off
-- video on/off with camera switch.
+- (p2) mic on/off
+- (p2) video on/off with camera switch.
 - (p3) add "audio call" and "video call" button
 - (p3) add "answer with audio" and answer "answer with video" button during incoming call  
 
@@ -47,6 +48,8 @@ There are also:
 - request runtime permission for android 6 (marshmellow) devices
 
 ##Done:
+- 25.10.2016 - user registers but does not unregister when closing application
+- 25.10.2016 - removed websocket disconnect after hangup
 - 20.10.2016 - camera switch works (no implementation needed)	
 - 14.10.2016 - incoming call: decision: answer or hangup?
 - 14.10.2016 - better error handling while switching connection parameters
