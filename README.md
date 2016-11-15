@@ -1,11 +1,40 @@
 # AppRTCDemo - Android
 
 ##About
-This project is a native prototype in order to communicate with kurentos media server. It works in conjunction with two other projects:
+This project is a native webrtc prototype in order to communicate with kurentos media server. It works in conjunction with two other projects:
 
-There are also:
+Related projects:
 - a pure websocket AppRTC for Kurento: AppRTC-Kurento and
 - a pure websocket AppRTC for Android: AppRTC-iOS 
+
+##Documentation
+This WebRTC Android App simply connects to a Java Webrtc Signaling Server via Websocket Protokoll and lists connected users which can be called via Videophone. It is a WebRTC ready prototype for integration into other apps which want to integrate WebRTC Videocalls e.g. for their Sales and Support team. 
+
+##Installation
+1. git clone this repository and open it in Android Studio
+2. AppRTC-Kurento (Signaling Server) must be running already
+3. STUN-TURN Server should be running, if you run the project outside your local LAN.
+4. connect your Android phone via USB and deploy and start android app from Android Studio 
+5. in the app settings (top right corner of the running app) 
+	- change the Websocket-URL according to the URL of your signaling server 
+		e.g. wss://webrtcsignaling-server/jWebrtc (secure websocket - wss:// insecure with ws:// )
+	- enter your favourite username which should register on signaling server and should be visible and reachable by the peers
+6. Choose a registered user and call
+
+
+##Code-Introduction
+- the apps main activities are:
+	ConnectActivity - the main screen - displays connected users
+	CallActivity - the screen which has the video and their controls
+
+- all websocket communication is done in 
+	WebsocketChannelClient - creates, connects, registeres and closes the websocket to SignalingServer 
+	WebsocketRTCClient - receives WebRTC - signaling messages and handles them accordingly
+	
+- WebRTC peerconnection is done in PeerConnectionClient
+
+
+
 
 ##Common Mistakes
 - (production) wrong url for webservice.
