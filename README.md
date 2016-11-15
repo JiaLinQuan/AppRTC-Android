@@ -8,7 +8,7 @@ Related projects:
 - a pure websocket AppRTC for Android: AppRTC-iOS 
 
 ##Documentation
-This WebRTC Android App simply connects to a Java Webrtc Signaling Server via Websocket Protokoll and lists connected users which can be called via Videophone. It is a WebRTC ready prototype for integration into other apps which want to integrate WebRTC Videocalls e.g. for their Sales and Support team. 
+This WebRTC Android App simply connects to a Java Webrtc Signaling Server via Websocket Protokoll and lists connected users which can be called via Videophone. It is a WebRTC ready prototype for integration into other apps which want to implement WebRTC Videocalls e.g. for their Sales and Support team. 
 
 ##Installation
 1. git clone this repository and open it in Android Studio
@@ -18,11 +18,12 @@ This WebRTC Android App simply connects to a Java Webrtc Signaling Server via We
 5. in the app settings (top right corner of the running app) 
 	- change the Websocket-URL according to the URL of your signaling server 
 		e.g. wss://webrtcsignaling-server/jWebrtc (secure websocket - wss:// insecure with ws:// )
+		 you can change the default values in  strings.xml  ```<string name="pref_room_server_url_default" translatable="false">wss://nicokrause.com/jWebrtc</string>```
 	- enter your favourite username which should register on signaling server and should be visible and reachable by the peers
-6. Choose a registered user and call
+6. open chrome and/or android browser to https://webrtcsignaling-server/jWebrtc and register another user
+7. choose a registered user on phone or browser and call.
 
-
-##Code-Introduction
+##Code-Instructions
 - the apps main activities are:
 	ConnectActivity - the main screen - displays connected users
 	CallActivity - the screen which has the video and their controls
@@ -30,11 +31,8 @@ This WebRTC Android App simply connects to a Java Webrtc Signaling Server via We
 - all websocket communication is done in 
 	WebsocketChannelClient - creates, connects, registeres and closes the websocket to SignalingServer 
 	WebsocketRTCClient - receives WebRTC - signaling messages and handles them accordingly
-	
+
 - WebRTC peerconnection is done in PeerConnectionClient
-
-
-
 
 ##Common Mistakes
 - (production) wrong url for webservice.
@@ -43,7 +41,6 @@ This WebRTC Android App simply connects to a Java Webrtc Signaling Server via We
 
 ##Todo/Bugs
 - app seems to go offline (disconnects the websocket) after a couple of minutes even if its not in the background
-
 - goes in background - comes back and does not fetch new user list
 - (p2) mic on/off
 - (p2) video on/off with camera switch.

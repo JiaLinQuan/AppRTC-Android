@@ -36,7 +36,7 @@
     <string name="pref_room_server_url_key">room_server_url_preference</string>
     <string name="pref_room_server_url_title">Websocket server URL.</string>
     <string name="pref_room_server_url_dlg">Enter the websocket server URL.</string>
-    <string name="pref_room_server_url_default" translatable="false">ws://192.168.43.251:8080/jWebrtc</string>
+    <string name="pref_room_server_url_default" translatable="false">wss://nicokrause.com/jWebrtc</string>
 
     <string name="pref_from_key">from_settings_key</string>
     <string name="pref_from_title">Username</string>
