@@ -1,3 +1,4 @@
+
 /*
  *  Copyright 2014 The WebRTC Project Authors. All rights reserved.
  *
@@ -8,10 +9,10 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-package org.appspot.apprtc;
+package de.lespace.apprtc;
 
-import org.appspot.apprtc.util.AppRTCUtils;
-import org.appspot.apprtc.util.AppRTCUtils.NonThreadSafe;
+import de.lespace.apprtc.util.AppRTCUtils;
+import de.lespace.apprtc.util.AppRTCUtils.NonThreadSafe;
 
 import android.content.Context;
 import android.hardware.Sensor;

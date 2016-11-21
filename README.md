@@ -18,7 +18,7 @@ This WebRTC Android App simply connects to a Java Webrtc Signaling Server via We
 5. in the app settings (top right corner of the running app) 
 	- change the Websocket-URL according to the URL of your signaling server 
 		e.g. wss://webrtcsignaling-server/jWebrtc (secure websocket - wss:// insecure with ws:// )
-		 you can change the default values in  strings.xml  ```<string name="pref_room_server_url_default" translatable="false">wss://nicokrause.com/jWebrtc</string>```
+		 you can change the default values in  strings.xml  ```<string name="pref_room_server_url_default" translatable="false">wss://nicokrause.com/jWebrtc</string>``
 	- enter your favourite username which should register on signaling server and should be visible and reachable by the peers
 6. open chrome and/or android browser to https://webrtcsignaling-server/jWebrtc and register another user
 7. choose a registered user on phone or browser and call.
@@ -40,13 +40,31 @@ This WebRTC Android App simply connects to a Java Webrtc Signaling Server via We
 - (development) kurento server not running?
 
 ##Todo/Bugs
-- app seems to go offline (disconnects the websocket) after a couple of minutes even if its not in the background
-- goes in background - comes back and does not fetch new user list
-- (p2) mic on/off
-- (p2) video on/off with camera switch.
-- (p3) add "audio call" and "video call" button
-- (p3) add "answer with audio" and answer "answer with video" button during incoming call  
 
+#Improvements and Research
+- Custom-Dialog for "back to front" enhancement 
+	http://stackoverflow.com/questions/13341560/how-to-create-a-custom-dialog-box-in-android
+	http://stackoverflow.com/questions/7569937/unable-to-add-window-android-view-viewrootw44da9bc0-permission-denied-for-t#answer-34061521
+	http://stackoverflow.com/questions/32224452/android-unable-to-add-window-permission-denied-for-this-window-type
+- try timeout of half a second ofter bringing app back to foreground for display call dialog
+- (enhancement) bring app to forground during incoming call (doesn't work)
+	http://stackoverflow.com/questions/29766270/how-to-resume-android-activity-programmatically-from-background/29769255#29769255
+	http://stackoverflow.com/questions/12074980/bring-application-to-front-after-user-clicks-on-home-button
+- re-register when coming back online
+- send heartbeat message to websocket 
+- (feature) add wake up feature - if (user is offline - allow wake up trough gcm)
+- save gcm registration token with websocket registration on signaling server
+- wake up certain user when offline (if app was started can be seen if use is online now) 
+
+- security check BEAST attack on production server (TEST SSL) 
+	https://www.ssllabs.com/ssltest/analyze.html?d=webrtc.a-fk.de&latest
+- goes in background - comes back and does not fetch new user list
+- Test necessary: don't let android go into idle mode during a call (who can test this in Android 5.0)
+	- http://stackoverflow.com/questions/3723634/how-do-i-prevent-an-android-device-from-going-to-sleep-programmatically
+	- https://developer.android.com/reference/android/os/PowerManager.html
+	- https://github.com/commonsguy/cw-advandroid/tree/master/SystemServices/Alarm/	
+
+##possible tweaks 
 - produces echo while communicating with chrome
 	- test with non-opus codec
 	- Echo Cancellation: Android-AECM https://github.com/lhc180/webrtc-based-android-aecm
@@ -54,14 +72,13 @@ This WebRTC Android App simply connects to a Java Webrtc Signaling Server via We
 	http://stackoverflow.com/questions/12818721/webrtc-aec-on-android
 	http://gingertech.net/2014/03/19/apprtc-googles-webrtc-test-app-and-its-parameters/
 	https://groups.google.com/forum/#!topic/easyrtc/zCUurD4tA2E
-- don't let android go into idle mode during a call (who can test this in Android 5.0)
-- http://stackoverflow.com/questions/3723634/how-do-i-prevent-an-android-device-from-going-to-sleep-programmatically
-- https://developer.android.com/reference/android/os/PowerManager.html
-- https://github.com/commonsguy/cw-advandroid/tree/master/SystemServices/Alarm/	
-- security check BEAST attack on production server
 
 ##Nice2Have
-- ringtone / alarm for incoming call
+- (p2) mic on/off
+- (p2) video on/off with camera switch.
+- (p3) add "audio call" and "video call" button
+- (p3) add "answer with audio" and answer "answer with video" button during incoming call 
+
 
 ##Tests
 - Handsfree speaker test switch with earpiece 
@@ -69,11 +86,22 @@ This WebRTC Android App simply connects to a Java Webrtc Signaling Server via We
 - (not tested yet) test reconnect when app goes offline or wifi off (see also: https://github.com/palmerc/SecureWebSockets/issues/13)
 - (ok) test socket stays connected in background mode. 
 
-##Improvements
-- security considerations while connecting (!)
-- request runtime permission for android 6 (marshmellow) devices
 
 ##Done:
+- 20.11.2016 - (bug) iterate through permissions requests to next permission only grant or deny (when app starts first time)
+- 19.11.2016 - now app comes back to forground while ringing. but "answer"/"hangup" button is not shown	
+- 19.11.2016 - app now also rings in background 
+- 19.11.2016 - added new permission handling for audio and video
+- 18.11.2016 - Added GCM-Message to Android-App which wakes it up (message can be send to firebase gcm service)
+			 - Notification is send 
+- 17.11.2016 - Evaluation of Google Cloud Messaging on Android (6h)
+	- worked through android gcm example on https://developers.google.com/cloud-messaging/android/start
+		(in https://developers.google.com/cloud-messaging/samples)
+	- created Firebox Account on https://console.firebase.google.com/ for GCM (Google Cloud Messaging)
+	- reviewed but not yet used gcm playground https://github.com/googlesamples/gcm-playground
+- 17.11.2016 - Evaluation of Android Services for Background Tasks
+	- https://developer.android.com/reference/android/app/Service.html#ProcessLifecycle
+- 17.11.2016 - RingTone during call (2h)
 - 25.10.2016 - user registers but does not unregister when closing application
 - 25.10.2016 - removed websocket disconnect after hangup
 - 20.10.2016 - camera switch works (no implementation needed)	

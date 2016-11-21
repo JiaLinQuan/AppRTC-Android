@@ -8,7 +8,7 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-package org.appspot.apprtc;
+package de.lespace.apprtc;
 
 import android.util.Log;
 
@@ -18,7 +18,7 @@ import com.neovisionaries.ws.client.WebSocketException;
 import com.neovisionaries.ws.client.WebSocketFactory;
 import com.neovisionaries.ws.client.WebSocketState;
 
-import org.appspot.apprtc.util.LooperExecutor;
+import de.lespace.apprtc.util.LooperExecutor;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -210,6 +210,7 @@ public class WebSocketChannelClient {
 
       try {
         ws.connect();
+        ws.setPingInterval(60 * 1000);
       } catch (WebSocketException e) {
         e.printStackTrace();
         reportError("WebSocket connection error: " + e.getMessage());

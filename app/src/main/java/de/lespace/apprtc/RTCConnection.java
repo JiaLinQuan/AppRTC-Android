@@ -1,13 +1,19 @@
-package org.appspot.apprtc;
+package de.lespace.apprtc;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Application;
 import android.app.Dialog;
 import android.app.DialogFragment;
+import android.app.FragmentTransaction;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
@@ -67,7 +73,7 @@ public abstract class RTCConnection extends Activity implements
 
     public ArrayList<String> roomList;
     public ArrayAdapter adapter;
-
+    public static Ringtone r;
 
     // Peer connection statistics callback period in ms.
     public static final int STAT_CALLBACK_PERIOD = 1000;
@@ -144,11 +150,51 @@ public abstract class RTCConnection extends Activity implements
 
     @Override
     public void onIncomingCall(final String from) {
+
+
+        // Notify UI that registration has completed, so the progress indicator can be hidden.
+/*
+        //Send Broadcast message to Service
+        Intent registrationComplete = new Intent(QuickstartPreferences.INCOMING_CALL);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(registrationComplete);
+
+        startActivity(intent);*/
+
+       /* Intent intent = new Intent(this, ConnectActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
+        Intent intent = new Intent(this,CallActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);*/
+       // r.stop();
+        //startActivity(intent);
+
+
         roomConnectionParameters.to = from;
         roomConnectionParameters.initiator = false;
         DialogFragment newFragment = new CallDialogFragment();
 
-        newFragment.show(getFragmentManager(), "incomingcall");
+
+        Uri alert = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE);
+
+        if(alert == null){
+            // alert is null, using backup
+            alert = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+
+            // I can't see this ever being null (as always have a default notification)
+            // but just incase
+            if(alert == null) {
+                // alert backup is null, using 2nd backup
+                alert = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALL);
+            }
+        }
+        r = RingtoneManager.getRingtone(getApplicationContext(), alert);
+        r.play();
+
+        FragmentTransaction transaction = getFragmentManager().beginTransaction();
+        transaction.add(newFragment, "loading");
+        transaction.commitAllowingStateLoss();
+
+       // newFragment.show(getFragmentManager(), "incomingcall");
     }
 
         @Override
@@ -314,12 +360,14 @@ public abstract class RTCConnection extends Activity implements
 
                     Intent intent = new Intent(getActivity(),CallActivity.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    r.stop();
                     startActivity(intent);
                 }
             });
             builder.setNegativeButton(R.string.calldialog_hangung, new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int id) {
                     // User cancelled the dialog send stop message to peer.
+                    r.stop();
                     appRtcClient.sendStopToPeer();;
                 }
             });

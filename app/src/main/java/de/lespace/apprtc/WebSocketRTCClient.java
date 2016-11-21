@@ -8,13 +8,13 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-package org.appspot.apprtc;
+package de.lespace.apprtc;
 
 
-import org.appspot.apprtc.WebSocketChannelClient.WebSocketChannelEvents;
-import org.appspot.apprtc.WebSocketChannelClient.WebSocketConnectionState;
-import org.appspot.apprtc.util.AppRTCUtils;
-import org.appspot.apprtc.util.LooperExecutor;
+import de.lespace.apprtc.WebSocketChannelClient.WebSocketChannelEvents;
+import de.lespace.apprtc.WebSocketChannelClient.WebSocketConnectionState;
+import de.lespace.apprtc.util.AppRTCUtils;
+import de.lespace.apprtc.util.LooperExecutor;
 
 import android.content.Intent;
 import android.util.Log;

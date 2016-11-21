@@ -8,7 +8,7 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-package org.appspot.apprtc;
+package de.lespace.apprtc;
 
 import android.app.Fragment;
 import android.os.Bundle;

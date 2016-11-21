@@ -8,15 +8,15 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-package org.appspot.apprtc;
+package de.lespace.apprtc;
 
 import android.content.Context;
 import android.os.ParcelFileDescriptor;
 import android.os.Environment;
 import android.util.Log;
 
-import org.appspot.apprtc.AppRTCClient.SignalingParameters;
-import org.appspot.apprtc.util.LooperExecutor;
+import de.lespace.apprtc.AppRTCClient.SignalingParameters;
+import de.lespace.apprtc.util.LooperExecutor;
 import org.webrtc.CameraEnumerationAndroid;
 import org.webrtc.DataChannel;
 import org.webrtc.EglBase;
@@ -48,7 +48,7 @@ import java.util.TimerTask;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static org.appspot.apprtc.AppRTCClient.*;
+import static de.lespace.apprtc.AppRTCClient.*;
 
 /**
  * Peer connection client implementation.

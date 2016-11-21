@@ -133,8 +133,6 @@
     <string name="pref_miscsettings_key">misc_settings_key</string>
     <string name="pref_miscsettings_title">Miscellaneous settings.</string>
 
-
-
     <string name="pref_displayhud_key">displayhud_preference</string>
     <string name="pref_displayhud_title">Display call statistics.</string>
     <string name="pref_displayhud_dlg">Display call statistics.</string>
@@ -144,5 +142,12 @@
     <string name="pref_tracing_title">Debug performance tracing.</string>
     <string name="pref_tracing_dlg">Debug performance tracing.</string>
     <string name="pref_tracing_default" translatable="false">false</string>
+
+    <string name="gcm_send_message">Token retrieved and sent to server! You can now use gcmsender to
+        send downstream messages to this app.</string>
+    <string name="registering_message">Generating InstanceID token...</string>
+    <string name="token_error_message">An error occurred while either fetching the InstanceID token,
+        sending the fetched token to the server or subscribing to the PubSub topic. Please try
+        running the sample again.</string>
 
 </resources>

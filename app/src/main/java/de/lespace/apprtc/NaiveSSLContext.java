@@ -1,4 +1,4 @@
-package org.appspot.apprtc;/*
+package de.lespace.apprtc;/*
  * Copyright (C) 2015 Neo Visionaries Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");

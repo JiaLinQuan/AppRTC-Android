@@ -8,9 +8,10 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-package org.appspot.apprtc;
+package de.lespace.apprtc;
 
-import org.appspot.apprtc.util.AppRTCUtils;
+
+import de.lespace.apprtc.util.AppRTCUtils;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;

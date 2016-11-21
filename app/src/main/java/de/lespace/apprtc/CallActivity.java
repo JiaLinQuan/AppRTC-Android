@@ -8,7 +8,7 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-package org.appspot.apprtc;
+package de.lespace.apprtc;
 
 
 
@@ -23,6 +23,7 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
@@ -50,12 +51,7 @@ public class CallActivity extends RTCConnection implements
 
   private static final String TAG = "CallActivity";
 
-  // List of mandatory application permissions.
-  private static final String[] MANDATORY_PERMISSIONS = {
-    "android.permission.MODIFY_AUDIO_SETTINGS",
-    "android.permission.RECORD_AUDIO",
-    "android.permission.INTERNET"
-  };
+
   // Local preview screen position before call is connected.
   private static final int LOCAL_X_CONNECTING = 0;
   private static final int LOCAL_Y_CONNECTING = 0;
@@ -72,7 +68,9 @@ public class CallActivity extends RTCConnection implements
   private static final int REMOTE_Y = 0;
   private static final int REMOTE_WIDTH = 100;
   private static final int REMOTE_HEIGHT = 100;
- // private AppRTCClient appRtcClient;
+
+    private static final int MY_PERMISSIONS_REQUEST_READ_CONTACTS = 0;
+    // private AppRTCClient appRtcClient;
   private ScalingType scalingType;
   private Toast logToast;
   private boolean commandLineRun;
@@ -86,8 +84,13 @@ public class CallActivity extends RTCConnection implements
   public PercentFrameLayout remoteRenderLayout;
   public SurfaceViewRenderer localRender;
   public SurfaceViewRenderer remoteRender;
+    private static boolean broadcastIsRegistered;
 
-  @Override
+
+    public void MY_PERMISSIONS_REQUEST_READ_CONTACTS(){
+
+    }
+    @Override
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
 
@@ -117,7 +120,6 @@ public class CallActivity extends RTCConnection implements
     callFragment = new CallFragment();
     hudFragment = new HudFragment();
 
-
     // Create UI controls.
     localRender = (SurfaceViewRenderer) findViewById(R.id.local_video_view);
     remoteRender = (SurfaceViewRenderer) findViewById(R.id.remote_video_view);
@@ -144,17 +146,12 @@ public class CallActivity extends RTCConnection implements
     updateVideoView();
 
       setResult(RESULT_CANCELED);
-      registerReceiver(broadcast_reciever, new IntentFilter("finish_CallActivity"));
-
-    // Check for mandatory permissions.
-    for (String permission : MANDATORY_PERMISSIONS) {
-      if (checkCallingOrSelfPermission(permission) != PackageManager.PERMISSION_GRANTED) {
-        logAndToast("Permission " + permission + " is not granted");
-        setResult(RESULT_CANCELED);
-        finish();
-        return;
+      if(!broadcastIsRegistered) {
+          registerReceiver(broadcast_reciever, new IntentFilter("finish_CallActivity"));
+          broadcastIsRegistered = true;
       }
-    }
+
+
     callFragment = new CallFragment();
     hudFragment = new HudFragment();
     // Send intent arguments to fragments.
@@ -180,7 +177,6 @@ public class CallActivity extends RTCConnection implements
 
     // Create and audio manager that will take care of audio routing,
     // audio modes, audio device enumeration etc.
-    //  if(audioManager!=null) {
     audioManager = AppRTCAudioManager.create(this, new Runnable() {
                   // This method will be called each time the audio state (number and
                   // type of devices) has been changed.
@@ -490,4 +486,6 @@ public class CallActivity extends RTCConnection implements
     public void onWebSocketClose() {
 
     }
+
+
 }
