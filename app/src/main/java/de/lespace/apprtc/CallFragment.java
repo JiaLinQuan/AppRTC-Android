@@ -93,6 +93,7 @@ public class CallFragment extends Fragment {
       @Override
       public void onClick(View view) {
         callEvents.onCameraSwitch();
+
       }
     });
 

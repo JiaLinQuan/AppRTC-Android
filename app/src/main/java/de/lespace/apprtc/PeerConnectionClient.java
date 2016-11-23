@@ -124,7 +124,7 @@ public class PeerConnectionClient {
   private int numberOfCameras;
   private VideoCapturerAndroid videoCapturer;
   // enableVideo is set to true if video should be rendered and sent.
-  private boolean renderVideo;
+  public boolean renderVideo;
   private VideoTrack localVideoTrack;
   private VideoTrack remoteVideoTrack;
 
