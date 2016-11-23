@@ -241,6 +241,13 @@ public class CallActivity extends RTCConnection implements
   }
 
   @Override
+  public void onAudioMute() {
+
+      boolean muted = audioManager.setMicrophoneMute(true);
+      logAndToast(muted?"muted":"unmuted");
+  }
+
+  @Override
   public void onCaptureFormatChange(int width, int height, int framerate) {
     if (peerConnectionClient != null) {
       peerConnectionClient.changeCaptureFormat(width, height, framerate);

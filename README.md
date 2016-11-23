@@ -40,6 +40,8 @@ This WebRTC Android App simply connects to a Java Webrtc Signaling Server via We
 - (development) kurento server not running?
 
 ##Todo/Bugs
+- remove camera switch button
+- add double touch on display for camera switch
 
 #Improvements and Research
 - Custom-Dialog for "back to front" enhancement 
@@ -88,6 +90,8 @@ This WebRTC Android App simply connects to a Java Webrtc Signaling Server via We
 
 
 ##Done:
+- 23.11.2016 - add audio on/off button  
+			   http://stackoverflow.com/questions/35208029/switch-between-audio-and-video-call-in-apprtc-android-code
 - 20.11.2016 - (bug) iterate through permissions requests to next permission only grant or deny (when app starts first time)
 - 19.11.2016 - now app comes back to forground while ringing. but "answer"/"hangup" button is not shown	
 - 19.11.2016 - app now also rings in background 

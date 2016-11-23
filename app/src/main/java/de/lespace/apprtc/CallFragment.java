@@ -29,6 +29,7 @@ public class CallFragment extends Fragment {
   private View controlView;
   private TextView contactView;
   private ImageButton disconnectButton;
+  private ImageButton audioButton;
   private ImageButton cameraSwitchButton;
   private ImageButton videoScalingButton;
   private TextView captureFormatText;
@@ -43,6 +44,7 @@ public class CallFragment extends Fragment {
   public interface OnCallEvents {
     public void onCallHangUp();
     public void onCameraSwitch();
+    public void onAudioMute();
     public void onVideoScalingSwitch(ScalingType scalingType);
     public void onCaptureFormatChange(int width, int height, int framerate);
   }
@@ -56,8 +58,13 @@ public class CallFragment extends Fragment {
     // Create UI controls.
     contactView =
         (TextView) controlView.findViewById(R.id.contact_name_call);
+
     disconnectButton =
         (ImageButton) controlView.findViewById(R.id.button_call_disconnect);
+
+    audioButton =
+            (ImageButton) controlView.findViewById(R.id.button_audio_on_off);
+
     cameraSwitchButton =
         (ImageButton) controlView.findViewById(R.id.button_call_switch_camera);
     videoScalingButton =
@@ -72,6 +79,13 @@ public class CallFragment extends Fragment {
       @Override
       public void onClick(View view) {
         callEvents.onCallHangUp();
+      }
+    });
+
+    audioButton.setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View view) {
+        callEvents.onAudioMute();
       }
     });
 
