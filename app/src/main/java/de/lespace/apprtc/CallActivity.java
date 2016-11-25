@@ -20,14 +20,12 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.v4.app.ActivityCompat;
+
 import android.support.v4.view.GestureDetectorCompat;
 import android.util.Log;
-import android.view.GestureDetector;
-import android.view.MotionEvent;
+
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager.LayoutParams;
@@ -49,8 +47,7 @@ import org.webrtc.SurfaceViewRenderer;
 public class CallActivity extends RTCConnection implements
         CallFragment.OnCallEvents,
         PeerConnectionClient.PeerConnectionEvents,
-        GestureDetector.OnDoubleTapListener,
-        WebSocketChannelClient.WebSocketChannelEvents, GestureDetector.OnGestureListener {
+        WebSocketChannelClient.WebSocketChannelEvents {
 
 
   private static final String TAG = "CallActivity";
@@ -89,12 +86,8 @@ public class CallActivity extends RTCConnection implements
   public SurfaceViewRenderer localRender;
   public SurfaceViewRenderer remoteRender;
   private GestureDetectorCompat mDetector;
-    private static boolean broadcastIsRegistered;
+  private static boolean broadcastIsRegistered;
 
-
-    public void MY_PERMISSIONS_REQUEST_READ_CONTACTS(){
-
-    }
     @Override
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
@@ -116,15 +109,9 @@ public class CallActivity extends RTCConnection implements
         View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
         | View.SYSTEM_UI_FLAG_FULLSCREEN
         | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
-    setContentView(R.layout.activity_call);
-      // Instantiate the gesture detector with the
-      // application context and an implementation of
-      // GestureDetector.OnGestureListener
 
-      mDetector = new GestureDetectorCompat(this,this);
-      // Set the gesture detector as the double tap
-      // listener.
-      mDetector.setOnDoubleTapListener(this);
+    setContentView(R.layout.activity_call);
+
 
     iceConnected = false;
 
@@ -158,13 +145,11 @@ public class CallActivity extends RTCConnection implements
     localRender.setZOrderMediaOverlay(true);
     updateVideoView();
 
-      setResult(RESULT_CANCELED);
-      if(!broadcastIsRegistered) {
-          registerReceiver(broadcast_reciever, new IntentFilter("finish_CallActivity"));
-          broadcastIsRegistered = true;
-      }
-
-
+    setResult(RESULT_CANCELED);
+    if(!broadcastIsRegistered) {
+        registerReceiver(broadcast_reciever, new IntentFilter("finish_CallActivity"));
+        broadcastIsRegistered = true;
+    }
     callFragment = new CallFragment();
     hudFragment = new HudFragment();
     // Send intent arguments to fragments.
@@ -176,7 +161,6 @@ public class CallActivity extends RTCConnection implements
     ft.add(R.id.call_fragment_container, callFragment);
     ft.add(R.id.hud_fragment_container, hudFragment);
     ft.commit();
-
 
     // For command line execution run connection for <runTimeMs> and exit.
     if (commandLineRun && runTimeMs > 0) {
@@ -249,7 +233,7 @@ public class CallActivity extends RTCConnection implements
   @Override
   public void onCameraSwitch() {
     if (peerConnectionClient != null) {
-      //peerConnectionClient.switchCamera();
+
       boolean renderVideo = !peerConnectionClient.renderVideo;
       peerConnectionClient.setVideoEnabled(renderVideo);
       logAndToast(renderVideo?"video enabled":"video disabled");
@@ -511,54 +495,4 @@ public class CallActivity extends RTCConnection implements
     }
 
 
-  @Override
-  public boolean onSingleTapConfirmed(MotionEvent e) {
-    logAndToast("onSingleTapConfirmed");
-    return false;
-  }
-
-  @Override
-  public boolean onDoubleTap(MotionEvent e) {
-    logAndToast("onDoubleTap");
-    return false;
-  }
-
-  @Override
-  public boolean onDoubleTapEvent(MotionEvent e) {
-    logAndToast("onDoubleTapEvent");
-    return false;
-  }
-
-  @Override
-  public boolean onDown(MotionEvent e) {
-    logAndToast("onDoubleTapEvent");
-    return false;
-  }
-
-  @Override
-  public void onShowPress(MotionEvent e) {
-    logAndToast("onDoubleTapEvent");
-  }
-
-  @Override
-  public boolean onSingleTapUp(MotionEvent e) {
-    logAndToast("onSingleTapUp");
-    return false;
-  }
-
-  @Override
-  public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-    return false;
-  }
-
-  @Override
-  public void onLongPress(MotionEvent e) {
-    logAndToast("onLongPress");
-
-  }
-
-  @Override
-  public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-    return false;
-  }
 }

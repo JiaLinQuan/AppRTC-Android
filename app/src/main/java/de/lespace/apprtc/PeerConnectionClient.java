@@ -132,6 +132,7 @@ public class PeerConnectionClient {
    * Peer connection parameters.
    */
   public static class PeerConnectionParameters {
+
     public final boolean videoCallEnabled;
     public final boolean loopback;
     public final boolean tracing;

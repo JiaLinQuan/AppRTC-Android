@@ -19,14 +19,17 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.webrtc.RendererCommon.ScalingType;
 
 /**
  * Fragment for call control.
  */
-public class CallFragment extends Fragment {
+public class CallFragment extends Fragment  {
+
   private View controlView;
+
   private TextView contactView;
   private ImageButton disconnectButton;
   private ImageButton audioButton;
@@ -37,6 +40,7 @@ public class CallFragment extends Fragment {
   private OnCallEvents callEvents;
   private ScalingType scalingType;
   private boolean videoCallEnabled = true;
+
 
   /**
    * Call control interface for container activity.

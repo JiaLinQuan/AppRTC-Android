@@ -40,8 +40,7 @@ This WebRTC Android App simply connects to a Java Webrtc Signaling Server via We
 - (development) kurento server not running?
 
 ##Todo/Bugs
-- remove camera switch button
-- add double touch on display for camera switch
+
 
 #Improvements and Research
 - Custom-Dialog for "back to front" enhancement 
@@ -76,8 +75,6 @@ This WebRTC Android App simply connects to a Java Webrtc Signaling Server via We
 	https://groups.google.com/forum/#!topic/easyrtc/zCUurD4tA2E
 
 ##Nice2Have
-- (p2) mic on/off
-- (p2) video on/off with camera switch.
 - (p3) add "audio call" and "video call" button
 - (p3) add "answer with audio" and answer "answer with video" button during incoming call 
 
@@ -90,6 +87,8 @@ This WebRTC Android App simply connects to a Java Webrtc Signaling Server via We
 
 
 ##Done:
+- 25.11.2016 - add double touch on display for camera switch
+- 23.11.2016 - add video on/off button 
 - 23.11.2016 - add audio on/off button  
 			   http://stackoverflow.com/questions/35208029/switch-between-audio-and-video-call-in-apprtc-android-code
 - 20.11.2016 - (bug) iterate through permissions requests to next permission only grant or deny (when app starts first time)
