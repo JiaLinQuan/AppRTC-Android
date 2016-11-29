@@ -52,26 +52,28 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import de.lespace.apprtc.util.LooperExecutor;
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
+import org.webrtc.IceCandidate;
+import org.webrtc.SessionDescription;
+import org.webrtc.StatsReport;
+
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
+
 
 /**
  * Handles the initial setup where the user selects which room to join.
  */
-public class ConnectActivity extends RTCConnection {
+public class ConnectActivity extends RTCConnection
+        implements AppRTCClient.SignalingEvents {
 
   private static final String TAG = "ConnectActivity";
   private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
   private static boolean commandLineRun = false;
 
 
-  private ImageButton addRoomButton;
-  private ImageButton removeRoomButton;
   private ImageButton connectButton;
-  private ImageButton connectLoopbackButton;
   private String keyprefFrom;
   private String keyprefVideoCallEnabled;
   private String keyprefResolution;
@@ -94,9 +96,7 @@ public class ConnectActivity extends RTCConnection {
   private String keyprefRoom;
   private String keyprefRoomList;
   private ListView roomListView;
-  private EditText roomEditText;
   private List<String> missingPermissions;
-  private boolean loopback;
   private Intent intent = null;
 
   private BroadcastReceiver gcmRegistrationBroadcastReceiver;
@@ -235,27 +235,6 @@ public class ConnectActivity extends RTCConnection {
       @Override
       public void onReceive(Context context, Intent intent) {
 
-
-
-/*
-        Uri alert = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE);
-
-        if (alert == null) {
-          // alert is null, using backup
-          alert = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-
-          // I can't see this ever being null (as always have a default notification)
-          // but just incase
-          if (alert == null) {
-            // alert backup is null, using 2nd backup
-            alert = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALL);
-          }
-        }
-        r = RingtoneManager.getRingtone(getApplicationContext(), alert);
-        r.play();*/
-
-
-
         Intent intentStart = new Intent(getApplicationContext(), ConnectActivity.class);
             // intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
@@ -342,7 +321,6 @@ public class ConnectActivity extends RTCConnection {
       Uri uri = Uri.parse(roomUrl);
       intent = new Intent(this, ConnectActivity.class);
       intent.setData(uri);
-      intent.putExtra(CallActivity.EXTRA_LOOPBACK, loopback);
       intent.putExtra(CallActivity.EXTRA_VIDEO_CALL, videoCallEnabled);
       intent.putExtra(CallActivity.EXTRA_VIDEO_WIDTH, videoWidth);
       intent.putExtra(CallActivity.EXTRA_VIDEO_HEIGHT, videoHeight);
@@ -392,14 +370,12 @@ public class ConnectActivity extends RTCConnection {
 
     peerConnectionParameters = new PeerConnectionClient.PeerConnectionParameters(
             videoCallEnabled,
-            loopback,
             tracing,
             videoWidth, videoHeight, cameraFps, videoStartBitrate, videoCodec, hwCodec,
             captureToTexture, audioStartBitrate, audioCodec, noAudioProcessing,
             aecDump, useOpenSLES);
 
-    roomConnectionParameters = new AppRTCClient.RoomConnectionParameters(
-            wsurl.toString(), from, false, loopback);
+    roomConnectionParameters = new AppRTCClient.RoomConnectionParameters(wsurl.toString(), from, false);
 
     Log.i(TAG, "creating appRtcClient with roomUri:" + wsurl.toString() + " from:" + from);
     // Create connection client and connection parameters.
@@ -456,7 +432,6 @@ public class ConnectActivity extends RTCConnection {
   @Override
   public void onPause() {
 
-
     LocalBroadcastManager.getInstance(this).unregisterReceiver(gcmRegistrationBroadcastReceiver);
     isGCMReceiverRegistered = false;
 
@@ -474,7 +449,6 @@ public class ConnectActivity extends RTCConnection {
   public void onResume() {
 
     registerGCMReceiver();
-
 
     String room = sharedPref.getString(keyprefRoom, "");
     //roomEditText.setText(room);
@@ -516,13 +490,13 @@ public class ConnectActivity extends RTCConnection {
     @Override
     public void onClick(View view) {
       commandLineRun = false;
-      connectToUser(loopback, 0);
+      connectToUser(0);
     }
   };
 
-  private void connectToUser(boolean loopback, int runTimeMs) {
+  private void connectToUser(int runTimeMs) {
 
-    Object to = getSelectedItem();
+    String to = getSelectedItem();
     roomConnectionParameters.initiator = true;
     roomConnectionParameters.to = to;
 
@@ -533,7 +507,7 @@ public class ConnectActivity extends RTCConnection {
     startActivityForResult(newIntent, CONNECTION_REQUEST);
 
   }
-
+/*
   private final OnClickListener addRoomListener = new OnClickListener() {
     @Override
     public void onClick(View view) {
@@ -554,9 +528,9 @@ public class ConnectActivity extends RTCConnection {
         adapter.notifyDataSetChanged();
       }
     }
-  };
+  };*/
 
-  private Object getSelectedItem() {
+  private String getSelectedItem() {
     int position = AdapterView.INVALID_POSITION;
     if (roomListView.getCheckedItemCount() > 0 && adapter.getCount() > 0) {
       position = roomListView.getCheckedItemPosition();
@@ -565,16 +539,236 @@ public class ConnectActivity extends RTCConnection {
       }
     }
     if (position != AdapterView.INVALID_POSITION) {
-      return adapter.getItem(position);
+      return (String) adapter.getItem(position);
     } else {
       return null;
     }
   }
 
   @Override
-  public void onChannelClose() {
+  public void onConnectedToRoom(final AppRTCClient.SignalingParameters params) {
+
+    runOnUiThread(new Runnable() {
+      @Override
+      public void run() {
+
+        //onConnectedToRoomInternal(params);
+      }
+    });
+  }
+
+  @Override
+  public void onUserListUpdate(final String response) {
+
+    runOnUiThread(new Runnable() {
+
+
+      @Override
+      public void run() {
+        try {
+          JSONArray mJSONArray = new JSONArray(response);
+          roomList = new ArrayList();
+          adapter.clear();
+          adapter.notifyDataSetChanged();
+
+
+          for(int i = 0; i < mJSONArray.length();i++){
+            String username = mJSONArray.getString(i);
+            if (username.length() > 0
+                    && !roomList.contains(username)
+                    && !username.equals(roomConnectionParameters.from)) {
+              roomList.add(username);
+              adapter.add(username);
+            }
+          }
+          adapter.notifyDataSetChanged();
+        }catch (JSONException e) {
+          e.printStackTrace();
+        }
+      }
+    });
+  }
+
+  @Override
+  public void onIncomingCall(final String from) {
+
+
+    // Notify UI that registration has completed, so the progress indicator can be hidden.
+/*
+        //Send Broadcast message to Service
+        Intent registrationComplete = new Intent(QuickstartPreferences.INCOMING_CALL);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(registrationComplete);
+
+        startActivity(intent);*/
+
+       /* Intent intent = new Intent(this, ConnectActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
+        Intent intent = new Intent(this,CallActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);*/
+    // r.stop();
+    //startActivity(intent);
+
+
+    roomConnectionParameters.to = from;
+    roomConnectionParameters.initiator = false;
+    DialogFragment newFragment = new RTCConnection.CallDialogFragment();
+
+
+    Uri alert = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE);
+
+    if(alert == null){
+      // alert is null, using backup
+      alert = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+
+      // I can't see this ever being null (as always have a default notification)
+      // but just incase
+      if(alert == null) {
+        // alert backup is null, using 2nd backup
+        alert = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALL);
+      }
+    }
+    r = RingtoneManager.getRingtone(getApplicationContext(), alert);
+    //  r.play();
+
+    FragmentTransaction transaction = getFragmentManager().beginTransaction();
+    transaction.add(newFragment, "loading");
+    transaction.commitAllowingStateLoss();
+
+  }
+
+  @Override
+  public void onIncomingScreenCall(JSONObject from) {
+    // super.onIncomingScreenCall()
+    logAndToast("Creating OFFER for Screensharing Caller");
+    //do nothing here - just in CallActivity
+
+    peerConnectionClient2 = PeerConnectionClient.getInstance();
+
+    peerConnectionClient2.createPeerConnectionFactoryScreen(this);
+
+    peerConnectionClient2.createPeerConnectionScreen(peerConnectionClient.getRenderEGLContext(),peerConnectionClient.getScreenRender());
+    // Create offer. Offer SDP will be sent to answering client in
+    // PeerConnectionEvents.onLocalDescription event.
+    peerConnectionClient2.createOffer();
+
+  }
+
+
+  @Override
+  public void onStartCommunication(final SessionDescription sdp) {
+    final long delta = System.currentTimeMillis() - callStartedTimeMs;
+    runOnUiThread(new Runnable() {
+      @Override
+      public void run() {
+        if (peerConnectionClient == null) {
+          Log.e(TAG, "Received remote SDP for non-initilized peer connection.");
+          return;
+        }
+        logAndToast("Received remote " + sdp.type + ", delay=" + delta + "ms");
+        peerConnectionClient.setRemoteDescription(sdp);
+      }
+    });
+  }
+
+
+  @Override
+  public void onStartScreenCommunication(final SessionDescription sdp) {
+    final long delta = System.currentTimeMillis() - callStartedTimeMs;
+    runOnUiThread(new Runnable() {
+      @Override
+      public void run() {
+        if (peerConnectionClient2 == null) {
+          Log.e(TAG, "Received remote SDP for non-initilized peer connection.");
+          return;
+        }
+        logAndToast("Received remote " + sdp.type + ", delay=" + delta + "ms");
+        peerConnectionClient2.setRemoteDescription(sdp);
+      }
+    });
+  }
+
+  @Override
+  public void onRemoteDescription(final SessionDescription sdp) {
+    final long delta = System.currentTimeMillis() - callStartedTimeMs;
+    runOnUiThread(new Runnable() {
+      @Override
+      public void run() {
+        if (peerConnectionClient == null) {
+          Log.e(TAG, "Received remote SDP for non-initilized peer connection.");
+          return;
+        }
+        logAndToast("Received remote " + sdp.type + ", delay=" + delta + "ms");
+        peerConnectionClient.setRemoteDescription(sdp);
+      }
+    });
+  }
+
+  @Override
+  public void onRemoteIceCandidate(final IceCandidate candidate) {
+    runOnUiThread(new Runnable() {
+      @Override
+      public void run() {
+        if (peerConnectionClient == null) {
+          Log.e(TAG,
+                  "Received ICE candidate for non-initilized peer connection.");
+          return;
+        }
+        peerConnectionClient.addRemoteIceCandidate(candidate);
+      }
+    });
+  }
+
+  @Override
+  public void onRemoteScreenDescription(final SessionDescription sdp) {
+    final long delta = System.currentTimeMillis() - callStartedTimeMs;
+    runOnUiThread(new Runnable() {
+      @Override
+      public void run() {
+        if (peerConnectionClient2 == null) {
+          Log.e(TAG, "Received remote SDP for non-initilized peer connection.");
+          return;
+        }
+        logAndToast("Received remote " + sdp.type + ", delay=" + delta + "ms");
+        peerConnectionClient2.setRemoteDescription(sdp);
+      }
+    });
+  }
+
+  @Override
+  public void onRemoteScreenIceCandidate(final IceCandidate candidate) {
+    runOnUiThread(new Runnable() {
+      @Override
+      public void run() {
+        if (peerConnectionClient2 == null) {
+          Log.e(TAG,
+                  "Received ICE candidate for non-initilized peer connection.");
+          return;
+        }
+        peerConnectionClient2.addRemoteIceCandidate(candidate);
+      }
+    });
+  }
+
+/*  public void onChannelClose() {
     Intent intent = new Intent("finish_CallActivity");
     sendBroadcast(intent);
+  }
+*/
+  @Override
+  public void onChannelClose() {
+    runOnUiThread(new Runnable() {
+      @Override
+      public void run() {
+        logAndToast("Remote end hung up; dropping PeerConnection");
+        disconnect(false);
+      }
+    });
+  }
+
+  @Override
+  public void onChannelScreenClose() {
+
   }
 
   @Override
@@ -665,6 +859,7 @@ public class ConnectActivity extends RTCConnection {
     AppIndex.AppIndexApi.end(client, getIndexApiAction());
     client.disconnect();
   }
+
 
   public static class CallDialogFragment extends DialogFragment {
 

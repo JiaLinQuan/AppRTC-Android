@@ -10,6 +10,7 @@
 
 package de.lespace.apprtc;
 
+import org.json.JSONObject;
 import org.webrtc.IceCandidate;
 import org.webrtc.PeerConnection;
 import org.webrtc.SessionDescription;
@@ -29,19 +30,15 @@ public interface AppRTCClient {
     public String roomUrl;
     public String from;
     public boolean initiator;
-    public final boolean loopback;
-    public Object to;
+    public String to;
 
     public RoomConnectionParameters(
-
         String roomUrl,
         String from,
-        boolean initiator,
-        boolean loopback) {
+        boolean initiator) {
           this.roomUrl = roomUrl;
           this.from = from;
           this.initiator = initiator;
-          this.loopback = loopback;
     }
 
   }
@@ -65,12 +62,12 @@ public interface AppRTCClient {
   /**
    * Send answer SDP to the other participant.
    */
-  public void sendOfferSdp(final SessionDescription sdp);
+  public void sendOfferSdp(final SessionDescription sdp, final boolean isScreensharing);
 
   /**
    * Send Ice candidate to the other participant.
    */
-  public void sendLocalIceCandidate(final IceCandidate candidate);
+  public void sendLocalIceCandidate(final IceCandidate candidate, final boolean isScreensharing);
 
   /**
    * Disconnect from room.
@@ -113,22 +110,28 @@ public interface AppRTCClient {
     public void onUserListUpdate(String response);
 
     public void onIncomingCall(String from);
+    public void onIncomingScreenCall(JSONObject from); //Screensharing only
 
     public void onStartCommunication(final SessionDescription sdp);
+    public void onStartScreenCommunication(final SessionDescription sdp); //Screensharing only
+
     /**
      * Callback fired once remote SDP is received.
      */
     public void onRemoteDescription(final SessionDescription sdp);
+    public void onRemoteScreenDescription(final SessionDescription sdp);
 
     /**
      * Callback fired once remote Ice candidate is received.
      */
     public void onRemoteIceCandidate(final IceCandidate candidate);
+    public void onRemoteScreenIceCandidate(final IceCandidate candidate);
 
     /**
      * Callback fired once channel is closed.
      */
     public void onChannelClose();
+    public void onChannelScreenClose();
 
     /**
      * Callback fired once channel error happened.

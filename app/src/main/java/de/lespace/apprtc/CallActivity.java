@@ -10,14 +10,9 @@
 
 package de.lespace.apprtc;
 
-
-
-
-import android.app.AlertDialog;
 import android.app.FragmentTransaction;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
@@ -31,6 +26,7 @@ import android.view.Window;
 import android.view.WindowManager.LayoutParams;
 import android.widget.Toast;
 
+import org.json.JSONObject;
 import org.webrtc.EglBase;
 import org.webrtc.IceCandidate;
 import org.webrtc.RendererCommon;
@@ -46,8 +42,9 @@ import org.webrtc.SurfaceViewRenderer;
  */
 public class CallActivity extends RTCConnection implements
         CallFragment.OnCallEvents,
-        PeerConnectionClient.PeerConnectionEvents,
-        WebSocketChannelClient.WebSocketChannelEvents {
+       // AppRTCClient.SignalingEvents,
+    //    PeerConnectionClient.PeerConnectionEvents,
+         WebSocketChannelClient.WebSocketChannelEvents{
 
 
   private static final String TAG = "CallActivity";
@@ -70,6 +67,12 @@ public class CallActivity extends RTCConnection implements
   private static final int REMOTE_WIDTH = 100;
   private static final int REMOTE_HEIGHT = 100;
 
+  // Screen video screen position
+  private static final int SCREEN_X = 0;
+  private static final int SCREEN_Y = 0;
+  private static final int SCREEN_WIDTH = 100;
+  private static final int SCREEN_HEIGHT = 100;
+
     private static final int MY_PERMISSIONS_REQUEST_READ_CONTACTS = 0;
     // private AppRTCClient appRtcClient;
   private ScalingType scalingType;
@@ -83,8 +86,11 @@ public class CallActivity extends RTCConnection implements
   public EglBase rootEglBase;
   public PercentFrameLayout localRenderLayout;
   public PercentFrameLayout remoteRenderLayout;
+  public PercentFrameLayout screenRenderLayout;
+
   public SurfaceViewRenderer localRender;
   public SurfaceViewRenderer remoteRender;
+  public SurfaceViewRenderer screenRender;
   private GestureDetectorCompat mDetector;
   private static boolean broadcastIsRegistered;
 
@@ -117,17 +123,22 @@ public class CallActivity extends RTCConnection implements
 
     scalingType = ScalingType.SCALE_ASPECT_FILL;
 
+
     callFragment = new CallFragment();
     hudFragment = new HudFragment();
 
     // Create UI controls.
     localRender = (SurfaceViewRenderer) findViewById(R.id.local_video_view);
     remoteRender = (SurfaceViewRenderer) findViewById(R.id.remote_video_view);
+      screenRender = (SurfaceViewRenderer) findViewById(R.id.remote_screen_view);
+
     localRenderLayout = (PercentFrameLayout) findViewById(R.id.local_video_layout);
     remoteRenderLayout = (PercentFrameLayout) findViewById(R.id.remote_video_layout);
 
+      screenRenderLayout = (PercentFrameLayout) findViewById(R.id.remote_screen_layout);
 
-    // Show/hide call control fragment on view click.
+
+      // Show/hide call control fragment on view click.
     View.OnClickListener listener = new View.OnClickListener() {
       @Override
       public void onClick(View view) {
@@ -137,19 +148,24 @@ public class CallActivity extends RTCConnection implements
 
     localRender.setOnClickListener(listener);
     remoteRender.setOnClickListener(listener);
+    screenRender.setOnClickListener(listener); //screensharing
 
     // Create video renderers.
     rootEglBase = EglBase.create();
     localRender.init(rootEglBase.getEglBaseContext(), null);
     remoteRender.init(rootEglBase.getEglBaseContext(), null);
+      screenRender.init(rootEglBase.getEglBaseContext(), null);
     localRender.setZOrderMediaOverlay(true);
+      screenRender.setZOrderMediaOverlay(true);
     updateVideoView();
 
     setResult(RESULT_CANCELED);
+
     if(!broadcastIsRegistered) {
         registerReceiver(broadcast_reciever, new IntentFilter("finish_CallActivity"));
         broadcastIsRegistered = true;
     }
+
     callFragment = new CallFragment();
     hudFragment = new HudFragment();
     // Send intent arguments to fragments.
@@ -191,18 +207,17 @@ public class CallActivity extends RTCConnection implements
 
     peerConnectionClient = PeerConnectionClient.getInstance();
     peerConnectionClient.createPeerConnectionFactory(
-            CallActivity.this, peerConnectionParameters, CallActivity.this);
+            CallActivity.this, peerConnectionParameters, this);
 
     peerConnectionClient.createPeerConnection(rootEglBase.getEglBaseContext(),
-            localRender,
-            remoteRender, roomConnectionParameters.initiator);
+            localRender,remoteRender,screenRender,
+            roomConnectionParameters.initiator);
 
     logAndToast("Creating OFFER...");
     // Create offer. Offer SDP will be sent to answering client in
     // PeerConnectionEvents.onLocalDescription event.
     peerConnectionClient.createOffer();
   }
-
 
     private void onAudioManagerChangedState() {
         // TODO(henrika): disable video if AppRTCAudioManager.AudioDevice.EARPIECE
@@ -211,7 +226,12 @@ public class CallActivity extends RTCConnection implements
 
 
   public void updateVideoView() {
-    remoteRenderLayout.setPosition(REMOTE_X, REMOTE_Y, REMOTE_WIDTH, REMOTE_HEIGHT);
+
+    screenRenderLayout.setPosition(SCREEN_X, SCREEN_Y, SCREEN_WIDTH, SCREEN_HEIGHT);
+    screenRender.setScalingType(scalingType);
+    screenRender.setMirror(false);
+
+    remoteRenderLayout.setPosition(SCREEN_X, SCREEN_Y, SCREEN_WIDTH, SCREEN_HEIGHT);
     remoteRender.setScalingType(scalingType);
     remoteRender.setMirror(false);
 
@@ -219,6 +239,7 @@ public class CallActivity extends RTCConnection implements
       localRenderLayout.setPosition(
               LOCAL_X_CONNECTED, LOCAL_Y_CONNECTED, LOCAL_WIDTH_CONNECTED, LOCAL_HEIGHT_CONNECTED);
       localRender.setScalingType(RendererCommon.ScalingType.SCALE_ASPECT_FIT);
+
     } else {
       localRenderLayout.setPosition(
               LOCAL_X_CONNECTING, LOCAL_Y_CONNECTING, LOCAL_WIDTH_CONNECTING, LOCAL_HEIGHT_CONNECTING);
@@ -228,6 +249,33 @@ public class CallActivity extends RTCConnection implements
 
     localRender.requestLayout();
     remoteRender.requestLayout();
+    screenRender.requestLayout();
+  }
+
+
+  @Override
+  public void onPeerConnectionStatsReady(final StatsReport[] reports) {
+    runOnUiThread(new Runnable() {
+      @Override
+      public void run() {
+        if (!isError && iceConnected) {
+          hudFragment.updateEncoderStatistics(reports);
+        }
+      }
+    });
+  }
+
+  @Override
+  public void onIceConnected() {
+    final long delta = System.currentTimeMillis() - callStartedTimeMs;
+    runOnUiThread(new Runnable() {
+      @Override
+      public void run() {
+        logAndToast("ICE connected, delay=" + delta + "ms");
+        iceConnected = true;
+        callConnected();
+      }
+    });
   }
 
   @Override
@@ -253,65 +301,15 @@ public class CallActivity extends RTCConnection implements
       peerConnectionClient.changeCaptureFormat(width, height, framerate);
     }
   }
-  @Override
-  public void onPeerConnectionClosed() {
-  }
+
+
 
   @Override
-  public void onPeerConnectionStatsReady(final StatsReport[] reports) {
-    runOnUiThread(new Runnable() {
-      @Override
-      public void run() {
-        if (!isError && iceConnected) {
-          hudFragment.updateEncoderStatistics(reports);
-        }
-      }
-    });
-  }
-  // -----Implementation of PeerConnectionClient.PeerConnectionEvents.---------
-  // Send local peer connection SDP and ICE candidates to remote party.
-  // All callbacks are invoked from peer connection client looper thread and
-  // are routed to UI thread.
-  @Override
-  public void onLocalDescription(final SessionDescription sdp) {
-    final long delta = System.currentTimeMillis() - callStartedTimeMs;
-    runOnUiThread(new Runnable() {
-      @Override
-      public void run() {
-        if (appRtcClient != null) {
-          logAndToast("Sending " + sdp.type + ", delay=" + delta + "ms");
-          if (roomConnectionParameters.initiator) {
-            appRtcClient.call(sdp);
-          } else {
-            appRtcClient.sendOfferSdp(sdp);
-          }
-        }
-      }
-    });
+  public void onVideoScalingSwitch(RendererCommon.ScalingType scalingType) {
+    this.scalingType = scalingType;
+    updateVideoView();
   }
 
-  @Override
-  public void onIceCandidate(final IceCandidate candidate) {
-    runOnUiThread(new Runnable() {
-      @Override
-      public void run() {
-        if (appRtcClient != null) {
-          appRtcClient.sendLocalIceCandidate(candidate);
-        }
-      }
-    });
-  }
-  public void reportError(final String description) {
-    runOnUiThread(new Runnable() {
-      @Override
-      public void run() {
-        if (!isError) {
-          isError = true;
-          disconnectWithErrorMessage(description);
-        }
-      }
-    });
-  }
   @Override
   protected void onDestroy() {
 
@@ -321,7 +319,8 @@ public class CallActivity extends RTCConnection implements
     }
     activityRunning = false;
     rootEglBase.release();
-      super.onDestroy();
+    super.onDestroy();
+
   }
 
   // CallFragment.OnCallEvents interface implementation.
@@ -331,74 +330,8 @@ public class CallActivity extends RTCConnection implements
   }
 
   @Override
-  public void onIceConnected() {
-    final long delta = System.currentTimeMillis() - callStartedTimeMs;
-    runOnUiThread(new Runnable() {
-      @Override
-      public void run() {
-        logAndToast("ICE connected, delay=" + delta + "ms");
-        iceConnected = true;
-        callConnected();
-      }
-    });
-  }
-
-  @Override
-  public void onIceDisconnected() {
-    runOnUiThread(new Runnable() {
-      @Override
-      public void run() {
-        logAndToast("ICE disconnected");
-        iceConnected = false;
-        disconnect(false);
-      }
-    });
-  }
-
-  @Override
-  public void onPeerConnectionError(final String description) {
-    reportError(description);
-  }
-
-  @Override
-  public void onVideoScalingSwitch(RendererCommon.ScalingType scalingType) {
-    this.scalingType = scalingType;
-    updateVideoView();
-  }
-
-  @Override
-  public void onChannelClose() {
-    runOnUiThread(new Runnable() {
-      @Override
-      public void run() {
-        logAndToast("Remote end hung up; dropping PeerConnection");
-        disconnect(false);
-      }
-    });
-  }
-
-  @Override
   public void onChannelError(String description) {
     reportError(description);
-  }
-
-  private void disconnectWithErrorMessage(final String errorMessage) {
-    if (commandLineRun || !activityRunning) {
-      Log.e(TAG, "Critical error: " + errorMessage);
-      disconnect(true);
-    } else {
-      new AlertDialog.Builder(this)
-              .setTitle(getText(R.string.channel_error_title))
-              .setMessage(errorMessage)
-              .setCancelable(false)
-              .setNeutralButton(R.string.ok, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int id) {
-                  dialog.cancel();
-                  disconnect(true);
-                }
-              }).create().show();
-    }
   }
 
   // Should be called from UI thread
@@ -424,6 +357,11 @@ public class CallActivity extends RTCConnection implements
         if (remoteRender != null) {
             remoteRender.release();
             remoteRender = null;
+        }
+
+        if (screenRender != null) {
+            screenRender.release();
+            screenRender = null;
         }
 
         if (audioManager != null) {
@@ -486,13 +424,12 @@ public class CallActivity extends RTCConnection implements
 
     @Override
     public void onWebSocketMessage(String message) {
-
+      logAndToast("Creating OFFER for Screensharing Caller");
     }
 
     @Override
     public void onWebSocketClose() {
 
     }
-
 
 }

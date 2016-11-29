@@ -153,10 +153,29 @@ public class WebSocketRTCClient implements AppRTCClient, WebSocketChannelEvents 
                     signalingEvents.onRemoteDescription(sdp);
                 }
             }
+            if(id.equals("callScreenResponse")){
+                response = json.getString("response");
 
-            if(id.equals("incomingCall")){ //looks like some reject messages! other wise create offer for
+                if(response.startsWith("rejected")) {
+                    Log.d(TAG, "call got rejected: "+response);
+                    signalingEvents.onChannelScreenClose();
+                }else{
+                    Log.d(TAG, "sending sdpAnswer: "+response);
+                    SessionDescription sdp = new SessionDescription(
+                            SessionDescription.Type.ANSWER,json.getString("sdpAnswer"));
+
+                    signalingEvents.onRemoteScreenDescription(sdp);
+                }
+            }
+
+            if(id.equals("incomingCall")){
                 Log.d(TAG, "incomingCall "+json.toString());
                 signalingEvents.onIncomingCall(json.getString("from"));
+            }
+
+            if(id.equals("incomingScreenCall")){
+                Log.d(TAG, "incomingScreenCall "+json.toString());
+                signalingEvents.onIncomingScreenCall(json);
             }
 
             if(id.equals("startCommunication")){
@@ -164,12 +183,32 @@ public class WebSocketRTCClient implements AppRTCClient, WebSocketChannelEvents 
                 SessionDescription sdp = new SessionDescription(SessionDescription.Type.ANSWER,json.getString("sdpAnswer"));
                 signalingEvents.onStartCommunication(sdp);
             }
-
+            if(id.equals("startScreenCommunication")){
+                Log.d(TAG, "startScreenCommunication "+json.toString());
+                SessionDescription sdp = new SessionDescription(SessionDescription.Type.ANSWER,json.getString("sdpAnswer"));
+                   // signalingEvents.onStartScreenCommunication(sdp); //remove if not needed!
+                signalingEvents.onStartScreenCommunication(sdp);
+            }
             if(id.equals("stopCommunication")){
                 Log.d(TAG, "stopCommunication "+json.toString());
                 signalingEvents.onChannelClose();
             }
+            if(id.equals("stopScreenCommunication")){
+                Log.d(TAG, "stopCommunication "+json.toString());
+                signalingEvents.onChannelScreenClose();
+            }
+            if(id.equals("iceCandidateScreen")){
 
+                JSONObject candidateJson = json.getJSONObject("candidate");
+
+                IceCandidate candidate = new IceCandidate(
+                        candidateJson.getString("sdpMid"),
+                        candidateJson.getInt("sdpMLineIndex"),
+                        candidateJson.getString("candidate"));
+
+                signalingEvents.onRemoteScreenIceCandidate(candidate);
+
+            }
             if(id.equals("iceCandidate")){
                 Log.d(TAG, "iceCandidate "+json.toString());
 
@@ -182,10 +221,13 @@ public class WebSocketRTCClient implements AppRTCClient, WebSocketChannelEvents 
 
                 signalingEvents.onRemoteIceCandidate(candidate);
             }
+
             if (id.equals("stop")) {
                 signalingEvents.onChannelClose();
             }
-
+            if (id.equals("stopScreen")) {
+                signalingEvents.onChannelScreenClose();
+            }
         } catch (JSONException e) {
             reportError("WebSocket message JSON parsing error: " + e.toString());
         }
@@ -331,18 +373,14 @@ public class WebSocketRTCClient implements AppRTCClient, WebSocketChannelEvents 
 
       // Send local answer SDP to the other participant.
       @Override
-      public void sendOfferSdp(final SessionDescription sdp) {
+      public void sendOfferSdp(final SessionDescription sdp, final boolean isScreenSharing) {
         executor.execute(new Runnable() {
           @Override
           public void run() {
 
-            if (connectionParameters.loopback) {
-              Log.e(TAG, "Sending answer in loopback mode.");
-              return;
-            }
-
               JSONObject json = new JSONObject();
-              jsonPut(json, "id","incomingCallResponse");
+              if(!isScreenSharing) jsonPut(json, "id","incomingCallResponse");
+              else jsonPut(json, "id","incomingScreenCallResponse");
               jsonPut(json, "from", connectionParameters.to);
               jsonPut(json, "callResponse",  "accept");
               jsonPut(json, "sdpOffer", sdp.description);
@@ -353,13 +391,15 @@ public class WebSocketRTCClient implements AppRTCClient, WebSocketChannelEvents 
 
       // Send Ice candidate to the other participant.
       @Override
-      public void sendLocalIceCandidate(final IceCandidate candidate) {
+      public void sendLocalIceCandidate(final IceCandidate candidate,  final boolean isScreenSharing) {
         executor.execute(new Runnable() {
           @Override
           public void run() {
 
             JSONObject json = new JSONObject();
-              jsonPut(json, "id", "onIceCandidate");
+
+              if(!isScreenSharing) jsonPut(json, "id", "onIceCandidate");
+              else  jsonPut(json, "id","onIceCandidateScreen");
               jsonPut(json, "candidate", candidate.sdp);
               jsonPut(json, "sdpMid", candidate.sdpMid);
               jsonPut(json, "sdpMLineIndex", candidate.sdpMLineIndex);

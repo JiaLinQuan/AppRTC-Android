@@ -17,10 +17,13 @@ import android.os.Bundle;
 import android.preference.Preference;
 import android.widget.Toast;
 
+import org.json.JSONObject;
+import org.webrtc.SessionDescription;
+
 /**
  * Settings activity for AppRTC.
  */
-public class SettingsActivity extends  RTCConnection
+public class SettingsActivity extends RTCConnection
         implements OnSharedPreferenceChangeListener{
 
 
@@ -215,11 +218,6 @@ public class SettingsActivity extends  RTCConnection
     } else {
       bitratePreferenceValue.setEnabled(true);
     }
-  }
-
-  @Override
-  public void onChannelClose() {
-      //do nothing here.
   }
 
   @Override
