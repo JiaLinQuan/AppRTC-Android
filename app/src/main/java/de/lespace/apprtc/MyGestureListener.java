@@ -1,6 +1,5 @@
 package de.lespace.apprtc;
 
-import android.app.Activity;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.widget.Toast;
@@ -18,8 +17,7 @@ public class MyGestureListener  extends
 
     public MyGestureListener(GestureAreaView view) {
         this.view = view;
-        this.peerConnectionClient = PeerConnectionClient.getInstance();
-
+        this.peerConnectionClient = PeerConnectionClient.getInstance(0); //get standard instance in case we have two
     }
 
     // onDown: Called when the user first presses on the touch screen.

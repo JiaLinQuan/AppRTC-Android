@@ -643,7 +643,7 @@ public class ConnectActivity extends RTCConnection
     logAndToast("Creating OFFER for Screensharing Caller");
     //do nothing here - just in CallActivity
 
-    peerConnectionClient2 = PeerConnectionClient.getInstance();
+    peerConnectionClient2 = PeerConnectionClient.getInstance(true);
 
     peerConnectionClient2.createPeerConnectionFactoryScreen(this);
 

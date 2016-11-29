@@ -41,6 +41,9 @@ This WebRTC Android App simply connects to a Java Webrtc Signaling Server via We
 
 ##Todo/Bugs
 
+- (screensharing) remote hangup does not switches back to video screen
+- (screensharing) if android calls browser - browse cannot start screensharing (initiater - offer problem) 
+
 
 #Improvements and Research
 - Custom-Dialog for "back to front" enhancement 
@@ -87,6 +90,8 @@ This WebRTC Android App simply connects to a Java Webrtc Signaling Server via We
 
 
 ##Done:
+- 29.11.2016 - (gestures) for camera switch - double tab is not working 
+- 29.11.2016 - (2 MT) added second PeerConnection logic for screensharing over additional stream  
 - 25.11.2016 - add double touch on display for camera switch
 - 23.11.2016 - add video on/off button 
 - 23.11.2016 - add audio on/off button  

@@ -41,8 +41,10 @@ import org.webrtc.voiceengine.WebRtcAudioManager;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.regex.Matcher;
@@ -86,7 +88,8 @@ public class PeerConnectionClient {
   private static final int MAX_VIDEO_HEIGHT = 1280;
   private static final int MAX_VIDEO_FPS = 30;
 
-  private static final PeerConnectionClient instance = new PeerConnectionClient();
+  private static PeerConnectionClient instance = null;
+  private static List<PeerConnectionClient> instances;
   private final PCObserver pcObserver = new PCObserver();
   private final SDPObserver sdpObserver = new SDPObserver();
   private final LooperExecutor executor;
@@ -255,9 +258,17 @@ public class PeerConnectionClient {
     executor.requestStart();
   }
 
-  public static PeerConnectionClient getInstance() {
-    return new PeerConnectionClient();//instance;
+  public static PeerConnectionClient getInstance(boolean newInstance) {
+    if(instance == null || newInstance) instance = new PeerConnectionClient();
+    instances = new ArrayList<PeerConnectionClient>();
+    instances.add(instance);
+
+    return instance;
   }
+  public static PeerConnectionClient getInstance(int count){
+      return  instances.get(0);
+  }
+
 
   public void setPeerConnectionFactoryOptions(PeerConnectionFactory.Options options) {
     this.options = options;

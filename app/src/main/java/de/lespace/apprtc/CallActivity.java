@@ -205,7 +205,7 @@ public class CallActivity extends RTCConnection implements
     Log.d(TAG, "Initializing the audio manager...");
     audioManager.init();
 
-    peerConnectionClient = PeerConnectionClient.getInstance();
+    peerConnectionClient = PeerConnectionClient.getInstance(true);
     peerConnectionClient.createPeerConnectionFactory(
             CallActivity.this, peerConnectionParameters, this);
 
