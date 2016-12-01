@@ -22,6 +22,7 @@ import android.support.v4.view.GestureDetectorCompat;
 import android.util.Log;
 
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager.LayoutParams;
 import android.widget.Toast;
@@ -433,8 +434,11 @@ public class CallActivity extends RTCConnection implements
 
                 peerConnectionClient2.close();
                 screenRenderLayout.removeView(screenRender);
-                screenRender.setVisibility(View.GONE);
-                screenRender.setZOrderMediaOverlay(false);
+              //  screenRender.release();
+               // screenRenderLayout.add(screenRender);
+                screenRenderLayout.addView(screenRender, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+               // screenRender.setVisibility(View.GONE);
+                screenRender.setZOrderMediaOverlay(true);
                // screenRender.release();
                 //screenRender = null;
                // screenRender = (SurfaceViewRenderer) findViewById(R.id.remote_screen_view);
