@@ -269,7 +269,7 @@ public class WebSocketRTCClient implements AppRTCClient, WebSocketChannelEvents 
     }
 
     @Override
-  public void disconnectFromWebservice() {
+  public void sendDisconnectToPeer() {
         executor.execute(new Runnable() {
           @Override
           public void run() {

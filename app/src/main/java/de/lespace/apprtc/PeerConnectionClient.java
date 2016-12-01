@@ -604,11 +604,11 @@ public class PeerConnectionClient {
   }
 
   private void closeInternal() {
-    if (factory != null && peerConnectionParameters.aecDump) {
+    if (!isScreenSharingConnection() && factory != null && peerConnectionParameters!=null && peerConnectionParameters.aecDump) {
       factory.stopAecDump();
     }
     Log.d(TAG, "Closing peer connection.");
-    statsTimer.cancel();
+    if(statsTimer!=null) statsTimer.cancel();
     if (peerConnection != null) {
       peerConnection.dispose();
       peerConnection = null;
@@ -619,7 +619,7 @@ public class PeerConnectionClient {
       videoSource = null;
     }
     Log.d(TAG, "Closing peer connection factory.");
-    if (factory != null) {
+    if (!isScreenSharingConnection() && factory != null) {
       factory.dispose();
       factory = null;
     }
@@ -1041,9 +1041,15 @@ public class PeerConnectionClient {
           if (newState == IceConnectionState.CONNECTED) {
             events.onIceConnected();
           } else if (newState == IceConnectionState.DISCONNECTED) {
-            events.onIceDisconnected();
+            if(this.equals(instances.get(0))) //this is a normal video connetion
+                events.onIceDisconnected();
+            else{   // its a scrensharing connection what todo?
+                Log.d(TAG, "IceConnectionState: " + newState+ " (scrensharing connection)");
+            }
           } else if (newState == IceConnectionState.FAILED) {
-            reportError("ICE connection failed.");
+            if(this.equals(instances.get(0))){
+              reportError("ICE connection failed.");
+            }
           }
         }
       });

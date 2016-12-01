@@ -81,7 +81,7 @@ public interface AppRTCClient {
   /**
    * Disconnect from room.
    */
-  public void disconnectFromWebservice();
+  public void sendDisconnectToPeer();
 
   /**
    * Struct holding the signaling parameters of an AppRTC room.

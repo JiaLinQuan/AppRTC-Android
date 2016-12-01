@@ -26,12 +26,9 @@ import android.view.Window;
 import android.view.WindowManager.LayoutParams;
 import android.widget.Toast;
 
-import org.json.JSONObject;
 import org.webrtc.EglBase;
-import org.webrtc.IceCandidate;
 import org.webrtc.RendererCommon;
 import org.webrtc.RendererCommon.ScalingType;
-import org.webrtc.SessionDescription;
 import org.webrtc.StatsReport;
 import org.webrtc.SurfaceViewRenderer;
 
@@ -41,10 +38,11 @@ import org.webrtc.SurfaceViewRenderer;
  * and call view.
  */
 public class CallActivity extends RTCConnection implements
-        CallFragment.OnCallEvents,
+       CallFragment.OnCallEvents
        // AppRTCClient.SignalingEvents,
     //    PeerConnectionClient.PeerConnectionEvents,
-         WebSocketChannelClient.WebSocketChannelEvents{
+    //     WebSocketChannelClient.WebSocketChannelEvents
+{
 
 
   private static final String TAG = "CallActivity";
@@ -163,6 +161,7 @@ public class CallActivity extends RTCConnection implements
 
     if(!broadcastIsRegistered) {
         registerReceiver(broadcast_reciever, new IntentFilter("finish_CallActivity"));
+        registerReceiver(broadcast_reciever, new IntentFilter("finish_screensharing"));
         broadcastIsRegistered = true;
     }
 
@@ -281,7 +280,6 @@ public class CallActivity extends RTCConnection implements
   @Override
   public void onCameraSwitch() {
     if (peerConnectionClient != null) {
-
       boolean renderVideo = !peerConnectionClient.renderVideo;
       peerConnectionClient.setVideoEnabled(renderVideo);
       logAndToast(renderVideo?"video enabled":"video disabled");
@@ -302,8 +300,6 @@ public class CallActivity extends RTCConnection implements
     }
   }
 
-
-
   @Override
   public void onVideoScalingSwitch(RendererCommon.ScalingType scalingType) {
     this.scalingType = scalingType;
@@ -318,6 +314,11 @@ public class CallActivity extends RTCConnection implements
       logToast.cancel();
     }
     activityRunning = false;
+
+
+     unregisterReceiver(broadcast_reciever);
+     broadcastIsRegistered = false;
+
     rootEglBase.release();
     super.onDestroy();
 
@@ -369,9 +370,8 @@ public class CallActivity extends RTCConnection implements
             audioManager = null;
         }
 
-
         if (appRtcClient != null && sendRemoteHangup) {
-            appRtcClient.disconnectFromWebservice(); //send bye message to peer only when initiator
+            appRtcClient.sendDisconnectToPeer(); //send bye message to peer only when initiator
             sendDisconnectToPeer = false;
             // appRtcClient = null;
         }
@@ -381,6 +381,11 @@ public class CallActivity extends RTCConnection implements
         if (peerConnectionClient != null) {
             peerConnectionClient.close();
             peerConnectionClient = null;
+        }
+
+        if (peerConnectionClient2 != null) {
+          peerConnectionClient2.close();
+          peerConnectionClient2 = null;
         }
 
         if(activityRunning){
@@ -414,22 +419,66 @@ public class CallActivity extends RTCConnection implements
 
         @Override
         public void onReceive(Context arg0, Intent intent) {
+
             String action = intent.getAction();
             if (action.equals("finish_CallActivity")) {
                 sendDisconnectToPeer = false;
                 finish();
             }
+
+            if (action.equals("finish_screensharing")) {
+            //  http://stackoverflow.com/questions/37385522/how-to-change-surfaceviews-z-order-runtime-in-android
+              if (screenRender != null) {
+                //
+
+                peerConnectionClient2.close();
+                screenRenderLayout.removeView(screenRender);
+                screenRender.setVisibility(View.GONE);
+                screenRender.setZOrderMediaOverlay(false);
+               // screenRender.release();
+                //screenRender = null;
+               // screenRender = (SurfaceViewRenderer) findViewById(R.id.remote_screen_view);
+              //  screenRenderLayout = (PercentFrameLayout) findViewById(R.id.remote_screen_layout);
+              //  screenRender.init(rootEglBase.getEglBaseContext(), null);
+              //  screenRender.setZOrderMediaOverlay(true);
+                /*
+                remoteRenderLayout.removeView(remoteRender);
+                localRenderLayout.removeView(localRender);
+               localRender.setVisibility(View.GONE);
+                remoteRender.setVisibility(View.GONE);
+                localRender.setZOrderMediaOverlay(true);
+                remoteRender.setZOrderMediaOverlay(false);*/
+               // localRenderLayout.addView(mLocalRender, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+               // remoteRenderLayout.addView(mRemoteRender, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+               // localRender.setVisibility(View.VISIBLE);
+               // remoteRender.setVisibility(View.VISIBLE);
+               // localRender.setZOrderMediaOverlay(true);
+              //  screenRender.setVisibility(View.INVISIBLE);
+
+              /* if (peerConnectionClient2 != null) {
+                  peerConnectionClient2.close();
+                  peerConnectionClient2 = null;
+                }*/
+
+             //   screenRenderLayout.setPosition(SCREEN_X, SCREEN_Y, SCREEN_WIDTH, SCREEN_HEIGHT);
+             //   screenRender.setScalingType(scalingType);
+             //   screenRender.setMirror(false);
+             //   screenRender.requestLayout();
+              //  updateVideoView();
+              }
+
+            }
         }
     };
 
-    @Override
-    public void onWebSocketMessage(String message) {
-      logAndToast("Creating OFFER for Screensharing Caller");
-    }
 
-    @Override
-    public void onWebSocketClose() {
+  @Override
+  public void onWebSocketMessage(String message) {
 
-    }
+  }
 
+  @Override
+  public void onWebSocketClose() {
+
+  }
 }

@@ -751,8 +751,7 @@ public class ConnectActivity extends RTCConnection
   }
 
 /*  public void onChannelClose() {
-    Intent intent = new Intent("finish_CallActivity");
-    sendBroadcast(intent);
+
   }
 */
   @Override
@@ -760,7 +759,7 @@ public class ConnectActivity extends RTCConnection
     runOnUiThread(new Runnable() {
       @Override
       public void run() {
-        logAndToast("Remote end hung up; dropping PeerConnection");
+        logAndToast("stopCommunication from remotereceived; finishing CallActivity");
         disconnect(false);
       }
     });
@@ -768,7 +767,8 @@ public class ConnectActivity extends RTCConnection
 
   @Override
   public void onChannelScreenClose() {
-
+    Intent intent = new Intent("finish_screensharing");
+    sendBroadcast(intent);
   }
 
   @Override

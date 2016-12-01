@@ -159,7 +159,8 @@ public abstract class RTCConnection extends Activity implements
 
     // Disconnect from remote resources, dispose of local resources, and exit.
     public void disconnect(boolean sendRemoteHangup) {
-        //TODO
+        Intent intent = new Intent("finish_CallActivity");
+        sendBroadcast(intent);
     }
 
     public boolean validateUrl(String url) {
@@ -239,15 +240,7 @@ public abstract class RTCConnection extends Activity implements
     }
     @Override
     public void onIceConnected() {
-      /*  final long delta = System.currentTimeMillis() - callStartedTimeMs;
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                logAndToast("ICE connected, delay=" + delta + "ms");
-                iceConnected = true;
-                callConnected();
-            }
-        });*/
+
     }
 
     @Override

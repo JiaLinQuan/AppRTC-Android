@@ -40,7 +40,7 @@ This WebRTC Android App simply connects to a Java Webrtc Signaling Server via We
 - (development) kurento server not running?
 
 ##Todo/Bugs
-
+- remote hangup stops communication very late. stop must react immediately
 - (screensharing) remote hangup does not switches back to video screen
 - (screensharing) if android calls browser - browse cannot start screensharing (initiater - offer problem) 
 
@@ -90,6 +90,7 @@ This WebRTC Android App simply connects to a Java Webrtc Signaling Server via We
 
 
 ##Done:
+- 29.11.2016 - stop connection from browser does not end properly on android
 - 29.11.2016 - (gestures) for camera switch - double tab is not working 
 - 29.11.2016 - (2 MT) added second PeerConnection logic for screensharing over additional stream  
 - 25.11.2016 - add double touch on display for camera switch
