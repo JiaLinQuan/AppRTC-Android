@@ -216,11 +216,14 @@ public abstract class RTCConnection extends Activity implements
             @Override
             public void run() {
                 if (appRtcClient != null) {
+
+                    boolean isScreenSharingConnection = (peerConnectionClient2!=null);
+
                     logAndToast("Sending " + sdp.type + ", delay=" + delta + "ms");
-                    if (roomConnectionParameters.initiator) {
+                    if (roomConnectionParameters.initiator && !isScreenSharingConnection) {
                         appRtcClient.call(sdp);
                     } else {
-                        appRtcClient.sendOfferSdp(sdp,(peerConnectionClient2!=null));
+                        appRtcClient.sendOfferSdp(sdp,isScreenSharingConnection);
                     }
                 }
             }
