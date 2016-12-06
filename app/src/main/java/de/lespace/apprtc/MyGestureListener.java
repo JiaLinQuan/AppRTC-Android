@@ -55,8 +55,8 @@ public class MyGestureListener  extends
     @Override
     public boolean onDoubleTap(MotionEvent e) {
 
-        Toast.makeText(view.getContext(), "onDoubleTapEvent",
-                Toast.LENGTH_SHORT).show();
+       // Toast.makeText(view.getContext(), "onDoubleTapEvent",
+          //      Toast.LENGTH_SHORT).show();
 
         this.peerConnectionClient.switchCamera();
 
@@ -81,7 +81,7 @@ public class MyGestureListener  extends
     // movement
     @Override
     public void onLongPress(MotionEvent e) {
-        Toast.makeText(view.getContext(), "onLongPress", Toast.LENGTH_SHORT).show();
+      //  Toast.makeText(view.getContext(), "onLongPress", Toast.LENGTH_SHORT).show();
 
     }
 

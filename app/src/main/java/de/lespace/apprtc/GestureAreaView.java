@@ -40,7 +40,7 @@ public class GestureAreaView extends View  {
 		MyGestureListener listener = new MyGestureListener(this);
 		gestures = new GestureDetector(c, listener, null, true);
 
-		droid = BitmapFactory.decodeResource(getResources(), R.drawable.droid);
+		//droid = BitmapFactory.decodeResource(getResources(), R.drawable.droid);
 		translate = new Matrix();
 	}
 
@@ -58,7 +58,7 @@ public class GestureAreaView extends View  {
 	@Override
 	protected void onDraw(Canvas canvas) {
 
-		canvas.drawBitmap(droid, translate, null);
+	//	canvas.drawBitmap(droid, translate, null);
 	}
 
 	public void move(float dx, float dy) {

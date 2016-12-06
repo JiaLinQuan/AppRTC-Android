@@ -507,28 +507,6 @@ public class ConnectActivity extends RTCConnection
     startActivityForResult(newIntent, CONNECTION_REQUEST);
 
   }
-/*
-  private final OnClickListener addRoomListener = new OnClickListener() {
-    @Override
-    public void onClick(View view) {
-      String newRoom = roomEditText.getText().toString();
-      if (newRoom.length() > 0 && !roomList.contains(newRoom)) {
-        adapter.add(newRoom);
-        adapter.notifyDataSetChanged();
-      }
-    }
-  };
-
-  private final OnClickListener removeRoomListener = new OnClickListener() {
-    @Override
-    public void onClick(View view) {
-      Object selectedRoom = getSelectedItem();
-      if (selectedRoom != null) {
-        adapter.remove(selectedRoom);
-        adapter.notifyDataSetChanged();
-      }
-    }
-  };*/
 
   private String getSelectedItem() {
     int position = AdapterView.INVALID_POSITION;

@@ -428,23 +428,50 @@ public class CallActivity extends RTCConnection implements
             }
 
             if (action.equals("finish_screensharing")) {
+              finish(); //workaround because stream does not seeam to come back.
             //  http://stackoverflow.com/questions/37385522/how-to-change-surfaceviews-z-order-runtime-in-android
-              if (screenRender != null) {
+              if (screenRender == null) { //nover null remove this - doesn't seem to work
                 //
+                  screenRender.setVisibility(View.GONE);
+                  if (peerConnectionClient2 != null) {
+                      peerConnectionClient2.close();
+                      peerConnectionClient2 = null;
+                  }
+               // screenRender.setVisibility(View.INVISIBLE);
+               // screenRender.setVisibility(View.VISIBLE);
+               // localRender.setVisibility(View.INVISIBLE);
+              //  remoteRender.setVisibility(View.INVISIBLE);
+                  screenRenderLayout.removeView(screenRender);
+                 // screenRender.release();;
+                  //screenRender= null;
+                //  screenRenderLayout = null;
 
-                peerConnectionClient2.close();
-                screenRenderLayout.removeView(screenRender);
-              //  screenRender.release();
-               // screenRenderLayout.add(screenRender);
-                screenRenderLayout.addView(screenRender, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-               // screenRender.setVisibility(View.GONE);
-                screenRender.setZOrderMediaOverlay(true);
+                //  screenRender = (SurfaceViewRenderer) findViewById(R.id.remote_screen_view);
+
+                ///  screenRenderLayout = (PercentFrameLayout) findViewById(R.id.remote_screen_layout);
+
+                 // screenRender.setOnClickListener(listener); //screensharing
+
+                  // Create video renderers.
+                 // rootEglBase = EglBase.create();;
+                //  screenRender.init(rootEglBase.getEglBaseContext(), null);
+               //   screenRender.setZOrderMediaOverlay(false);
+               //   screenRender.requestLayout();
+               //   screenRender.requestFocus();
                // screenRender.release();
-                //screenRender = null;
-               // screenRender = (SurfaceViewRenderer) findViewById(R.id.remote_screen_view);
+
+                screenRenderLayout.addView(screenRender, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+
+                  screenRender.setZOrderMediaOverlay(true);
+
+               // screenRender.release();
+               // screenRender = null;
+               // screenRenderLayout = null;
+            //    screenRender = (SurfaceViewRenderer) findViewById(R.id.remote_screen_view);
               //  screenRenderLayout = (PercentFrameLayout) findViewById(R.id.remote_screen_layout);
-              //  screenRender.init(rootEglBase.getEglBaseContext(), null);
-              //  screenRender.setZOrderMediaOverlay(true);
+               //
+               // screenRender.init(rootEglBase.getEglBaseContext(), null);
+             //   screenRender.setZOrderMediaOverlay(false);
                 /*
                 remoteRenderLayout.removeView(remoteRender);
                 localRenderLayout.removeView(localRender);
@@ -459,11 +486,8 @@ public class CallActivity extends RTCConnection implements
                // localRender.setZOrderMediaOverlay(true);
               //  screenRender.setVisibility(View.INVISIBLE);
 
-              /* if (peerConnectionClient2 != null) {
-                  peerConnectionClient2.close();
-                  peerConnectionClient2 = null;
-                }*/
-
+                  screenRender.setVisibility(View.VISIBLE);
+             //     screenRender.setZOrderMediaOverlay(true);
              //   screenRenderLayout.setPosition(SCREEN_X, SCREEN_Y, SCREEN_WIDTH, SCREEN_HEIGHT);
              //   screenRender.setScalingType(scalingType);
              //   screenRender.setMirror(false);

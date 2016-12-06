@@ -259,14 +259,21 @@ public class PeerConnectionClient {
   }
 
   public static PeerConnectionClient getInstance(boolean newInstance) {
-    if(instance == null || newInstance) instance = new PeerConnectionClient();
-    instances = new ArrayList<PeerConnectionClient>();
-    instances.add(instance);
+    if(instance == null || newInstance) {
+      instance = new PeerConnectionClient();
+      instances = new ArrayList<PeerConnectionClient>();
+      instances.add(instance);
+    }
+
 
     return instance;
   }
   public static PeerConnectionClient getInstance(int count){
-      return  instances.get(0);
+      if(instances.size()-1<count){
+        instance = new PeerConnectionClient();
+        instances.add(instance);
+      }
+      return  instances.get(count);
   }
 
 
@@ -1066,6 +1073,9 @@ public class PeerConnectionClient {
       Log.d(TAG, "IceConnectionReceiving changed to " + receiving);
     }
 
+
+    MediaStream screenstream = null;
+    VideoRenderer videoscreenrenderer = null;
     @Override
     public void onAddStream(final MediaStream stream){
       executor.execute(new Runnable() {
@@ -1085,8 +1095,10 @@ public class PeerConnectionClient {
           }
           if (isScreenSharingConnection && stream.videoTracks.size() == 1) {
             remoteScreenTrack = stream.videoTracks.get(0);
+            screenstream = stream;
+            videoscreenrenderer = new VideoRenderer(screenRender);
             remoteScreenTrack.setEnabled(true);
-            remoteScreenTrack.addRenderer(new VideoRenderer(screenRender));
+              remoteScreenTrack.addRenderer(videoscreenrenderer);
           }
         }
       });
@@ -1094,6 +1106,10 @@ public class PeerConnectionClient {
 
     @Override
     public void onRemoveStream(final MediaStream stream){
+      if(stream == screenstream){
+        remoteScreenTrack.removeRenderer(videoscreenrenderer);
+      }
+
       executor.execute(new Runnable() {
         @Override
         public void run() {
