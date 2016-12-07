@@ -126,9 +126,15 @@ public class ConnectActivity extends RTCConnection
 
     if (grantResults.length > 0
             && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-      Toast.makeText(ConnectActivity.this, MANDATORY_PERMISSIONS[0] + " Permission Granted!", Toast.LENGTH_SHORT).show();
+
+      Log.e(TAG,  MANDATORY_PERMISSIONS[0] +"Permission Granted!");
+
+      //  Toast.makeText(ConnectActivity.this, MANDATORY_PERMISSIONS[0] + " Permission Granted!", Toast.LENGTH_SHORT).show();
     } else {
-      Toast.makeText(ConnectActivity.this, MANDATORY_PERMISSIONS[0] + " Permission Denied!", Toast.LENGTH_SHORT).show();
+
+      Log.e(TAG, MANDATORY_PERMISSIONS[0] + " Permission Denied!");
+
+      //Toast.makeText(ConnectActivity.this, MANDATORY_PERMISSIONS[0] + " Permission Denied!", Toast.LENGTH_SHORT).show();
     }
     missingPermissions.remove(0); //remove missing permission from array and request next left permission
     requestPermission();

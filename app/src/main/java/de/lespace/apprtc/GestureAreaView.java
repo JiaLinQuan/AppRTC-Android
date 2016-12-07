@@ -55,11 +55,11 @@ public class GestureAreaView extends View  {
 
 	// The onDraw() method must be overridden to draw the bitmap graphic in the
 	// appropriate position at any time
-	@Override
+	/*@Override
 	protected void onDraw(Canvas canvas) {
 
 	//	canvas.drawBitmap(droid, translate, null);
-	}
+	}*/
 
 	public void move(float dx, float dy) {
 		translate.postTranslate(dx, dy);

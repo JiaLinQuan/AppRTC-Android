@@ -72,7 +72,6 @@ public class CallActivity extends RTCConnection implements
   private static final int SCREEN_WIDTH = 100;
   private static final int SCREEN_HEIGHT = 100;
 
-    private static final int MY_PERMISSIONS_REQUEST_READ_CONTACTS = 0;
     // private AppRTCClient appRtcClient;
   private ScalingType scalingType;
   private Toast logToast;
