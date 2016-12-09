@@ -2,25 +2,17 @@ package de.lespace.apprtc;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.Application;
 import android.app.Dialog;
 import android.app.DialogFragment;
-import android.app.FragmentTransaction;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.media.Ringtone;
-import android.media.RingtoneManager;
-import android.net.Uri;
 import android.os.Bundle;
-import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.webrtc.IceCandidate;
 import org.webrtc.RendererCommon;
 import org.webrtc.SessionDescription;
@@ -68,11 +60,11 @@ public abstract class RTCConnection extends Activity implements
     public boolean iceConnected;
     public boolean isError;
     public static SharedPreferences sharedPref;
-    private boolean commandLineRun;
+
     public int runTimeMs;
     public boolean activityRunning;
 
-    public AppRTCAudioManager audioManager = null;
+
     public RendererCommon.ScalingType scalingType;
     public boolean callControlFragmentVisible = true;
 
@@ -96,6 +88,7 @@ public abstract class RTCConnection extends Activity implements
     public static AppRTCClient.RoomConnectionParameters roomConnectionParameters;
     public static PeerConnectionClient.PeerConnectionParameters peerConnectionParameters;
     public static AppRTCClient.SignalingParameters signalingParam;
+    private boolean doToast = false;
 
     public RTCConnection(){
 
@@ -103,11 +96,14 @@ public abstract class RTCConnection extends Activity implements
     // Log |msg| and Toast about it.
     public void logAndToast(String msg) {
         Log.d(TAG, msg);
-        if (logToast != null) {
-            logToast.cancel();
+        if(doToast){
+            if (logToast != null) {
+                logToast.cancel();
+            }
+            logToast = Toast.makeText(this, msg, Toast.LENGTH_SHORT);
+            logToast.show();
         }
-        logToast = Toast.makeText(this, msg, Toast.LENGTH_SHORT);
-        logToast.show();
+
     }
     @Override
     public void onWebSocketError(String description) {
@@ -140,7 +136,7 @@ public abstract class RTCConnection extends Activity implements
     @Override
     public void onResume() {
         super.onResume();
-        activityRunning = true;
+       // activityRunning = true;
         if (peerConnectionClient != null) {
             peerConnectionClient.startVideoSource();
         }
@@ -196,14 +192,7 @@ public abstract class RTCConnection extends Activity implements
 
     @Override
     public void onPeerConnectionStatsReady(final StatsReport[] reports) {
-       /* runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                if (!isError && iceConnected) {
-                    hudFragment.updateEncoderStatistics(reports);
-                }
-            }
-        });*/
+
     }
     // -----Implementation of PeerConnectionClient.PeerConnectionEvents.---------
     // Send local peer connection SDP and ICE candidates to remote party.
@@ -276,7 +265,7 @@ public abstract class RTCConnection extends Activity implements
     }
 
     private void disconnectWithErrorMessage(final String errorMessage) {
-        if (commandLineRun || !activityRunning) {
+        if (!activityRunning) {
             Log.e(TAG, "Critical error: " + errorMessage);
             disconnect(true);
         } else {

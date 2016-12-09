@@ -96,7 +96,7 @@ public class PeerConnectionClient {
 
   private PeerConnectionFactory factory;
   private PeerConnection peerConnection;
-  PeerConnectionFactory.Options options = null;
+  private PeerConnectionFactory.Options options = null;
   private VideoSource videoSource;
   private boolean videoCallEnabled;
   private boolean preferIsac;
@@ -261,19 +261,20 @@ public class PeerConnectionClient {
   public static PeerConnectionClient getInstance(boolean newInstance) {
     if(instance == null || newInstance) {
       instance = new PeerConnectionClient();
-      instances = new ArrayList<PeerConnectionClient>();
-      instances.add(instance);
+   //   instances = new ArrayList<PeerConnectionClient>();
+   //   instances.add(instance);
     }
 
 
     return instance;
   }
   public static PeerConnectionClient getInstance(int count){
-      if(instances.size()-1<count){
-        instance = new PeerConnectionClient();
-        instances.add(instance);
-      }
-      return  instances.get(count);
+   //   if(instances.size()-1<count){
+     //   instance = new PeerConnectionClient();
+       // instances.add(instance);
+     // }
+      //return  instances.get(count);
+    return instance;
   }
 
 
@@ -386,13 +387,14 @@ public class PeerConnectionClient {
 
   private void createPeerConnectionFactoryInternal(Context context) {
       if(!isScreenSharingConnection){
-        PeerConnectionFactory.initializeInternalTracer();
+       // PeerConnectionFactory.initializeInternalTracer();
+        /*
         if (peerConnectionParameters.tracing) {
             PeerConnectionFactory.startInternalTracingCapture(
                     Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator
                     + "webrtc-trace.txt");
         }
-
+*/
     Log.d(TAG, "Create peer connection factory. Use video: " + peerConnectionParameters.videoCallEnabled);
     isError = false;
 
@@ -564,10 +566,12 @@ public class PeerConnectionClient {
 
     // Set default WebRTC tracing and INFO libjingle logging.
     // NOTE: this _must_ happen while |factory| is alive!
-    Logging.enableTracing(
+
+    /* Logging.enableTracing(
+    /* Logging.enableTracing(
         "logcat:",
         EnumSet.of(Logging.TraceLevel.TRACE_DEFAULT),
-        Logging.Severity.LS_INFO);
+        Logging.Severity.LS_INFO);*/
 
     mediaStream = factory.createLocalMediaStream("ARDAMS");
     if (videoCallEnabled && !isScreenSharingConnection) {
@@ -578,8 +582,10 @@ public class PeerConnectionClient {
         cameraDeviceName = frontCameraDeviceName;
       }
       Log.d(TAG, "Opening camera: " + cameraDeviceName);
-      videoCapturer = VideoCapturerAndroid.create(cameraDeviceName, null,
-          peerConnectionParameters.captureToTexture ? renderEGLContext : null);
+      videoCapturer = VideoCapturerAndroid.create(
+              cameraDeviceName, null,false
+
+      ); // peerConnectionParameters.captureToTexture ? renderEGLContext : null
       if (videoCapturer == null) {
         reportError("Failed to open camera");
         return;
@@ -633,8 +639,9 @@ public class PeerConnectionClient {
     options = null;
     Log.d(TAG, "Closing peer connection done.");
     events.onPeerConnectionClosed();
-    PeerConnectionFactory.stopInternalTracingCapture();
-    PeerConnectionFactory.shutdownInternalTracer();
+   ///
+    // PeerConnectionFactory.stopInternalTracingCapture();
+   // PeerConnectionFactory.shutdownInternalTracer();
   }
 
   public boolean isHDVideo() {
@@ -1022,6 +1029,7 @@ public class PeerConnectionClient {
 
   // Implementation detail: observe ICE & stream changes and react accordingly.
   private class PCObserver implements PeerConnection.Observer {
+
     @Override
     public void onIceCandidate(final IceCandidate candidate){
       executor.execute(new Runnable() {
@@ -1030,6 +1038,11 @@ public class PeerConnectionClient {
           events.onIceCandidate(candidate);
         }
       });
+    }
+
+    @Override
+    public void onIceCandidatesRemoved(IceCandidate[] iceCandidates) {
+
     }
 
     @Override
@@ -1048,11 +1061,11 @@ public class PeerConnectionClient {
           if (newState == IceConnectionState.CONNECTED) {
             events.onIceConnected();
           } else if (newState == IceConnectionState.DISCONNECTED) {
-            if(this.equals(instances.get(0))) //this is a normal video connetion
+          //  if(this.equals(instances.get(0))) //this is a normal video connetion
                 events.onIceDisconnected();
-            else{   // its a scrensharing connection what todo?
-                Log.d(TAG, "IceConnectionState: " + newState+ " (scrensharing connection)");
-            }
+            //else{   // its a scrensharing connection what todo?
+              //  Log.d(TAG, "IceConnectionState: " + newState+ " (scrensharing connection)");
+            //}
           } else if (newState == IceConnectionState.FAILED) {
             if(this.equals(instances.get(0))){
               reportError("ICE connection failed.");

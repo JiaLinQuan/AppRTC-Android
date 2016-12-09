@@ -112,11 +112,8 @@ public class ConnectActivity extends RTCConnection
           "android.permission.CAMERA",
           "android.permission.INTERNET"
   };
-  /**
-   * ATTENTION: This was auto-generated to implement the App Indexing API.
-   * See https://g.co/AppIndexing/AndroidStudio for more information.
-   */
-  private GoogleApiClient client;
+  private boolean callActive;
+
 
   @Override
   public void onRequestPermissionsResult(
@@ -388,34 +385,9 @@ public class ConnectActivity extends RTCConnection
     appRtcClient = new WebSocketRTCClient(this, new LooperExecutor());
 
     connectToWebsocket();
-    // ATTENTION: This was auto-generated to implement the App Indexing API.
-    // See https://g.co/AppIndexing/AndroidStudio for more information.
-    client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
+
   }
 
-  /*
-  private void showDialog() {
-
-           // DialogFragment newFragment = new CallDialogFragment();
-           // newFragment.setShowsDialog(true);
-      View dialogView = View.inflate(getBaseContext(),R.layout.customer_dialog,null);
-         //   FragmentTransaction transaction = getFragmentManager().beginTransaction();
-         //   transaction.add(newFragment, "loading");
-         //   transaction.commitAllowingStateLoss();
-
-            WindowManager  windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
-            WindowManager.LayoutParams params = new WindowManager.LayoutParams(
-                    WindowManager.LayoutParams.WRAP_CONTENT,
-                    WindowManager.LayoutParams.WRAP_CONTENT,
-                    WindowManager.LayoutParams.TYPE_PHONE,
-                    WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD,
-                    PixelFormat.TRANSLUCENT);
-
-            params.gravity = Gravity.CENTER | Gravity.CENTER;
-            windowManager.addView(dialogView, params);
-
-
-  }*/
 
   @Override
   public boolean onCreateOptionsMenu(Menu menu) {
@@ -482,13 +454,23 @@ public class ConnectActivity extends RTCConnection
   }
 
   @Override
-  protected void onActivityResult(
-          int requestCode, int resultCode, Intent data) {
+  protected void onActivityResult(int requestCode, int resultCode, Intent data) {
     if (requestCode == CONNECTION_REQUEST && commandLineRun) {
       Log.d(TAG, "Return: " + resultCode);
       setResult(resultCode);
       commandLineRun = false;
       finish();
+    }
+    if(requestCode==RESULT_OK){
+      //Now start callActivityAgain!
+      if(callActive){
+        //Intent intent = new Intent(this, CallActivity.class);
+        //intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        //  r.stop();
+        //startActivityForResult(intent, CONNECTION_REQUEST);
+        connectToUser();
+        callActive=false;
+      }
     }
   }
 
@@ -496,15 +478,14 @@ public class ConnectActivity extends RTCConnection
     @Override
     public void onClick(View view) {
       commandLineRun = false;
-      connectToUser(0);
+      String to = getSelectedItem();
+      roomConnectionParameters.initiator = true;
+      roomConnectionParameters.to = to;
+
+      connectToUser();
     }
   };
-
-  private void connectToUser(int runTimeMs) {
-
-    String to = getSelectedItem();
-    roomConnectionParameters.initiator = true;
-    roomConnectionParameters.to = to;
+  private void connectToUser() {
 
     Intent newIntent = new Intent(this, CallActivity.class);
     newIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -513,6 +494,7 @@ public class ConnectActivity extends RTCConnection
     startActivityForResult(newIntent, CONNECTION_REQUEST);
 
   }
+
 
   private String getSelectedItem() {
     int position = AdapterView.INVALID_POSITION;
@@ -535,7 +517,6 @@ public class ConnectActivity extends RTCConnection
     runOnUiThread(new Runnable() {
       @Override
       public void run() {
-
         //onConnectedToRoomInternal(params);
       }
     });
@@ -574,50 +555,40 @@ public class ConnectActivity extends RTCConnection
   }
 
   @Override
-  public void onIncomingCall(final String from) {
-
-
-    // Notify UI that registration has completed, so the progress indicator can be hidden.
-/*
-        //Send Broadcast message to Service
-        Intent registrationComplete = new Intent(QuickstartPreferences.INCOMING_CALL);
-        LocalBroadcastManager.getInstance(this).sendBroadcast(registrationComplete);
-
-        startActivity(intent);*/
-
-       /* Intent intent = new Intent(this, ConnectActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        startActivity(intent);
-        Intent intent = new Intent(this,CallActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);*/
-    // r.stop();
-    //startActivity(intent);
-
+  public void onIncomingCall(final String from, final boolean screensharing) {
 
     roomConnectionParameters.to = from;
     roomConnectionParameters.initiator = false;
-    DialogFragment newFragment = new RTCConnection.CallDialogFragment();
 
 
-    Uri alert = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE);
-
-    if(alert == null){
-      // alert is null, using backup
-      alert = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-
-      // I can't see this ever being null (as always have a default notification)
-      // but just incase
-      if(alert == null) {
-        // alert backup is null, using 2nd backup
-        alert = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALL);
-      }
+    if(screensharing){ //if its screensharing jsut re-connect without asking user!
+       this.callActive=true;
+       connectToUser();
     }
-    r = RingtoneManager.getRingtone(getApplicationContext(), alert);
-    //  r.play();
+    else{
+      DialogFragment newFragment = new RTCConnection.CallDialogFragment();
 
-    FragmentTransaction transaction = getFragmentManager().beginTransaction();
-    transaction.add(newFragment, "loading");
-    transaction.commitAllowingStateLoss();
+
+      Uri alert = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE);
+
+      if(alert == null){
+        // alert is null, using backup
+        alert = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+
+        // I can't see this ever being null (as always have a default notification)
+        // but just incase
+        if(alert == null) {
+          // alert backup is null, using 2nd backup
+          alert = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALL);
+        }
+      }
+      r = RingtoneManager.getRingtone(getApplicationContext(), alert);
+      r.play();
+
+      FragmentTransaction transaction = getFragmentManager().beginTransaction();
+      transaction.add(newFragment, "loading");
+      transaction.commitAllowingStateLoss();
+    }
 
   }
 
@@ -734,10 +705,11 @@ public class ConnectActivity extends RTCConnection
     });
   }
 
-/*  public void onChannelClose() {
-
+  @Override
+  public void onCallback() { //A stop was received by the peer - now answering please send new call (e.g. with screensharing)
+    appRtcClient.sendCallback();
   }
-*/
+
   @Override
   public void onChannelClose() {
     runOnUiThread(new Runnable() {
@@ -808,40 +780,15 @@ public class ConnectActivity extends RTCConnection
     return true;
   }
 
-  /**
-   * ATTENTION: This was auto-generated to implement the App Indexing API.
-   * See https://g.co/AppIndexing/AndroidStudio for more information.
-   */
-  public Action getIndexApiAction() {
-    Thing object = new Thing.Builder()
-            .setName("Connect Page") // TODO: Define a title for the content shown.
-            // TODO: Make sure this auto-generated URL is correct.
-            .setUrl(Uri.parse("https://webrtc.a-fkd.de/jWebrtc"))
-            .build();
-    return new Action.Builder(Action.TYPE_VIEW)
-            .setObject(object)
-            .setActionStatus(Action.STATUS_TYPE_COMPLETED)
-            .build();
-  }
-
   @Override
   public void onStart() {
     super.onStart();
-
-    // ATTENTION: This was auto-generated to implement the App Indexing API.
-    // See https://g.co/AppIndexing/AndroidStudio for more information.
-    client.connect();
-    AppIndex.AppIndexApi.start(client, getIndexApiAction());
   }
 
   @Override
   public void onStop() {
     super.onStop();
 
-    // ATTENTION: This was auto-generated to implement the App Indexing API.
-    // See https://g.co/AppIndexing/AndroidStudio for more information.
-    AppIndex.AppIndexApi.end(client, getIndexApiAction());
-    client.disconnect();
   }
 
 
@@ -866,7 +813,9 @@ public class ConnectActivity extends RTCConnection
           Intent intent = new Intent(getActivity(), CallActivity.class);
           intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
           r.stop();
-          startActivity(intent);
+          startActivityForResult(intent, CONNECTION_REQUEST);
+
+        //  startActivity(intent);
         }
       });
       builder.setNegativeButton(R.string.calldialog_hangung, new DialogInterface.OnClickListener() {
@@ -879,7 +828,6 @@ public class ConnectActivity extends RTCConnection
       });
 
 // 3. Get the AlertDialog from create()
-      AlertDialog dialog = builder.create();
 
       return builder.create();
     }

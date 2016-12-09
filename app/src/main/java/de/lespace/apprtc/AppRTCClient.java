@@ -22,6 +22,8 @@ import java.util.List;
  */
 public interface AppRTCClient {
 
+
+
   /**
    * Struct holding the connection parameters of an AppRTC room.
    */
@@ -84,6 +86,11 @@ public interface AppRTCClient {
   public void sendDisconnectToPeer();
 
   /**
+   * Inform stopping user of successful stop of connection ask for new connection (e.g. screensharing)
+   */
+  public void sendCallback();
+
+  /**
    * Struct holding the signaling parameters of an AppRTC room.
    */
   public static class SignalingParameters {
@@ -109,7 +116,7 @@ public interface AppRTCClient {
 
     public void onUserListUpdate(String response);
 
-    public void onIncomingCall(String from);
+    public void onIncomingCall(String from, boolean callActive);
     public void onIncomingScreenCall(JSONObject from); //Screensharing only
 
     public void onStartCommunication(final SessionDescription sdp);
@@ -127,6 +134,7 @@ public interface AppRTCClient {
     public void onRemoteIceCandidate(final IceCandidate candidate);
     public void onRemoteScreenIceCandidate(final IceCandidate candidate);
 
+    public void onCallback();
     /**
      * Callback fired once channel is closed.
      */

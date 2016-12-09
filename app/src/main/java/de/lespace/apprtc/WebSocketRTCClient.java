@@ -28,7 +28,9 @@ import org.webrtc.PeerConnection;
 import org.webrtc.SessionDescription;
 
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 
 import static android.widget.Toast.*;
 
@@ -44,16 +46,9 @@ import static android.widget.Toast.*;
 public class WebSocketRTCClient implements AppRTCClient, WebSocketChannelEvents {
 
     private static final String TAG = "WebSocketRTCClient";
-    private enum ConnectionState {
-        NEW, CONNECTED, CLOSED, ERROR
-    };
-
-    private enum MessageType {
-        MESSAGE, LEAVE
-    };
 
     private final LooperExecutor executor;
-    private boolean initiator;
+
 
     private WebSocketChannelClient wsClient;
     private WebSocketConnectionState socketState;
@@ -68,16 +63,40 @@ public class WebSocketRTCClient implements AppRTCClient, WebSocketChannelEvents 
 
      executor.requestStart();
   }
+
+
+    List<JSONObject> signalingQueue = new ArrayList<JSONObject>();
+    List<JSONObject> callingQueue = new ArrayList<JSONObject>();
     // --------------------------------------------------------------------
     // WebSocketChannelEvents interface implementation.
     // All events are called by WebSocketChannelClient on a local looper thread
     // (passed to WebSocket client constructor).
     @Override
-    public void onWebSocketMessage(final String msg){
+    public void onWebSocketMessage(final String msg) {
+
         try {
-
             JSONObject json = new JSONObject(msg);
+           // if(json.getString("id").equals("incomdingCall"))
+              //  callingQueue.add(json);
+            //else {
+                signalingQueue.add(json);
+           // }
 
+            if(!queuing) processSignalingQueue();
+        } catch (JSONException e) {
+            reportError("WebSocket message JSON parsing error: " + e.toString());
+        }
+
+    }
+
+
+    boolean queuing = false;
+    public void processSignalingQueue(){
+        try {
+        while(signalingQueue.size()>0){
+            queuing=true;
+            JSONObject json= signalingQueue.remove(0);
+            String msg = json.toString();
             if (json.has("params")) {
                 Log.i(TAG, "Got appConfig"+msg+" parsing into roomParameters");
                 //this.roomParametersFetcher.parseAppConfig(msg);
@@ -102,11 +121,13 @@ public class WebSocketRTCClient implements AppRTCClient, WebSocketChannelEvents 
                     } catch (JSONException e) {
                       signalingEvents.onChannelError("app config JSON parsing error: " + e.toString());
                     }
+                    queuing=false;
                  return;
             }
 
             if (socketState != WebSocketConnectionState.REGISTERED && socketState != WebSocketConnectionState.CONNECTED){
                 Log.e(TAG, "websocket still in non registered state.");
+                queuing=false;
                 return;
             }
 
@@ -139,6 +160,16 @@ public class WebSocketRTCClient implements AppRTCClient, WebSocketChannelEvents 
                 signalingEvents.onUserListUpdate(response);
             }
 
+            if(id.equals("incomingCall")){
+                Log.d(TAG, "incomingCall "+json.toString());
+                signalingEvents.onIncomingCall(json.getString("from"),json.has("screensharing"));
+            }
+
+            if(id.equals("incomingScreenCall")){
+                Log.d(TAG, "incomingScreenCall "+json.toString());
+                signalingEvents.onIncomingScreenCall(json);
+            }
+
             if(id.equals("callResponse")){
                 response = json.getString("response");
 
@@ -168,16 +199,6 @@ public class WebSocketRTCClient implements AppRTCClient, WebSocketChannelEvents 
                 }
             }
 
-            if(id.equals("incomingCall")){
-                Log.d(TAG, "incomingCall "+json.toString());
-                signalingEvents.onIncomingCall(json.getString("from"));
-            }
-
-            if(id.equals("incomingScreenCall")){
-                Log.d(TAG, "incomingScreenCall "+json.toString());
-                signalingEvents.onIncomingScreenCall(json);
-            }
-
             if(id.equals("startCommunication")){
                 Log.d(TAG, "startCommunication "+json.toString());
                 SessionDescription sdp = new SessionDescription(SessionDescription.Type.ANSWER,json.getString("sdpAnswer"));
@@ -191,7 +212,11 @@ public class WebSocketRTCClient implements AppRTCClient, WebSocketChannelEvents 
             }
             if(id.equals("stopCommunication")){
                 Log.d(TAG, "stopCommunication "+json.toString());
+
                 signalingEvents.onChannelClose();
+                if(json.has("callback")){
+                    signalingEvents.onCallback();
+                }
             }
             if(id.equals("stopScreenCommunication")){
                 Log.d(TAG, "stopCommunication "+json.toString());
@@ -225,12 +250,18 @@ public class WebSocketRTCClient implements AppRTCClient, WebSocketChannelEvents 
             if (id.equals("stop")) {
                 signalingEvents.onChannelClose();
             }
+            if (id.equals("callback")) {
+                signalingEvents.onChannelClose();
+            }
             if (id.equals("stopScreen")) {
                 signalingEvents.onChannelScreenClose();
             }
+        }
+        queuing=false;
         } catch (JSONException e) {
             reportError("WebSocket message JSON parsing error: " + e.toString());
         }
+
     }
 
   // --------------------------------------------------------------------
@@ -278,6 +309,22 @@ public class WebSocketRTCClient implements AppRTCClient, WebSocketChannelEvents 
         });
   }
 
+    public void sendCallback() {
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    JSONObject jsonMessage = new JSONObject();
+                    jsonPut(jsonMessage, "id" , "callback");
+
+                    wsClient.send(jsonMessage.toString());
+                }catch(Exception e){
+                    reportError("WebSocketerror: " + e.toString());
+                }
+            }
+        });
+    }
+
     @Override
     public void reconnect() {
         executor.execute(new Runnable() {
@@ -311,15 +358,20 @@ public class WebSocketRTCClient implements AppRTCClient, WebSocketChannelEvents 
       // Disconnect from room and send bye messages - runs on a local looper thread.
       private void disconnectFromRoomInternal() {
         Log.d(TAG, "Disconnect. Room state: " + socketState);
-        if (socketState == WebSocketConnectionState.CONNECTED
-                || socketState == WebSocketConnectionState.NEW
-                || socketState == WebSocketConnectionState.REGISTERED) {
-            Log.d(TAG, "Closing room.");
-            JSONObject jsonMessage = new JSONObject();
-            jsonPut(jsonMessage, "id" , "stop");
-            wsClient.send(jsonMessage.toString());
-            wsClient.disconnect(true);
-        }
+          executor.execute(new Runnable() {
+              @Override
+              public void run() {
+                    if (socketState == WebSocketConnectionState.CONNECTED
+                            || socketState == WebSocketConnectionState.NEW
+                            || socketState == WebSocketConnectionState.REGISTERED) {
+                        Log.d(TAG, "Closing room.");
+                        JSONObject jsonMessage = new JSONObject();
+                        jsonPut(jsonMessage, "id" , "stop");
+                        wsClient.send(jsonMessage.toString());
+                        wsClient.disconnect(true);
+                    }
+              }
+          });
       }
 
       // Helper functions to get connection, sendSocketMessage message and leave message URLs

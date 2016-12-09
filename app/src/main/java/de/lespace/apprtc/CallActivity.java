@@ -10,6 +10,7 @@
 
 package de.lespace.apprtc;
 
+import android.app.Activity;
 import android.app.FragmentTransaction;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -39,11 +40,7 @@ import org.webrtc.SurfaceViewRenderer;
  * and call view.
  */
 public class CallActivity extends RTCConnection implements
-       CallFragment.OnCallEvents
-       // AppRTCClient.SignalingEvents,
-    //    PeerConnectionClient.PeerConnectionEvents,
-    //     WebSocketChannelClient.WebSocketChannelEvents
-{
+       CallFragment.OnCallEvents {
 
 
   private static final String TAG = "CallActivity";
@@ -74,8 +71,7 @@ public class CallActivity extends RTCConnection implements
 
     // private AppRTCClient appRtcClient;
   private ScalingType scalingType;
-  private Toast logToast;
-  private boolean commandLineRun;
+
   private boolean sendDisconnectToPeer = true;
   private long callStartedTimeMs = 0;
   // Controls
@@ -89,7 +85,7 @@ public class CallActivity extends RTCConnection implements
   public SurfaceViewRenderer localRender;
   public SurfaceViewRenderer remoteRender;
   public SurfaceViewRenderer screenRender;
-  private GestureDetectorCompat mDetector;
+    public AppRTCAudioManager audioManager = null;
   private static boolean broadcastIsRegistered;
 
     @Override
@@ -177,15 +173,6 @@ public class CallActivity extends RTCConnection implements
     ft.add(R.id.hud_fragment_container, hudFragment);
     ft.commit();
 
-    // For command line execution run connection for <runTimeMs> and exit.
-    if (commandLineRun && runTimeMs > 0) {
-      (new Handler()).postDelayed(new Runnable() {
-        @Override
-        public void run() {
-          disconnect(false);
-        }
-      }, runTimeMs);
-    }
 
     // Create and audio manager that will take care of audio routing,
     // audio modes, audio device enumeration etc.
@@ -204,18 +191,20 @@ public class CallActivity extends RTCConnection implements
     Log.d(TAG, "Initializing the audio manager...");
     audioManager.init();
 
+        activityRunning = true;
     peerConnectionClient = PeerConnectionClient.getInstance(true);
     peerConnectionClient.createPeerConnectionFactory(
-            CallActivity.this, peerConnectionParameters, this);
+            CallActivity.this, peerConnectionParameters, CallActivity.this);
 
     peerConnectionClient.createPeerConnection(rootEglBase.getEglBaseContext(),
-            localRender,remoteRender,screenRender,
+            localRender, remoteRender, screenRender,
             roomConnectionParameters.initiator);
 
     logAndToast("Creating OFFER...");
     // Create offer. Offer SDP will be sent to answering client in
     // PeerConnectionEvents.onLocalDescription event.
     peerConnectionClient.createOffer();
+
   }
 
     private void onAudioManagerChangedState() {
@@ -309,14 +298,13 @@ public class CallActivity extends RTCConnection implements
   @Override
   protected void onDestroy() {
 
-    disconnect(sendDisconnectToPeer);
+   // disconnect(sendDisconnectToPeer);
     if (logToast != null) {
       logToast.cancel();
     }
     activityRunning = false;
 
-
-     unregisterReceiver(broadcast_reciever);
+     if(broadcastIsRegistered) unregisterReceiver(broadcast_reciever);
      broadcastIsRegistered = false;
 
     rootEglBase.release();
@@ -351,6 +339,11 @@ public class CallActivity extends RTCConnection implements
 
     public void disconnect(boolean sendRemoteHangup){
 
+        if (audioManager != null) {
+            audioManager.close();
+            audioManager = null;
+        }
+
         if (localRender != null) {
             localRender.release();
             localRender = null;
@@ -365,10 +358,6 @@ public class CallActivity extends RTCConnection implements
             screenRender = null;
         }
 
-        if (audioManager != null) {
-            audioManager.close();
-            audioManager = null;
-        }
 
         if (appRtcClient != null && sendRemoteHangup) {
             appRtcClient.sendDisconnectToPeer(); //send bye message to peer only when initiator
@@ -423,7 +412,7 @@ public class CallActivity extends RTCConnection implements
             String action = intent.getAction();
             if (action.equals("finish_CallActivity")) {
                 sendDisconnectToPeer = false;
-                finish();
+                disconnect(false);
             }
 
             if (action.equals("finish_screensharing")) {

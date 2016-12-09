@@ -86,13 +86,14 @@ public class WebSocketChannelClient {
     // Install the all-trusting trust manager
     try {
 
-      SSLContext sslContext = SSLContext.getDefault();
-      // Create a WebSocketFactory instance.
-      WebSocketFactory factory = new WebSocketFactory();
-      // Set the custom SSL context.
-        if(trustAll) factory.setSSLContext(NaiveSSLContext.getInstance("TLS"));
-        else
-          factory.setSSLContext(sslContext);
+        SSLContext sslContext = SSLContext.getDefault();
+        // Create a WebSocketFactory instance.
+        WebSocketFactory factory = new WebSocketFactory();
+        // Set the custom SSL context.
+          if(trustAll) factory.setSSLContext(NaiveSSLContext.getInstance("TLS"));
+          else
+            factory.setSSLContext(sslContext);
+
       return factory;
     } catch (Exception e) {
       Log.i(TAG, "SSLContextProblem: " + e.getMessage() );
@@ -270,12 +271,6 @@ public class WebSocketChannelClient {
     return;
   }
 
-  // This call can be used to send WebSocket messages before WebSocket
-  // connection is opened.
-  public void sendSocketMessage(String message) {
-    checkIfCalledOnValidThread();
-    ws.sendText(message);
-  }
 
   public void disconnect(boolean waitForComplete) {
     checkIfCalledOnValidThread();
