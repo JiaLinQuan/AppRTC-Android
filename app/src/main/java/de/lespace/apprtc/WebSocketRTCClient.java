@@ -220,7 +220,7 @@ public class WebSocketRTCClient implements AppRTCClient, WebSocketChannelEvents 
                     handler.postDelayed(new Runnable() {
                         @Override
                         public void run() {
-                            //Do something after 100ms
+                            //Do something after 3000ms
                             signalingEvents.onCallback();
                         }
                     }, 3000);
