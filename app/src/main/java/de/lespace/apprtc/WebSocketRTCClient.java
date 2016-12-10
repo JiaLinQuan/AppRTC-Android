@@ -17,6 +17,7 @@ import de.lespace.apprtc.util.AppRTCUtils;
 import de.lespace.apprtc.util.LooperExecutor;
 
 import android.content.Intent;
+import android.os.Handler;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -215,7 +216,15 @@ public class WebSocketRTCClient implements AppRTCClient, WebSocketChannelEvents 
 
                 signalingEvents.onChannelClose();
                 if(json.has("callback")){
-                    signalingEvents.onCallback();
+                    final Handler handler = new Handler();
+                    handler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            //Do something after 100ms
+                            signalingEvents.onCallback();
+                        }
+                    }, 3000);
+
                 }
             }
             if(id.equals("stopScreenCommunication")){

@@ -43,6 +43,7 @@ This WebRTC Android App simply connects to a Java Webrtc Signaling Server via We
 
 
 #Improvements and Research
+- compile own webrtc lib for android https://github.com/pristineio/webrtc-build-scripts
 - Custom-Dialog for "back to front" enhancement 
 	http://stackoverflow.com/questions/13341560/how-to-create-a-custom-dialog-box-in-android
 	http://stackoverflow.com/questions/7569937/unable-to-add-window-android-view-viewrootw44da9bc0-permission-denied-for-t#answer-34061521
