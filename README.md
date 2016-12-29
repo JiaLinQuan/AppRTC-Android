@@ -40,7 +40,7 @@ This WebRTC Android App simply connects to a Java Webrtc Signaling Server via We
 - (development) kurento server not running?
 
 ##Todo/Bugs
-
+- when receiving "rejected" do not send channelclose to other party and display reject message"
 
 #Improvements and Research
 - compile own webrtc lib for android https://github.com/pristineio/webrtc-build-scripts
