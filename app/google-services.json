@@ -10,7 +10,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:1059503121530:android:f36173e948059ccb",
         "android_client_info": {
-          "package_name": "de.lespace.apprtc"
+          "package_name": "de.lespace.mscrtc"
         }
       },
       "oauth_client": [
