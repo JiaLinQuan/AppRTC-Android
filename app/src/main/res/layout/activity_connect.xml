@@ -20,15 +20,21 @@
                 android:layout_marginEnd="20dp"
                 android:layout_width="48dp"
                 android:layout_height="48dp"/>
-            <ImageButton
+        <ImageButton
                 android:id="@+id/connect_button"
                 android:background="@android:drawable/sym_action_call"
                 android:contentDescription="@string/connect_description"
                 android:layout_marginEnd="20dp"
                 android:layout_width="48dp"
                 android:layout_height="48dp"/>
-    </LinearLayout>
 
+    </LinearLayout>
+    <com.facebook.login.widget.LoginButton
+        android:id="@+id/login_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        />
     <TextView
             android:id="@+id/room_listview_description"
             android:layout_width="fill_parent"

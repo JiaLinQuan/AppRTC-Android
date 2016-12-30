@@ -42,6 +42,12 @@ import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.facebook.CallbackManager;
+import com.facebook.FacebookCallback;
+import com.facebook.FacebookException;
+import com.facebook.FacebookSdk;
+import com.facebook.login.LoginResult;
+import com.facebook.login.widget.LoginButton;
 import com.google.android.gms.appindexing.Action;
 import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.appindexing.Thing;
@@ -72,6 +78,8 @@ public class ConnectActivity extends RTCConnection
   private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
   private static boolean commandLineRun = false;
 
+  private LoginButton loginButton;
+  private CallbackManager callbackManager;
 
   private ImageButton connectButton;
   private String keyprefFrom;
@@ -149,7 +157,10 @@ public class ConnectActivity extends RTCConnection
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
 
+    FacebookSdk.sdkInitialize(getApplicationContext());
     setContentView(R.layout.activity_connect);
+    callbackManager = CallbackManager.Factory.create();
+    loginButton = (LoginButton)findViewById(R.id.login_button);
     // Get setting keys.
     PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
     sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
@@ -181,6 +192,35 @@ public class ConnectActivity extends RTCConnection
     // Video call enabled flag.
     boolean videoCallEnabled = sharedPref.getBoolean(keyprefVideoCallEnabled,
             Boolean.valueOf(getString(R.string.pref_videocall_default)));
+
+
+    loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
+
+      @Override
+      public void onSuccess(LoginResult loginResult) {
+
+        from = loginResult.getAccessToken().getUserId();
+        //use facebook user id as login name
+
+            /* "User ID: "
+                + loginResult.getAccessToken().getUserId()
+                + "\n" +
+                "Auth Token: "
+                + loginResult.getAccessToken().getToken() */
+      }
+
+      @Override
+      public void onCancel() {
+
+      }
+
+      @Override
+      public void onError(FacebookException e) {
+
+      }
+
+    });
+
 
     // Get default codecs.
     String videoCodec = sharedPref.getString(keyprefVideoCodec, getString(R.string.pref_videocodec_default));
@@ -278,8 +318,7 @@ public class ConnectActivity extends RTCConnection
 
     // Get camera fps from settings.
     int cameraFps = 0;
-    String fps = sharedPref.getString(keyprefFps,
-            getString(R.string.pref_fps_default));
+    String fps = sharedPref.getString(keyprefFps,getString(R.string.pref_fps_default));
     String[] fpsValues = fps.split("[ x]+");
     if (fpsValues.length == 2) {
       try {
@@ -385,7 +424,6 @@ public class ConnectActivity extends RTCConnection
     appRtcClient = new WebSocketRTCClient(this, new LooperExecutor());
 
     connectToWebsocket();
-
   }
 
 
@@ -790,7 +828,6 @@ public class ConnectActivity extends RTCConnection
     super.onStop();
 
   }
-
 
   public static class CallDialogFragment extends DialogFragment {
 

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name" translatable="no">AppRTC</string>
-    <string name="settings_name" translatable="no">AppRTC Settings</string>
+    <string name="app_name" translatable="no">Le Space</string>
+    <string name="settings_name" translatable="no">Le Space Settings</string>
     <string name="disconnect_call">Disconnect Call</string>
     <string name="room_names">Online Users:</string>
     <string name="room_description">
@@ -150,4 +150,5 @@
         sending the fetched token to the server or subscribing to the PubSub topic. Please try
         running the sample again.</string>
     <string name="no_audio" translatable="false">Switch off Audio</string>
+    <string name="facebook_app_id">1691776261109055</string>
 </resources>

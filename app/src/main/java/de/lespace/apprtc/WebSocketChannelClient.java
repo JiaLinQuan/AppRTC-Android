@@ -210,8 +210,8 @@ public class WebSocketChannelClient {
     } ;
 
       try {
-        ws.connect();
-        ws.setPingInterval(60 * 1000);
+          ws.connect();
+          ws.setPingInterval(60 * 1000);
       } catch (WebSocketException e) {
         e.printStackTrace();
         reportError("WebSocket connection error: " + e.getMessage());
