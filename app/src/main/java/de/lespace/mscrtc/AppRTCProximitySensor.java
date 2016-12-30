@@ -9,10 +9,10 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-package de.lespace.apprtc;
+package de.lespace.mscrtc;
 
-import de.lespace.apprtc.util.AppRTCUtils;
-import de.lespace.apprtc.util.AppRTCUtils.NonThreadSafe;
+import de.lespace.mscrtc.util.AppRTCUtils;
+import de.lespace.mscrtc.util.AppRTCUtils.NonThreadSafe;
 
 import android.content.Context;
 import android.hardware.Sensor;

@@ -8,20 +8,18 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-package de.lespace.apprtc;
+package de.lespace.mscrtc;
 
 import android.content.Context;
 import android.os.ParcelFileDescriptor;
-import android.os.Environment;
 import android.util.Log;
 
-import de.lespace.apprtc.AppRTCClient.SignalingParameters;
-import de.lespace.apprtc.util.LooperExecutor;
+import de.lespace.mscrtc.AppRTCClient.SignalingParameters;
+import de.lespace.mscrtc.util.LooperExecutor;
 import org.webrtc.CameraEnumerationAndroid;
 import org.webrtc.DataChannel;
 import org.webrtc.EglBase;
 import org.webrtc.IceCandidate;
-import org.webrtc.Logging;
 import org.webrtc.MediaCodecVideoEncoder;
 import org.webrtc.MediaConstraints;
 import org.webrtc.MediaConstraints.KeyValuePair;
@@ -41,8 +39,6 @@ import org.webrtc.voiceengine.WebRtcAudioManager;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Timer;

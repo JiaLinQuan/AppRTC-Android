@@ -8,7 +8,7 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-package de.lespace.apprtc;
+package de.lespace.mscrtc;
 
 import android.util.Log;
 
@@ -16,7 +16,6 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.InputMismatchException;
 import java.util.Scanner;
 
 /**

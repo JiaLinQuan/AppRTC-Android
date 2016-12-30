@@ -8,7 +8,7 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-package de.lespace.apprtc;
+package de.lespace.mscrtc;
 
 import android.util.Log;
 
@@ -18,7 +18,7 @@ import com.neovisionaries.ws.client.WebSocketException;
 import com.neovisionaries.ws.client.WebSocketFactory;
 import com.neovisionaries.ws.client.WebSocketState;
 
-import de.lespace.apprtc.util.LooperExecutor;
+import de.lespace.mscrtc.util.LooperExecutor;
 import org.json.JSONException;
 import org.json.JSONObject;
 

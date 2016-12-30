@@ -1,4 +1,4 @@
-package de.lespace.apprtc;
+package de.lespace.mscrtc;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;

@@ -8,7 +8,7 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-package de.lespace.apprtc.util;
+package de.lespace.mscrtc.util;
 
 import java.io.IOException;
 import java.io.InputStream;

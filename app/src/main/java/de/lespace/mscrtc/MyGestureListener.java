@@ -1,8 +1,7 @@
-package de.lespace.apprtc;
+package de.lespace.mscrtc;
 
 import android.view.GestureDetector;
 import android.view.MotionEvent;
-import android.widget.Toast;
 
 
 /**

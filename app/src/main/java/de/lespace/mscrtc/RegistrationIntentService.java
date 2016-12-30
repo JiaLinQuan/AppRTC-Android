@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package de.lespace.apprtc;
+package de.lespace.mscrtc;
 
 import android.app.IntentService;
 import android.content.Intent;

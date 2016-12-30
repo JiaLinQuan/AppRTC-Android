@@ -8,18 +8,15 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-package de.lespace.apprtc;
+package de.lespace.mscrtc;
 
 
-import de.lespace.apprtc.WebSocketChannelClient.WebSocketChannelEvents;
-import de.lespace.apprtc.WebSocketChannelClient.WebSocketConnectionState;
-import de.lespace.apprtc.util.AppRTCUtils;
-import de.lespace.apprtc.util.LooperExecutor;
+import de.lespace.mscrtc.WebSocketChannelClient.WebSocketChannelEvents;
+import de.lespace.mscrtc.WebSocketChannelClient.WebSocketConnectionState;
+import de.lespace.mscrtc.util.LooperExecutor;
 
-import android.content.Intent;
 import android.os.Handler;
 import android.util.Log;
-import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -28,12 +25,9 @@ import org.webrtc.IceCandidate;
 import org.webrtc.PeerConnection;
 import org.webrtc.SessionDescription;
 
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-
-import static android.widget.Toast.*;
 
 /**
  * Negotiates signaling for chatting with apprtc.appspot.com "rooms".

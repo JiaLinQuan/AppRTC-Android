@@ -1,4 +1,4 @@
-package de.lespace.apprtc;
+package de.lespace.mscrtc;
 
 import android.app.Activity;
 import android.app.AlertDialog;

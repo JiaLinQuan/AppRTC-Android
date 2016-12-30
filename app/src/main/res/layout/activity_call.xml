@@ -6,7 +6,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-    <de.lespace.apprtc.PercentFrameLayout
+    <de.lespace.mscrtc.PercentFrameLayout
         android:id="@+id/remote_video_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
@@ -14,9 +14,9 @@
             android:id="@+id/remote_video_view"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
-    </de.lespace.apprtc.PercentFrameLayout>
+    </de.lespace.mscrtc.PercentFrameLayout>
 
-    <de.lespace.apprtc.PercentFrameLayout
+    <de.lespace.mscrtc.PercentFrameLayout
         android:id="@+id/remote_screen_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
@@ -24,9 +24,9 @@
             android:id="@+id/remote_screen_view"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
-    </de.lespace.apprtc.PercentFrameLayout>
+    </de.lespace.mscrtc.PercentFrameLayout>
 
-    <de.lespace.apprtc.PercentFrameLayout
+    <de.lespace.mscrtc.PercentFrameLayout
         android:id="@+id/local_video_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
@@ -34,7 +34,7 @@
             android:id="@+id/local_video_view"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
-    </de.lespace.apprtc.PercentFrameLayout>
+    </de.lespace.mscrtc.PercentFrameLayout>
 
     <FrameLayout
         android:id="@+id/call_fragment_container"
