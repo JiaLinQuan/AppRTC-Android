@@ -10,15 +10,11 @@
 
 package de.lespace.apprtc;
 
-import android.app.Activity;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.widget.Toast;
-
-import org.json.JSONObject;
-import org.webrtc.SessionDescription;
 
 /**
  * Settings activity for AppRTC.
@@ -139,7 +135,7 @@ public class SettingsActivity extends RTCConnection
       Toast logToast = Toast.makeText(this, "connection settings changed", Toast.LENGTH_SHORT);
       logToast.show();
       if(key.equals(keyPrefFrom)) roomConnectionParameters.from = sharedPreferences.getString(key, "");
-      if(key.equals(keyPrefRoomServerUrl)) roomConnectionParameters.roomUrl = sharedPreferences.getString(key, "");
+      if(key.equals(keyPrefRoomServerUrl)) roomConnectionParameters.wssUrl = sharedPreferences.getString(key, "");
 
       appRtcClient.reconnect();
     }

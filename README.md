@@ -1,11 +1,9 @@
-# AppRTCDemo - Android
+# Le Space - Android 
 
 ##About
-This project is a native webrtc prototype in order to communicate with kurentos media server. It works in conjunction with two other projects:
+This project is a open source Android webrtc video chat which can be easily integrated in any website. E.g. you can add improve your customer support by adding this widget to your website. 
 
-Related projects:
-- a pure websocket AppRTC for Kurento: AppRTC-Kurento and
-- a pure websocket AppRTC for Android: AppRTC-iOS 
+
 
 ##Documentation
 This WebRTC Android App simply connects to a Java Webrtc Signaling Server via Websocket Protokoll and lists connected users which can be called via Videophone. It is a WebRTC ready prototype for integration into other apps which want to implement WebRTC Videocalls e.g. for their Sales and Support team. 
@@ -40,9 +38,16 @@ This WebRTC Android App simply connects to a Java Webrtc Signaling Server via We
 - (development) kurento server not running?
 
 ##Todo/Bugs
+- login with facebook and setUserId
+	https://code.tutsplus.com/tutorials/quick-tip-add-facebook-login-to-your-android-app--cms-23837 
+	https://www.tutorialspoint.com/android/android_shared_preferences.htm
+- display my userId
+- display status for connection (connecting,online,error)
+- generate code for blog <iframe /> or <script>
 
 
 #Improvements and Research
+
 - compile own webrtc lib for android https://github.com/pristineio/webrtc-build-scripts
 - Custom-Dialog for "back to front" enhancement 
 	http://stackoverflow.com/questions/13341560/how-to-create-a-custom-dialog-box-in-android

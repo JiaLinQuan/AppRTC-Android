@@ -29,18 +29,18 @@ public interface AppRTCClient {
    */
   public static class RoomConnectionParameters {
 
-    public String roomUrl;
+    public String wssUrl;
     public String from;
     public boolean initiator;
     public String to;
 
     public RoomConnectionParameters(
-        String roomUrl,
+        String wssUrl,
         String from,
         boolean initiator) {
-          this.roomUrl = roomUrl;
+          this.wssUrl = wssUrl;
           this.from = from;
-          this.initiator = initiator;
+         this.initiator = initiator;
     }
 
   }

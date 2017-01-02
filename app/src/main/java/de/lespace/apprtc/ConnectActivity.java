@@ -132,7 +132,7 @@ public class ConnectActivity extends RTCConnection
     if (grantResults.length > 0
             && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
 
-      Log.e(TAG,  MANDATORY_PERMISSIONS[0] +"Permission Granted!");
+      Log.e(TAG,  MANDATORY_PERMISSIONS[0] +" Permission Granted!");
 
       //  Toast.makeText(ConnectActivity.this, MANDATORY_PERMISSIONS[0] + " Permission Granted!", Toast.LENGTH_SHORT).show();
     } else {
@@ -185,38 +185,54 @@ public class ConnectActivity extends RTCConnection
     keyprefRoomServerUrl = getString(R.string.pref_room_server_url_key);
     keyprefRoom = getString(R.string.pref_room_key);
     keyprefRoomList = getString(R.string.pref_room_list_key);
+
+
     from = sharedPref.getString(keyprefFrom, getString(R.string.pref_from_default));
-    String roomUrl = sharedPref.getString(
-            keyprefRoomServerUrl, getString(R.string.pref_room_server_url_default));
+    final String wssUrl = sharedPref.getString(keyprefRoomServerUrl, getString(R.string.pref_room_server_url_default));
 
     // Video call enabled flag.
     boolean videoCallEnabled = sharedPref.getBoolean(keyprefVideoCallEnabled,
             Boolean.valueOf(getString(R.string.pref_videocall_default)));
 
-
+    callbackManager = CallbackManager.Factory.create();
     loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
 
       @Override
       public void onSuccess(LoginResult loginResult) {
 
         from = loginResult.getAccessToken().getUserId();
+       // Log.i(TAG,  "facebook login successful:"+from);
+        logAndToast("facebook login successful:"+from);
+
         //use facebook user id as login name
 
+        SharedPreferences saved_values = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        SharedPreferences.Editor editor=saved_values.edit();
+        editor.putString("from_settings_key", from);
+
+        boolean okey = editor.commit();
+
+
+        roomConnectionParameters.from = from;
+        roomConnectionParameters.wssUrl = wssUrl;
+        Toast.makeText(ConnectActivity.this,"Thanks "+okey+" "+from,Toast.LENGTH_LONG).show();
             /* "User ID: "
                 + loginResult.getAccessToken().getUserId()
                 + "\n" +
                 "Auth Token: "
                 + loginResult.getAccessToken().getToken() */
+        appRtcClient.reconnect();
       }
 
       @Override
       public void onCancel() {
+        logAndToast( "facebook login canceled");
 
       }
 
       @Override
       public void onError(FacebookException e) {
-
+        logAndToast( "facebook login error:"+e.getMessage());
       }
 
     });
@@ -259,10 +275,8 @@ public class ConnectActivity extends RTCConnection
       @Override
       public void onReceive(Context context, Intent intent) {
         // mRegistrationProgressBar.setVisibility(ProgressBar.GONE);
-        SharedPreferences sharedPreferences =
-                PreferenceManager.getDefaultSharedPreferences(context);
-        boolean sentToken = sharedPreferences
-                .getBoolean(QuickstartPreferences.SENT_TOKEN_TO_SERVER, false);
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+        boolean sentToken = sharedPreferences.getBoolean(QuickstartPreferences.SENT_TOKEN_TO_SERVER, false);
         if (sentToken) {
           logAndToast(getString(R.string.gcm_send_message));
           // mInformationTextView.setText(getString(R.string.gcm_send_message));
@@ -357,10 +371,10 @@ public class ConnectActivity extends RTCConnection
 
     boolean tracing = sharedPref.getBoolean(keyprefTracing, Boolean.valueOf(getString(R.string.pref_tracing_default)));
 
-    Log.d(TAG, "Connecting from " + from + " at URL " + roomUrl);
+    Log.d(TAG, "Connecting from " + from + " at URL " + wssUrl);
 
-    if (validateUrl(roomUrl)) {
-      Uri uri = Uri.parse(roomUrl);
+    if (validateUrl(wssUrl)) {
+      Uri uri = Uri.parse(wssUrl);
       intent = new Intent(this, ConnectActivity.class);
       intent.setData(uri);
       intent.putExtra(CallActivity.EXTRA_VIDEO_CALL, videoCallEnabled);
@@ -391,7 +405,7 @@ public class ConnectActivity extends RTCConnection
 
     // If an implicit VIEW intent is launching the app, go directly to that URL.
     //final Intent intent = getIntent();
-    Uri wsurl = Uri.parse(roomUrl);
+    Uri wsurl = Uri.parse(wssUrl);
     //intent.getData();
     Log.d(TAG, "connecting to:" + wsurl.toString());
     if (wsurl == null) {
@@ -425,7 +439,6 @@ public class ConnectActivity extends RTCConnection
 
     connectToWebsocket();
   }
-
 
   @Override
   public boolean onCreateOptionsMenu(Menu menu) {
@@ -491,8 +504,12 @@ public class ConnectActivity extends RTCConnection
     super.onResume();
   }
 
+
   @Override
   protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+    callbackManager.onActivityResult(requestCode, resultCode, data);
+
     if (requestCode == CONNECTION_REQUEST && commandLineRun) {
       Log.d(TAG, "Return: " + resultCode);
       setResult(resultCode);

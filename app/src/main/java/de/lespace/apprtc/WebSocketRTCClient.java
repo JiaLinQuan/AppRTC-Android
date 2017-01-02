@@ -13,13 +13,10 @@ package de.lespace.apprtc;
 
 import de.lespace.apprtc.WebSocketChannelClient.WebSocketChannelEvents;
 import de.lespace.apprtc.WebSocketChannelClient.WebSocketConnectionState;
-import de.lespace.apprtc.util.AppRTCUtils;
 import de.lespace.apprtc.util.LooperExecutor;
 
-import android.content.Intent;
 import android.os.Handler;
 import android.util.Log;
-import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -28,12 +25,9 @@ import org.webrtc.IceCandidate;
 import org.webrtc.PeerConnection;
 import org.webrtc.SessionDescription;
 
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-
-import static android.widget.Toast.*;
 
 /**
  * Negotiates signaling for chatting with apprtc.appspot.com "rooms".
@@ -376,8 +370,10 @@ public class WebSocketRTCClient implements AppRTCClient, WebSocketChannelEvents 
                         Log.d(TAG, "Closing room.");
                         JSONObject jsonMessage = new JSONObject();
                         jsonPut(jsonMessage, "id" , "stop");
-                        wsClient.send(jsonMessage.toString());
-                        wsClient.disconnect(true);
+                        if(wsClient!=null) { //in case of reconnect in the beginning wsClient is null
+                            wsClient.send(jsonMessage.toString());
+                            wsClient.disconnect(true);
+                        }
                     }
               }
           });
@@ -385,7 +381,7 @@ public class WebSocketRTCClient implements AppRTCClient, WebSocketChannelEvents 
 
       // Helper functions to get connection, sendSocketMessage message and leave message URLs
       private String getConnectionUrl(RoomConnectionParameters connectionParameters) {
-            return connectionParameters.roomUrl+"/ws";
+            return connectionParameters.wssUrl +"/ws";
       }
 
     // Return the list of ICE servers described by a WebRTCPeerConnection
