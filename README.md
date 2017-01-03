@@ -3,8 +3,6 @@
 ##About
 This project is a open source Android webrtc video chat which can be easily integrated in any website. E.g. you can add improve your customer support by adding this widget to your website. 
 
-
-
 ##Documentation
 This WebRTC Android App simply connects to a Java Webrtc Signaling Server via Websocket Protokoll and lists connected users which can be called via Videophone. It is a WebRTC ready prototype for integration into other apps which want to implement WebRTC Videocalls e.g. for their Sales and Support team. 
 
@@ -38,16 +36,15 @@ This WebRTC Android App simply connects to a Java Webrtc Signaling Server via We
 - (development) kurento server not running?
 
 ##Todo/Bugs
-- login with facebook and setUserId
-	https://code.tutsplus.com/tutorials/quick-tip-add-facebook-login-to-your-android-app--cms-23837 
-	https://www.tutorialspoint.com/android/android_shared_preferences.htm
+- (bug) if android goes offline server doesn't recognize it - send ping-pong
+- (bug) if a user is already registered when coming back online websocket must be overwritten
 - display my userId
 - display status for connection (connecting,online,error)
 - generate code for blog <iframe /> or <script>
 
-
 #Improvements and Research
-
+- re-register when coming back online
+- send heartbeat message to websocket 
 - compile own webrtc lib for android https://github.com/pristineio/webrtc-build-scripts
 - Custom-Dialog for "back to front" enhancement 
 	http://stackoverflow.com/questions/13341560/how-to-create-a-custom-dialog-box-in-android
@@ -57,8 +54,8 @@ This WebRTC Android App simply connects to a Java Webrtc Signaling Server via We
 - (enhancement) bring app to forground during incoming call (doesn't work)
 	http://stackoverflow.com/questions/29766270/how-to-resume-android-activity-programmatically-from-background/29769255#29769255
 	http://stackoverflow.com/questions/12074980/bring-application-to-front-after-user-clicks-on-home-button
-- re-register when coming back online
-- send heartbeat message to websocket 
+
+
 - (feature) add wake up feature - if (user is offline - allow wake up trough gcm)
 - save gcm registration token with websocket registration on signaling server
 - wake up certain user when offline (if app was started can be seen if use is online now) 
@@ -93,6 +90,12 @@ This WebRTC Android App simply connects to a Java Webrtc Signaling Server via We
 
 
 ##Done:
+- 02.01.2017 - (bug) when first time registering over facbook old default user does not de-register
+	- don't use default - user
+	- don't connect with default user
+- 02.01.2017 - login with facebook and setUserId
+				https://code.tutsplus.com/tutorials/quick-tip-add-facebook-login-to-your-android-app--cms-23837 
+				https://www.tutorialspoint.com/android/android_shared_preferences.htm
 - 01.12.2016 - (screensharing) if android calls browser - browse cannot start screensharing (initiater - offer problem) 
 
 - 01.12.2016 - (screensharing) remote hangup does not switches back to video screen

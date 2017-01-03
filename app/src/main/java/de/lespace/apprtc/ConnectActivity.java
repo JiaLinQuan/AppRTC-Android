@@ -48,12 +48,9 @@ import com.facebook.FacebookException;
 import com.facebook.FacebookSdk;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
-import com.google.android.gms.appindexing.Action;
-import com.google.android.gms.appindexing.AppIndex;
-import com.google.android.gms.appindexing.Thing;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
-import com.google.android.gms.common.api.GoogleApiClient;
+
 
 import de.lespace.apprtc.util.LooperExecutor;
 import org.json.JSONArray;
@@ -71,8 +68,7 @@ import java.util.List;
 /**
  * Handles the initial setup where the user selects which room to join.
  */
-public class ConnectActivity extends RTCConnection
-        implements AppRTCClient.SignalingEvents {
+public class ConnectActivity extends RTCConnection  implements AppRTCClient.SignalingEvents {
 
   private static final String TAG = "ConnectActivity";
   private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
@@ -107,11 +103,14 @@ public class ConnectActivity extends RTCConnection
   private List<String> missingPermissions;
   private Intent intent = null;
 
+  private BroadcastReceiver networkchangeBroadcastReceiver;
   private BroadcastReceiver gcmRegistrationBroadcastReceiver;
   private BroadcastReceiver bringToFrontBroadcastReceiver;
 
+  private boolean isNetworkChangeReceiverRegistered;
   private boolean isGCMReceiverRegistered;
   private boolean isBringToFrontReceiverRegistered;
+
 
   // List of mandatory application permissions.
   private static final String[] MANDATORY_PERMISSIONS = {
@@ -212,27 +211,28 @@ public class ConnectActivity extends RTCConnection
 
         boolean okey = editor.commit();
 
-
-        roomConnectionParameters.from = from;
-        roomConnectionParameters.wssUrl = wssUrl;
-        Toast.makeText(ConnectActivity.this,"Thanks "+okey+" "+from,Toast.LENGTH_LONG).show();
+        roomConnectionParameters = new AppRTCClient.RoomConnectionParameters(wssUrl, from, false);
+       // roomConnectionParameters.from = from;
+       // roomConnectionParameters.wssUrl = wssUrl;
+     //   Toast.makeText(ConnectActivity.this,"Thanks "+from,Toast.LENGTH_LONG).show();
             /* "User ID: "
                 + loginResult.getAccessToken().getUserId()
                 + "\n" +
                 "Auth Token: "
                 + loginResult.getAccessToken().getToken() */
-        appRtcClient.reconnect();
+        connectToWebsocket();
+        //appRtcClient.reconnect();
       }
 
       @Override
       public void onCancel() {
-        logAndToast( "facebook login canceled");
+      //  logAndToast( "facebook login canceled");
 
       }
 
       @Override
       public void onError(FacebookException e) {
-        logAndToast( "facebook login error:"+e.getMessage());
+       // logAndToast( "facebook login error:"+e.getMessage());
       }
 
     });
@@ -270,6 +270,18 @@ public class ConnectActivity extends RTCConnection
       }
     }
     requestPermission();
+
+    networkchangeBroadcastReceiver = new BroadcastReceiver() {
+      @Override
+      public void onReceive(Context context, Intent intent) {
+
+        if(intent.getFlags()==1){
+          appRtcClient.reconnect();
+          Toast.makeText(context, "network is online:"+intent.getFlags(), Toast.LENGTH_LONG).show();
+        }
+
+      }
+    };
     // mRegistrationProgressBar = (ProgressBar) findViewById(R.id.registrationProgressBar);
     gcmRegistrationBroadcastReceiver = new BroadcastReceiver() {
       @Override
@@ -305,6 +317,7 @@ public class ConnectActivity extends RTCConnection
     };
 
     // Registering BroadcastReceiver
+    registerNetworkChangeReceiver();
     registerGCMReceiver();
     registerBringToFrontReceiver();
 
@@ -437,7 +450,9 @@ public class ConnectActivity extends RTCConnection
     // Create connection client and connection parameters.
     appRtcClient = new WebSocketRTCClient(this, new LooperExecutor());
 
-    connectToWebsocket();
+    if(roomConnectionParameters.from!=null && !roomConnectionParameters.from.equals("nandi"))
+      connectToWebsocket();
+
   }
 
   @Override
@@ -797,6 +812,14 @@ public class ConnectActivity extends RTCConnection
 
   }
 
+  private void registerNetworkChangeReceiver() {
+    if (!isNetworkChangeReceiverRegistered) {
+      LocalBroadcastManager.getInstance(this).registerReceiver(networkchangeBroadcastReceiver,
+              new IntentFilter(QuickstartPreferences.NETWORK_ONLINE));
+
+      isNetworkChangeReceiverRegistered = true;
+    }
+  }
   private void registerGCMReceiver() {
     if (!isGCMReceiverRegistered) {
       LocalBroadcastManager.getInstance(this).registerReceiver(gcmRegistrationBroadcastReceiver,

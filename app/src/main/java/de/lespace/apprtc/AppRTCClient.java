@@ -22,8 +22,6 @@ import java.util.List;
  */
 public interface AppRTCClient {
 
-
-
   /**
    * Struct holding the connection parameters of an AppRTC room.
    */
