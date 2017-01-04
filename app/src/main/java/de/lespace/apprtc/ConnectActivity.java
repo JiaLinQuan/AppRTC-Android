@@ -275,6 +275,10 @@ public class ConnectActivity extends RTCConnection  implements AppRTCClient.Sign
       @Override
       public void onReceive(Context context, Intent intent) {
 
+
+        if(intent.getFlags()==0){
+            appRtcClient.resetWebsocket();
+        }
         if(intent.getFlags()==1){
           appRtcClient.reconnect();
           Toast.makeText(context, "network is online:"+intent.getFlags(), Toast.LENGTH_LONG).show();
@@ -773,6 +777,11 @@ public class ConnectActivity extends RTCConnection  implements AppRTCClient.Sign
         peerConnectionClient2.addRemoteIceCandidate(candidate);
       }
     });
+  }
+
+  @Override
+  public void onPing() { //A stop was received by the peer - now answering please send new call (e.g. with screensharing)
+    appRtcClient.sendPong();
   }
 
   @Override

@@ -150,6 +150,10 @@ public class WebSocketRTCClient implements AppRTCClient, WebSocketChannelEvents 
                 }
             }
 
+            if(id.equals("ping")){
+                signalingEvents.onPing();
+            }
+
             if(id.equals("registeredUsers")){
                 response = json.getString("response");
                 signalingEvents.onUserListUpdate(response);
@@ -312,6 +316,22 @@ public class WebSocketRTCClient implements AppRTCClient, WebSocketChannelEvents 
         });
   }
 
+    public void sendPong() {
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    JSONObject jsonMessage = new JSONObject();
+                    jsonPut(jsonMessage, "id" , "pong");
+
+                    wsClient.send(jsonMessage.toString());
+                }catch(Exception e){
+                    reportError("WebSocketerror: " + e.toString());
+                }
+            }
+        });
+    }
+
     public void sendCallback() {
         executor.execute(new Runnable() {
             @Override
@@ -326,6 +346,10 @@ public class WebSocketRTCClient implements AppRTCClient, WebSocketChannelEvents 
                 }
             }
         });
+    }
+
+    public void resetWebsocket(){
+            wsClient = null;
     }
 
     @Override

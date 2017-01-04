@@ -22,6 +22,8 @@ import java.util.List;
  */
 public interface AppRTCClient {
 
+
+
   /**
    * Struct holding the connection parameters of an AppRTC room.
    */
@@ -74,6 +76,8 @@ public interface AppRTCClient {
    */
   public void reconnect();
 
+  public void resetWebsocket();
+
   /**
    * Send stop message to peer
    */
@@ -82,6 +86,11 @@ public interface AppRTCClient {
    * Disconnect from room.
    */
   public void sendDisconnectToPeer();
+
+  /**
+   * Inform stopping user of successful stop of connection ask for new connection (e.g. screensharing)
+   */
+  public void sendPong();
 
   /**
    * Inform stopping user of successful stop of connection ask for new connection (e.g. screensharing)
@@ -133,6 +142,7 @@ public interface AppRTCClient {
     public void onRemoteScreenIceCandidate(final IceCandidate candidate);
 
     public void onCallback();
+    public void onPing();
     /**
      * Callback fired once channel is closed.
      */
