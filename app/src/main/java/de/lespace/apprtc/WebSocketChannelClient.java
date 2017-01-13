@@ -94,7 +94,7 @@ public class WebSocketChannelClient {
           else
             factory.setSSLContext(sslContext);
 
-      return factory;
+        return factory;
     } catch (Exception e) {
       Log.i(TAG, "SSLContextProblem: " + e.getMessage() );
       e.printStackTrace();
@@ -102,12 +102,16 @@ public class WebSocketChannelClient {
     }
   }
 
+  public void setState(WebSocketConnectionState state){
+    this.state = state;
+  }
+
   public WebSocketConnectionState getState() {
     return state;
   }
 
   public boolean connect(final String wsUrl) {
-    Log.i(TAG, "connect called: " + wsUrl);
+      Log.i(TAG, "connect called: " + wsUrl);
     checkIfCalledOnValidThread();
 
     if (state != WebSocketConnectionState.NEW) {
@@ -219,8 +223,6 @@ public class WebSocketChannelClient {
     return true;
   }
 
-
-
   public void register(final String from) {
     Log.d(TAG, "Registering room " + from);
     checkIfCalledOnValidThread();
@@ -274,7 +276,7 @@ public class WebSocketChannelClient {
 
   public void disconnect(boolean waitForComplete) {
     checkIfCalledOnValidThread();
-    Log.d(TAG, "Disonnect WebSocket. State: " + state);
+      Log.d(TAG, "Disonnect WebSocket. State: " + state);
     if (state == WebSocketConnectionState.REGISTERED) {
       // Send "bye" to WebSocket server.
       send("{\"id\": \"stop\"}");
@@ -306,15 +308,15 @@ public class WebSocketChannelClient {
   private void reportError(final String errorMessage) {
     Log.e(TAG, errorMessage);
     executor.execute(new Runnable() {
-      @Override
-      public void run() {
-        if (state != WebSocketConnectionState.ERROR) {
-          state = WebSocketConnectionState.ERROR;
-          events.onWebSocketError(errorMessage);
-        }
+    @Override
+    public void run() {
+      if (state != WebSocketConnectionState.ERROR) {
+        state = WebSocketConnectionState.ERROR;
+        events.onWebSocketError(errorMessage);
       }
-    });
-  }
+    }
+  });
+}
    // Helper method for debugging purposes. Ensures that WebSocket method is
    // called on a looper thread.
   private void checkIfCalledOnValidThread() {

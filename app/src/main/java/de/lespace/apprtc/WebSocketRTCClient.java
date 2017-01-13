@@ -29,68 +29,28 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-/**
- * Negotiates signaling for chatting with apprtc.appspot.com "rooms".
- *
- * <p>To use: create an instance of this object (registering a message handler) and
- * call connectToWebsocket().  Once room connection is established
- * onConnectedToRoom() callback with room parameters is invoked.
- * Messages to other party (with local Ice candidates and answer SDP) can
- * be sent after WebSocket connection is established.
- */
-public class WebSocketRTCClient implements AppRTCClient, WebSocketChannelEvents {
+
+public class WebSocketRTCClient implements AppRTCClient {
 
     private static final String TAG = "WebSocketRTCClient";
 
     private final LooperExecutor executor;
-
-
     private WebSocketChannelClient wsClient;
-    private WebSocketConnectionState socketState;
-    private RoomConnectionParameters connectionParameters;
-
+    private WebSocketChannelEvents wsEvents;
     private SignalingEvents signalingEvents;
+    private boolean queuing = false;
 
-    public WebSocketRTCClient(SignalingEvents events, LooperExecutor executor) {
+    public WebSocketRTCClient( WebSocketChannelEvents wsEvents, LooperExecutor executor) {
         this.executor = executor;
-        this.socketState = WebSocketConnectionState.NEW;
-        this.signalingEvents = events;
-
-     executor.requestStart();
-  }
-
-
-    List<JSONObject> signalingQueue = new ArrayList<JSONObject>();
-    List<JSONObject> callingQueue = new ArrayList<JSONObject>();
-    // --------------------------------------------------------------------
-    // WebSocketChannelEvents interface implementation.
-    // All events are called by WebSocketChannelClient on a local looper thread
-    // (passed to WebSocket client constructor).
-    @Override
-    public void onWebSocketMessage(final String msg) {
-
-        try {
-            JSONObject json = new JSONObject(msg);
-           // if(json.getString("id").equals("incomdingCall"))
-              //  callingQueue.add(json);
-            //else {
-                signalingQueue.add(json);
-           // }
-
-            if(!queuing) processSignalingQueue();
-        } catch (JSONException e) {
-            reportError("WebSocket message JSON parsing error: " + e.toString());
-        }
-
+        this.wsEvents = wsEvents;
+         executor.requestStart();
     }
-
-
-    boolean queuing = false;
+    private List<JSONObject> signalingQueue = new ArrayList<JSONObject>();
     public void processSignalingQueue(){
         try {
-        while(signalingQueue.size()>0){
-            queuing=true;
-            JSONObject json= signalingQueue.remove(0);
+        while(getSignalingQueue().size()>0){
+            setQueuing(true);
+            JSONObject json= getSignalingQueue().remove(0);
             String msg = json.toString();
             if (json.has("params")) {
                 Log.i(TAG, "Got appConfig"+msg+" parsing into roomParameters");
@@ -112,17 +72,17 @@ public class WebSocketRTCClient implements AppRTCClient, WebSocketChannelEvents 
 
                         AppRTCClient.SignalingParameters signalingParameters = new SignalingParameters(iceServers);
 
-                        wsClient.register(connectionParameters.from);
+                        wsClient.register(RTCConnection.roomConnectionParameters.from);
                     } catch (JSONException e) {
-                      signalingEvents.onChannelError("app config JSON parsing error: " + e.toString());
+                      getSignalingEvents().onChannelError("app config JSON parsing error: " + e.toString());
                     }
-                    queuing=false;
+                    setQueuing(false);
                  return;
             }
 
-            if (socketState != WebSocketConnectionState.REGISTERED && socketState != WebSocketConnectionState.CONNECTED){
+            if (wsClient.getState() != WebSocketConnectionState.REGISTERED && wsClient.getState() != WebSocketConnectionState.CONNECTED){
                 Log.e(TAG, "websocket still in non registered state.");
-                queuing=false;
+                setQueuing(false);
                 return;
             }
 
@@ -138,35 +98,35 @@ public class WebSocketRTCClient implements AppRTCClient, WebSocketChannelEvents 
                 String message = json.getString("message");
 
                 if(response.equals("accepted"))      {
-                    socketState = WebSocketConnectionState.REGISTERED;
+                    wsClient.setState(WebSocketConnectionState.REGISTERED);
                 }
 
                 else if(response.equals("rejected"))      {
-                    signalingEvents.onChannelError("register rejected: " + message);
+                    getSignalingEvents().onChannelError("register rejected: " + message);
                 }
 
                 else if(response.equals("skipped")) {
-                    signalingEvents.onChannelError("register rejected: " + message);                                                                       // Log.e(TAG, "registration was skipped because: "+message);
+                    getSignalingEvents().onChannelError("register rejected: " + message);                                                                       // Log.e(TAG, "registration was skipped because: "+message);
                 }
             }
 
             if(id.equals("ping")){
-                signalingEvents.onPing();
+                if(getSignalingEvents()!=null)  getSignalingEvents().onPing();
             }
 
             if(id.equals("registeredUsers")){
                 response = json.getString("response");
-                signalingEvents.onUserListUpdate(response);
+                getSignalingEvents().onUserListUpdate(response);
             }
 
             if(id.equals("incomingCall")){
                 Log.d(TAG, "incomingCall "+json.toString());
-                signalingEvents.onIncomingCall(json.getString("from"),json.has("screensharing"));
+                getSignalingEvents().onIncomingCall(json.getString("from"),json.has("screensharing"));
             }
 
             if(id.equals("incomingScreenCall")){
                 Log.d(TAG, "incomingScreenCall "+json.toString());
-                signalingEvents.onIncomingScreenCall(json);
+                getSignalingEvents().onIncomingScreenCall(json);
             }
 
             if(id.equals("callResponse")){
@@ -174,61 +134,66 @@ public class WebSocketRTCClient implements AppRTCClient, WebSocketChannelEvents 
 
                 if(response.startsWith("rejected")) {
                     Log.d(TAG, "call got rejected: "+response);
-                    signalingEvents.onChannelClose();
+                    getSignalingEvents().onChannelClose();
                 }else{
                     Log.d(TAG, "sending sdpAnswer: "+response);
                     SessionDescription sdp = new SessionDescription(
                             SessionDescription.Type.ANSWER,json.getString("sdpAnswer"));
 
-                    signalingEvents.onRemoteDescription(sdp);
+                    getSignalingEvents().onRemoteDescription(sdp);
                 }
             }
+
             if(id.equals("callScreenResponse")){
                 response = json.getString("response");
 
                 if(response.startsWith("rejected")) {
                     Log.d(TAG, "call got rejected: "+response);
-                    signalingEvents.onChannelScreenClose();
+                    getSignalingEvents().onChannelScreenClose();
                 }else{
                     Log.d(TAG, "sending sdpAnswer: "+response);
                     SessionDescription sdp = new SessionDescription(
                             SessionDescription.Type.ANSWER,json.getString("sdpAnswer"));
 
-                    signalingEvents.onRemoteScreenDescription(sdp);
+                    getSignalingEvents().onRemoteScreenDescription(sdp);
                 }
             }
 
             if(id.equals("startCommunication")){
                 Log.d(TAG, "startCommunication "+json.toString());
                 SessionDescription sdp = new SessionDescription(SessionDescription.Type.ANSWER,json.getString("sdpAnswer"));
-                signalingEvents.onStartCommunication(sdp);
+                getSignalingEvents().onStartCommunication(sdp);
             }
+
             if(id.equals("startScreenCommunication")){
                 Log.d(TAG, "startScreenCommunication "+json.toString());
                 SessionDescription sdp = new SessionDescription(SessionDescription.Type.ANSWER,json.getString("sdpAnswer"));
                    // signalingEvents.onStartScreenCommunication(sdp); //remove if not needed!
-                signalingEvents.onStartScreenCommunication(sdp);
+                getSignalingEvents().onStartScreenCommunication(sdp);
             }
+
             if(id.equals("stopCommunication")){
                 Log.d(TAG, "stopCommunication "+json.toString());
 
-                signalingEvents.onChannelClose();
+                getSignalingEvents().onChannelClose();
                 if(json.has("callback")){
                     final Handler handler = new Handler();
                     handler.postDelayed(new Runnable() {
                         @Override
                         public void run() {
                             //Do something after 3000ms
-                            signalingEvents.onCallback();
+                            getSignalingEvents().onCallback();
                         }
                     }, 3000);
 
                 }
             }
+
             if(id.equals("stopScreenCommunication")){
                 Log.d(TAG, "stopCommunication "+json.toString());
-                signalingEvents.onChannelScreenClose();
+                getSignalingEvents().onChannelScreenClose();
             }
+
             if(id.equals("iceCandidateScreen")){
 
                 JSONObject candidateJson = json.getJSONObject("candidate");
@@ -238,9 +203,10 @@ public class WebSocketRTCClient implements AppRTCClient, WebSocketChannelEvents 
                         candidateJson.getInt("sdpMLineIndex"),
                         candidateJson.getString("candidate"));
 
-                signalingEvents.onRemoteScreenIceCandidate(candidate);
+                getSignalingEvents().onRemoteScreenIceCandidate(candidate);
 
             }
+
             if(id.equals("iceCandidate")){
                 Log.d(TAG, "iceCandidate "+json.toString());
 
@@ -251,20 +217,22 @@ public class WebSocketRTCClient implements AppRTCClient, WebSocketChannelEvents 
                         candidateJson.getInt("sdpMLineIndex"),
                         candidateJson.getString("candidate"));
 
-                signalingEvents.onRemoteIceCandidate(candidate);
+                getSignalingEvents().onRemoteIceCandidate(candidate);
             }
 
             if (id.equals("stop")) {
-                signalingEvents.onChannelClose();
+                getSignalingEvents().onChannelClose();
             }
+
             if (id.equals("callback")) {
-                signalingEvents.onChannelClose();
+                getSignalingEvents().onChannelClose();
             }
+
             if (id.equals("stopScreen")) {
-                signalingEvents.onChannelScreenClose();
+                getSignalingEvents().onChannelScreenClose();
             }
         }
-        queuing=false;
+        setQueuing(false);
         } catch (JSONException e) {
             reportError("WebSocket message JSON parsing error: " + e.toString());
         }
@@ -277,7 +245,7 @@ public class WebSocketRTCClient implements AppRTCClient, WebSocketChannelEvents 
   // parameters, retrieves room parameters and connect to WebSocket server.
   @Override
   public void connectToWebsocket(RoomConnectionParameters connectionParameters) {
-    this.connectionParameters = connectionParameters;
+      RTCConnection.roomConnectionParameters = connectionParameters;
     executor.execute(new Runnable() {
       @Override
       public void run() {
@@ -372,25 +340,23 @@ public class WebSocketRTCClient implements AppRTCClient, WebSocketChannelEvents 
       // Connects to websocket - function runs on a local looper thread.
       private void connectToWebsocketInternal() {
 
-          String connectionUrl = getConnectionUrl(connectionParameters);
-
-          socketState = WebSocketConnectionState.NEW;
-          wsClient = new WebSocketChannelClient(executor, this);
+          String connectionUrl = getConnectionUrl(RTCConnection.roomConnectionParameters);
+         // wsClient.setState(WebSocketConnectionState.NEW);
+          wsClient = new WebSocketChannelClient(executor,wsEvents);
           wsClient.connect(connectionUrl);
-          socketState = WebSocketConnectionState.CONNECTED;
+          wsClient.setState(WebSocketConnectionState.CONNECTED);
           Log.d(TAG, "wsClient connect " + connectionUrl);
 
       }
 
       // Disconnect from room and send bye messages - runs on a local looper thread.
       private void disconnectFromRoomInternal() {
-        Log.d(TAG, "Disconnect. Room state: " + socketState);
           executor.execute(new Runnable() {
               @Override
               public void run() {
-                    if (socketState == WebSocketConnectionState.CONNECTED
-                            || socketState == WebSocketConnectionState.NEW
-                            || socketState == WebSocketConnectionState.REGISTERED) {
+                     if (wsClient!=null && wsClient.getState() !=null && (wsClient.getState() == WebSocketConnectionState.CONNECTED
+                            || wsClient.getState() == WebSocketConnectionState.NEW
+                            || wsClient.getState() == WebSocketConnectionState.REGISTERED)) {
                         Log.d(TAG, "Closing room.");
                         JSONObject jsonMessage = new JSONObject();
                         jsonPut(jsonMessage, "id" , "stop");
@@ -435,7 +401,7 @@ public class WebSocketRTCClient implements AppRTCClient, WebSocketChannelEvents 
           executor.execute(new Runnable() {
               @Override
               public void run() {
-                  if (socketState != WebSocketConnectionState.REGISTERED) {
+                  if (wsClient.getState() != WebSocketConnectionState.REGISTERED) {
                       reportError("Sending offer SDP in non registered state.");
                       return;
                   }
@@ -443,8 +409,8 @@ public class WebSocketRTCClient implements AppRTCClient, WebSocketChannelEvents 
                   JSONObject json = new JSONObject();
 
                   jsonPut(json,"id","call");
-                  jsonPut(json,"from",connectionParameters.from);
-                  jsonPut(json,"to",connectionParameters.to);
+                  jsonPut(json,"from",RTCConnection.roomConnectionParameters.from);
+                  jsonPut(json,"to",RTCConnection.roomConnectionParameters.to);
                   jsonPut(json, "sdpOffer", sdp.description);
                   wsClient.send(json.toString());
 
@@ -462,7 +428,7 @@ public class WebSocketRTCClient implements AppRTCClient, WebSocketChannelEvents 
               JSONObject json = new JSONObject();
               if(!isScreenSharing) jsonPut(json, "id","incomingCallResponse");
               else jsonPut(json, "id","incomingScreenCallResponse");
-              jsonPut(json, "from", connectionParameters.to);
+              jsonPut(json, "from", RTCConnection.roomConnectionParameters.to);
               jsonPut(json, "callResponse",  "accept");
               jsonPut(json, "sdpOffer", sdp.description);
               wsClient.send(json.toString());
@@ -491,17 +457,6 @@ public class WebSocketRTCClient implements AppRTCClient, WebSocketChannelEvents 
       }
 
 
-
-      @Override
-      public void onWebSocketClose() {
-          signalingEvents.onChannelClose();
-      }
-
-      @Override
-      public void onWebSocketError(String description) {
-        reportError("WebSocket error: " + description);
-      }
-
   // --------------------------------------------------------------------
   // Helper functions.
   private void reportError(final String errorMessage) {
@@ -509,9 +464,9 @@ public class WebSocketRTCClient implements AppRTCClient, WebSocketChannelEvents 
     executor.execute(new Runnable() {
       @Override
       public void run() {
-        if (socketState != WebSocketConnectionState.ERROR) {
-                socketState = WebSocketConnectionState.ERROR;
-                signalingEvents.onChannelError(errorMessage);
+        if (wsClient!=null && wsClient.getState()!=null && wsClient.getState() != WebSocketConnectionState.ERROR) {
+                wsClient.setState(WebSocketConnectionState.ERROR);
+                getSignalingEvents().onChannelError(errorMessage);
         }
       }
     });
@@ -526,4 +481,27 @@ public class WebSocketRTCClient implements AppRTCClient, WebSocketChannelEvents 
     }
   }
 
+    public boolean isQueuing() {
+        return queuing;
+    }
+
+    public void setQueuing(boolean queuing) {
+        this.queuing = queuing;
+    }
+
+    public List<JSONObject> getSignalingQueue() {
+        return signalingQueue;
+    }
+
+    public void setSignalingQueue(List<JSONObject> signalingQueue) {
+        this.signalingQueue = signalingQueue;
+    }
+
+    public SignalingEvents getSignalingEvents() {
+        return signalingEvents;
+    }
+
+    public void setSignalingEvents(SignalingEvents signalingEvents) {
+        this.signalingEvents = signalingEvents;
+    }
 }

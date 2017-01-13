@@ -738,7 +738,7 @@ public class PeerConnectionClient {
       }
     });
   }
-
+/*
   public void createAnswer() {
     executor.execute(new Runnable() {
       @Override
@@ -750,7 +750,7 @@ public class PeerConnectionClient {
         }
       }
     });
-  }
+  }*/
 
   public void addRemoteIceCandidate(final IceCandidate candidate) {
     executor.execute(new Runnable() {

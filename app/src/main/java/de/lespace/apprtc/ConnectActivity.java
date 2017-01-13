@@ -14,6 +14,8 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.app.FragmentTransaction;
+import android.app.Notification;
+import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -21,23 +23,20 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.graphics.PixelFormat;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -50,17 +49,11 @@ import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
-
-
-import de.lespace.apprtc.util.LooperExecutor;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.webrtc.IceCandidate;
 import org.webrtc.SessionDescription;
-import org.webrtc.StatsReport;
-
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -152,6 +145,8 @@ public class ConnectActivity extends RTCConnection  implements AppRTCClient.Sign
       ActivityCompat.requestPermissions(this, new String[]{missingPermissions.get(0)}, missingPermissions.size());
   }
 
+
+
   @Override
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
@@ -184,15 +179,14 @@ public class ConnectActivity extends RTCConnection  implements AppRTCClient.Sign
     keyprefRoomServerUrl = getString(R.string.pref_room_server_url_key);
     keyprefRoom = getString(R.string.pref_room_key);
     keyprefRoomList = getString(R.string.pref_room_list_key);
-
-
     from = sharedPref.getString(keyprefFrom, getString(R.string.pref_from_default));
     final String wssUrl = sharedPref.getString(keyprefRoomServerUrl, getString(R.string.pref_room_server_url_default));
+    roomConnectionParameters = new AppRTCClient.RoomConnectionParameters(wssUrl, from, false);
 
     // Video call enabled flag.
-    boolean videoCallEnabled = sharedPref.getBoolean(keyprefVideoCallEnabled,
-            Boolean.valueOf(getString(R.string.pref_videocall_default)));
+    boolean videoCallEnabled = sharedPref.getBoolean(keyprefVideoCallEnabled, Boolean.valueOf(getString(R.string.pref_videocall_default)));
 
+    startService(new Intent(this,TestService.class));
     callbackManager = CallbackManager.Factory.create();
     loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
 
@@ -211,17 +205,12 @@ public class ConnectActivity extends RTCConnection  implements AppRTCClient.Sign
 
         boolean okey = editor.commit();
 
-        roomConnectionParameters = new AppRTCClient.RoomConnectionParameters(wssUrl, from, false);
-       // roomConnectionParameters.from = from;
-       // roomConnectionParameters.wssUrl = wssUrl;
-     //   Toast.makeText(ConnectActivity.this,"Thanks "+from,Toast.LENGTH_LONG).show();
-            /* "User ID: "
-                + loginResult.getAccessToken().getUserId()
-                + "\n" +
-                "Auth Token: "
-                + loginResult.getAccessToken().getToken() */
-        connectToWebsocket();
-        //appRtcClient.reconnect();
+
+        roomConnectionParameters.from = from;
+        roomConnectionParameters.wssUrl = wssUrl;
+        TestService.appRTCClient.reconnect();
+
+
       }
 
       @Override
@@ -260,12 +249,10 @@ public class ConnectActivity extends RTCConnection  implements AppRTCClient.Sign
             Boolean.valueOf(getString(R.string.pref_opensles_default)));
 
     // Check for mandatory permissions.
-    int counter = 0;
     missingPermissions = new ArrayList();
 
     for (String permission : MANDATORY_PERMISSIONS) {
       if (checkCallingOrSelfPermission(permission) != PackageManager.PERMISSION_GRANTED) {
-        counter++;
         missingPermissions.add(permission);
       }
     }
@@ -275,17 +262,18 @@ public class ConnectActivity extends RTCConnection  implements AppRTCClient.Sign
       @Override
       public void onReceive(Context context, Intent intent) {
 
-
         if(intent.getFlags()==0){
-            appRtcClient.resetWebsocket();
+          TestService.appRTCClient.resetWebsocket();
         }
         if(intent.getFlags()==1){
-          appRtcClient.reconnect();
+          TestService.appRTCClient.reconnect();
           Toast.makeText(context, "network is online:"+intent.getFlags(), Toast.LENGTH_LONG).show();
         }
 
       }
     };
+
+    final AppRTCClient.SignalingEvents signalingEvents = this;
     // mRegistrationProgressBar = (ProgressBar) findViewById(R.id.registrationProgressBar);
     gcmRegistrationBroadcastReceiver = new BroadcastReceiver() {
       @Override
@@ -300,6 +288,7 @@ public class ConnectActivity extends RTCConnection  implements AppRTCClient.Sign
           logAndToast(getString(R.string.gcm_send_message));
           // mInformationTextView.setText(getString(R.string.token_error_message));
         }
+        TestService.appRTCClient.setSignalingEvents(signalingEvents);
       }
     };
 
@@ -314,9 +303,6 @@ public class ConnectActivity extends RTCConnection  implements AppRTCClient.Sign
         intent.addFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
         intent.addFlags(Intent.FLAG_ACTIVITY_PREVIOUS_IS_TOP);
         startActivity(intentStart);
-        //  newFragment.show(transaction,"loading");
-
-      //  showDialog();
       }
     };
 
@@ -448,14 +434,9 @@ public class ConnectActivity extends RTCConnection  implements AppRTCClient.Sign
             captureToTexture, audioStartBitrate, audioCodec, noAudioProcessing,
             aecDump, useOpenSLES);
 
-    roomConnectionParameters = new AppRTCClient.RoomConnectionParameters(wsurl.toString(), from, false);
 
     Log.i(TAG, "creating appRtcClient with roomUri:" + wsurl.toString() + " from:" + from);
-    // Create connection client and connection parameters.
-    appRtcClient = new WebSocketRTCClient(this, new LooperExecutor());
 
-    if(roomConnectionParameters.from!=null && !roomConnectionParameters.from.equals("nandi"))
-      connectToWebsocket();
 
   }
 
@@ -484,7 +465,7 @@ public class ConnectActivity extends RTCConnection  implements AppRTCClient.Sign
     isGCMReceiverRegistered = false;
 
     //String room = roomEditText.getText().toString();
-    String roomListJson = new JSONArray(roomList).toString();
+    String roomListJson = new JSONArray(userList).toString();
     SharedPreferences.Editor editor = sharedPref.edit();
     //editor.putString(keyprefRoom, room);
     editor.putString(keyprefRoomList, roomListJson);
@@ -500,20 +481,20 @@ public class ConnectActivity extends RTCConnection  implements AppRTCClient.Sign
 
     String room = sharedPref.getString(keyprefRoom, "");
     //roomEditText.setText(room);
-    roomList = new ArrayList<String>();
+    userList = new ArrayList<String>();
     String roomListJson = sharedPref.getString(keyprefRoomList, null);
     if (roomListJson != null) {
       try {
         JSONArray jsonArray = new JSONArray(roomListJson);
         for (int i = 0; i < jsonArray.length(); i++) {
-          roomList.add(jsonArray.get(i).toString());
+          userList.add(jsonArray.get(i).toString());
         }
       } catch (JSONException e) {
         Log.e(TAG, "Failed to load room list: " + e.toString());
       }
     }
     adapter = new ArrayAdapter<String>(
-            this, android.R.layout.simple_list_item_1, roomList);
+            this, android.R.layout.simple_list_item_1, userList);
     roomListView.setAdapter(adapter);
     if (adapter.getCount() > 0) {
       roomListView.requestFocus();
@@ -585,16 +566,6 @@ public class ConnectActivity extends RTCConnection  implements AppRTCClient.Sign
     }
   }
 
-  @Override
-  public void onConnectedToRoom(final AppRTCClient.SignalingParameters params) {
-
-    runOnUiThread(new Runnable() {
-      @Override
-      public void run() {
-        //onConnectedToRoomInternal(params);
-      }
-    });
-  }
 
   @Override
   public void onUserListUpdate(final String response) {
@@ -606,7 +577,7 @@ public class ConnectActivity extends RTCConnection  implements AppRTCClient.Sign
       public void run() {
         try {
           JSONArray mJSONArray = new JSONArray(response);
-          roomList = new ArrayList();
+          userList = new ArrayList();
           adapter.clear();
           adapter.notifyDataSetChanged();
 
@@ -614,9 +585,9 @@ public class ConnectActivity extends RTCConnection  implements AppRTCClient.Sign
           for(int i = 0; i < mJSONArray.length();i++){
             String username = mJSONArray.getString(i);
             if (username.length() > 0
-                    && !roomList.contains(username)
+                    && !userList.contains(username)
                     && !username.equals(roomConnectionParameters.from)) {
-              roomList.add(username);
+              userList.add(username);
               adapter.add(username);
             }
           }
@@ -641,8 +612,6 @@ public class ConnectActivity extends RTCConnection  implements AppRTCClient.Sign
     }
     else{
       DialogFragment newFragment = new RTCConnection.CallDialogFragment();
-
-
       Uri alert = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE);
 
       if(alert == null){
@@ -673,9 +642,7 @@ public class ConnectActivity extends RTCConnection  implements AppRTCClient.Sign
     //do nothing here - just in CallActivity
 
     peerConnectionClient2 = PeerConnectionClient.getInstance(true);
-
     peerConnectionClient2.createPeerConnectionFactoryScreen(this);
-
     peerConnectionClient2.createPeerConnectionScreen(peerConnectionClient.getRenderEGLContext(),peerConnectionClient.getScreenRender());
     // Create offer. Offer SDP will be sent to answering client in
     // PeerConnectionEvents.onLocalDescription event.
@@ -781,12 +748,12 @@ public class ConnectActivity extends RTCConnection  implements AppRTCClient.Sign
 
   @Override
   public void onPing() { //A stop was received by the peer - now answering please send new call (e.g. with screensharing)
-    appRtcClient.sendPong();
+    TestService.appRTCClient.sendPong();
   }
 
   @Override
   public void onCallback() { //A stop was received by the peer - now answering please send new call (e.g. with screensharing)
-    appRtcClient.sendCallback();
+    TestService.appRTCClient.sendCallback();
   }
 
   @Override
@@ -809,16 +776,6 @@ public class ConnectActivity extends RTCConnection  implements AppRTCClient.Sign
   @Override
   public void onChannelError(String description) {
     logAndToast(description);
-  }
-
-  @Override
-  public void onWebSocketMessage(String message) {
-    //do nothing
-  }
-
-  @Override
-  public void onWebSocketClose() {
-
   }
 
   private void registerNetworkChangeReceiver() {
@@ -908,7 +865,7 @@ public class ConnectActivity extends RTCConnection  implements AppRTCClient.Sign
         public void onClick(DialogInterface dialog, int id) {
           // User cancelled the dialog send stop message to peer.
           r.stop();
-          appRtcClient.sendStopToPeer();
+          TestService.appRTCClient.sendStopToPeer();
           ;
         }
       });

@@ -359,8 +359,8 @@ public class CallActivity extends RTCConnection implements
         }
 
 
-        if (appRtcClient != null && sendRemoteHangup) {
-            appRtcClient.sendDisconnectToPeer(); //send bye message to peer only when initiator
+        if (TestService.appRTCClient != null && sendRemoteHangup) {
+            TestService.appRTCClient.sendDisconnectToPeer(); //send bye message to peer only when initiator
             sendDisconnectToPeer = false;
             // appRtcClient = null;
         }
@@ -487,14 +487,4 @@ public class CallActivity extends RTCConnection implements
         }
     };
 
-
-  @Override
-  public void onWebSocketMessage(String message) {
-
-  }
-
-  @Override
-  public void onWebSocketClose() {
-
-  }
 }

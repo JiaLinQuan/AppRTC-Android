@@ -36,26 +36,21 @@ This WebRTC Android App simply connects to a Java Webrtc Signaling Server via We
 - (development) kurento server not running?
 
 ##Todo/Bugs
-- (bug) if android goes offline server doesn't recognize it - send ping-pong
-- (bug) if a user is already registered when coming back online websocket must be overwritten
+- make a foreground service  
+	Sampel Foreground Service 
+		https://github.com/commonsguy/cw-android/tree/master/Notifications/FakePlayer
+		http://www.truiton.com/2014/10/android-foreground-service-example/
+		http://stackoverflow.com/questions/9696861/how-can-we-prevent-a-service-from-being-killed-by-os
+- improve fb - login procedere 
 - display my userId
 - display status for connection (connecting,online,error)
 - generate code for blog <iframe /> or <script>
 
+
 #Improvements and Research
-- re-register when coming back online
-- send heartbeat message to websocket 
+- (improvement) reconnect websocket in case of websocket error (every 10 seconds if not offline)
+- (improvement) try to reconnect to server if no ping is received
 - compile own webrtc lib for android https://github.com/pristineio/webrtc-build-scripts
-- Custom-Dialog for "back to front" enhancement 
-	http://stackoverflow.com/questions/13341560/how-to-create-a-custom-dialog-box-in-android
-	http://stackoverflow.com/questions/7569937/unable-to-add-window-android-view-viewrootw44da9bc0-permission-denied-for-t#answer-34061521
-	http://stackoverflow.com/questions/32224452/android-unable-to-add-window-permission-denied-for-this-window-type
-- try timeout of half a second ofter bringing app back to foreground for display call dialog
-- (enhancement) bring app to forground during incoming call (doesn't work)
-	http://stackoverflow.com/questions/29766270/how-to-resume-android-activity-programmatically-from-background/29769255#29769255
-	http://stackoverflow.com/questions/12074980/bring-application-to-front-after-user-clicks-on-home-button
-
-
 - (feature) add wake up feature - if (user is offline - allow wake up trough gcm)
 - save gcm registration token with websocket registration on signaling server
 - wake up certain user when offline (if app was started can be seen if use is online now) 
@@ -88,8 +83,16 @@ This WebRTC Android App simply connects to a Java Webrtc Signaling Server via We
 - (not tested yet) test reconnect when app goes offline or wifi off (see also: https://github.com/palmerc/SecureWebSockets/issues/13)
 - (ok) test socket stays connected in background mode. 
 
-
 ##Done:
+- 12.01.2017 - (improvement) created le-space launch icon 
+	https://romannurik.github.io/AndroidAssetStudio/icons-launcher.html#foreground.type=image&foreground.space.trim=1&foreground.space.pad=0&foreColor=607d8b%2C0&crop=0&backgroundShape=bevel&backColor=ffffff%2C100&effects=none
+- 11.01.2017 - (bug) after wifi reconnect app crashes
+- 10.01.2017 - (bug) android or status widget seems to disconnect/go offline after a couple of minutes 
+	- implement websocket service which runs in background
+- 04.01.2017 - re-register when coming back online
+- 04.01.2017 - send heartbeat message to websocket 
+- 04.01.2017 - (bug) if android goes offline server doesn't recognize it - send ping-pong
+- 04.01.2017 - (bug) if a user is already registered when coming back online websocket must be overwritten
 - 02.01.2017 - (bug) when first time registering over facbook old default user does not de-register
 	- don't use default - user
 	- don't connect with default user

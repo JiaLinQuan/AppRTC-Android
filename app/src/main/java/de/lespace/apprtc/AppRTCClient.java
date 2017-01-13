@@ -71,6 +71,12 @@ public interface AppRTCClient {
    */
   public void sendLocalIceCandidate(final IceCandidate candidate, final boolean isScreensharing);
 
+  public List getSignalingQueue();
+
+  public boolean isQueuing();
+
+  public void processSignalingQueue();
+
   /**
    * Disconnect from room.
    */
@@ -82,6 +88,7 @@ public interface AppRTCClient {
    * Send stop message to peer
    */
   public void sendStopToPeer();
+
   /**
    * Disconnect from room.
    */
@@ -96,6 +103,10 @@ public interface AppRTCClient {
    * Inform stopping user of successful stop of connection ask for new connection (e.g. screensharing)
    */
   public void sendCallback();
+
+  public SignalingEvents getSignalingEvents();
+
+  public void setSignalingEvents(final SignalingEvents signalingEvents);
 
   /**
    * Struct holding the signaling parameters of an AppRTC room.
@@ -115,11 +126,6 @@ public interface AppRTCClient {
    * <p>Methods are guaranteed to be invoked on the UI thread of |activity|.
    */
   public static interface SignalingEvents {
-    /**
-     * Callback fired once the room's signaling parameters
-     * SignalingParameters are extracted.
-     */
-    public void onConnectedToRoom(final SignalingParameters params);
 
     public void onUserListUpdate(String response);
 

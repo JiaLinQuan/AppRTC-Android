@@ -22,8 +22,7 @@ import java.util.ArrayList;
 
 
 public abstract class RTCConnection extends Activity implements
-        PeerConnectionClient.PeerConnectionEvents,
-        WebSocketChannelClient.WebSocketChannelEvents {
+        PeerConnectionClient.PeerConnectionEvents {
 
     public static final String EXTRA_FROM = "de.lespace.mscwebrtc.FROM";
     public static final String EXTRA_TO = "de.lespace.mscwebrtc.TO";
@@ -55,7 +54,6 @@ public abstract class RTCConnection extends Activity implements
     public String from = "";
     public Toast logToast;
     public long callStartedTimeMs = 0;
-    public static AppRTCClient appRtcClient;
     private static final String TAG = "RTCConnection";
     public boolean iceConnected;
     public boolean isError;
@@ -68,7 +66,7 @@ public abstract class RTCConnection extends Activity implements
     public RendererCommon.ScalingType scalingType;
     public boolean callControlFragmentVisible = true;
 
-    public ArrayList<String> roomList;
+    public ArrayList<String> userList;
     public ArrayAdapter adapter;
     public static Ringtone r;
 
@@ -88,11 +86,13 @@ public abstract class RTCConnection extends Activity implements
     public static AppRTCClient.RoomConnectionParameters roomConnectionParameters;
     public static PeerConnectionClient.PeerConnectionParameters peerConnectionParameters;
     public static AppRTCClient.SignalingParameters signalingParam;
+
     private boolean doToast = false;
 
     public RTCConnection(){
 
     }
+
     // Log |msg| and Toast about it.
     public void logAndToast(String msg) {
         Log.d(TAG, msg);
@@ -104,10 +104,6 @@ public abstract class RTCConnection extends Activity implements
             logToast.show();
         }
 
-    }
-    @Override
-    public void onWebSocketError(String description) {
-        logAndToast(description);
     }
 
     // -----Implementation of AppRTCClient.AppRTCSignalingEvents ---------------
@@ -143,14 +139,14 @@ public abstract class RTCConnection extends Activity implements
     }
 
     public void connectToWebsocket() {
-        if (appRtcClient == null) {
+        if (TestService.appRTCClient == null) {
             Log.e(TAG, "AppRTC client is not allocated for a call.");
             return;
         }
         callStartedTimeMs = System.currentTimeMillis();
 
         // Start room connection.
-        appRtcClient.connectToWebsocket(roomConnectionParameters);
+        TestService.appRTCClient.connectToWebsocket(roomConnectionParameters);
     }
 
     // Disconnect from remote resources, dispose of local resources, and exit.
@@ -204,15 +200,15 @@ public abstract class RTCConnection extends Activity implements
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                if (appRtcClient != null) {
+                if (TestService.appRTCClient != null) {
 
                     boolean isScreenSharingConnection = (peerConnectionClient2!=null);
 
                     logAndToast("Sending " + sdp.type + ", delay=" + delta + "ms");
                     if (roomConnectionParameters.initiator && !isScreenSharingConnection) {
-                        appRtcClient.call(sdp);
+                        TestService.appRTCClient.call(sdp);
                     } else {
-                        appRtcClient.sendOfferSdp(sdp,isScreenSharingConnection);
+                        TestService.appRTCClient.sendOfferSdp(sdp,isScreenSharingConnection);
                     }
                 }
             }
@@ -224,8 +220,8 @@ public abstract class RTCConnection extends Activity implements
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                if (appRtcClient != null) {
-                    appRtcClient.sendLocalIceCandidate(candidate,(peerConnectionClient2!=null));
+                if (TestService.appRTCClient != null) {
+                    TestService.appRTCClient.sendLocalIceCandidate(candidate,(peerConnectionClient2!=null));
                 }
             }
         });
@@ -319,7 +315,7 @@ public abstract class RTCConnection extends Activity implements
                 public void onClick(DialogInterface dialog, int id) {
                     // User cancelled the dialog send stop message to peer.
                     r.stop();
-                    appRtcClient.sendStopToPeer();;
+                    TestService.appRTCClient.sendStopToPeer();;
                 }
             });
 

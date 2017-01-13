@@ -137,7 +137,7 @@ public class SettingsActivity extends RTCConnection
       if(key.equals(keyPrefFrom)) roomConnectionParameters.from = sharedPreferences.getString(key, "");
       if(key.equals(keyPrefRoomServerUrl)) roomConnectionParameters.wssUrl = sharedPreferences.getString(key, "");
 
-      appRtcClient.reconnect();
+      TestService.appRTCClient.reconnect();
     }
 
     if (key.equals(keyprefResolution)
@@ -216,18 +216,4 @@ public class SettingsActivity extends RTCConnection
     }
   }
 
-  @Override
-  public void onChannelError(String description) {
-
-  }
-
-  @Override
-  public void onWebSocketMessage(String message) {
-
-  }
-
-  @Override
-  public void onWebSocketClose() {
-
-  }
 }
