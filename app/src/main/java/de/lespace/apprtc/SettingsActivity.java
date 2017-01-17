@@ -137,7 +137,7 @@ public class SettingsActivity extends RTCConnection
       if(key.equals(keyPrefFrom)) roomConnectionParameters.from = sharedPreferences.getString(key, "");
       if(key.equals(keyPrefRoomServerUrl)) roomConnectionParameters.wssUrl = sharedPreferences.getString(key, "");
 
-      TestService.appRTCClient.reconnect();
+      SignalingService.appRTCClient.reconnect();
     }
 
     if (key.equals(keyprefResolution)

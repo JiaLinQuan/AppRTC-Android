@@ -36,11 +36,6 @@ This WebRTC Android App simply connects to a Java Webrtc Signaling Server via We
 - (development) kurento server not running?
 
 ##Todo/Bugs
-- make a foreground service  
-	Sampel Foreground Service 
-		https://github.com/commonsguy/cw-android/tree/master/Notifications/FakePlayer
-		http://www.truiton.com/2014/10/android-foreground-service-example/
-		http://stackoverflow.com/questions/9696861/how-can-we-prevent-a-service-from-being-killed-by-os
 - improve fb - login procedere 
 - display my userId
 - display status for connection (connecting,online,error)
@@ -48,6 +43,7 @@ This WebRTC Android App simply connects to a Java Webrtc Signaling Server via We
 
 
 #Improvements and Research
+- (improvement) disable signaling wake-lock when offline - enable signaling wake-lock when online 
 - (improvement) reconnect websocket in case of websocket error (every 10 seconds if not offline)
 - (improvement) try to reconnect to server if no ping is received
 - compile own webrtc lib for android https://github.com/pristineio/webrtc-build-scripts
@@ -84,6 +80,14 @@ This WebRTC Android App simply connects to a Java Webrtc Signaling Server via We
 - (ok) test socket stays connected in background mode. 
 
 ##Done:
+- 13.01.2017	- (bug) Signaling finishes when app goes to sleep 
+				- https://developer.android.com/training/scheduling/wakelock.html
+- (bug) service or activity gets destroyed - send message to start each other.
+	http://stackoverflow.com/questions/9696861/how-can-we-prevent-a-service-from-being-killed-by-os
+- 13.01.2017 - make a foreground service Sample Foreground Service 
+		https://github.com/commonsguy/cw-android/tree/master/Notifications/FakePlayer
+		http://www.truiton.com/2014/10/android-foreground-service-example/
+		http://stackoverflow.com/questions/9696861/how-can-we-prevent-a-service-from-being-killed-by-os
 - 12.01.2017 - (improvement) created le-space launch icon 
 	https://romannurik.github.io/AndroidAssetStudio/icons-launcher.html#foreground.type=image&foreground.space.trim=1&foreground.space.pad=0&foreColor=607d8b%2C0&crop=0&backgroundShape=bevel&backColor=ffffff%2C100&effects=none
 - 11.01.2017 - (bug) after wifi reconnect app crashes

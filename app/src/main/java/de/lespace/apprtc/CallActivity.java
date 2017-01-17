@@ -10,23 +10,19 @@
 
 package de.lespace.apprtc;
 
-import android.app.Activity;
 import android.app.FragmentTransaction;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
-import android.os.Handler;
 
-import android.support.v4.view.GestureDetectorCompat;
 import android.util.Log;
 
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager.LayoutParams;
-import android.widget.Toast;
 
 import org.webrtc.EglBase;
 import org.webrtc.RendererCommon;
@@ -359,8 +355,8 @@ public class CallActivity extends RTCConnection implements
         }
 
 
-        if (TestService.appRTCClient != null && sendRemoteHangup) {
-            TestService.appRTCClient.sendDisconnectToPeer(); //send bye message to peer only when initiator
+        if (SignalingService.appRTCClient != null && sendRemoteHangup) {
+            SignalingService.appRTCClient.sendDisconnectToPeer(); //send bye message to peer only when initiator
             sendDisconnectToPeer = false;
             // appRtcClient = null;
         }

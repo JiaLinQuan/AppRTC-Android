@@ -29,12 +29,7 @@
                 android:layout_height="48dp"/>
 
     </LinearLayout>
-    <com.facebook.login.widget.LoginButton
-        android:id="@+id/login_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        />
+
     <TextView
             android:id="@+id/room_listview_description"
             android:layout_width="fill_parent"

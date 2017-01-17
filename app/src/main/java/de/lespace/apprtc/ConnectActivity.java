@@ -14,8 +14,6 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.app.FragmentTransaction;
-import android.app.Notification;
-import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -28,7 +26,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.Menu;
@@ -66,9 +63,9 @@ public class ConnectActivity extends RTCConnection  implements AppRTCClient.Sign
   private static final String TAG = "ConnectActivity";
   private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
   private static boolean commandLineRun = false;
-
+/*
   private LoginButton loginButton;
-  private CallbackManager callbackManager;
+  private CallbackManager callbackManager;*/
 
   private ImageButton connectButton;
   private String keyprefFrom;
@@ -150,11 +147,8 @@ public class ConnectActivity extends RTCConnection  implements AppRTCClient.Sign
   @Override
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-
-    FacebookSdk.sdkInitialize(getApplicationContext());
     setContentView(R.layout.activity_connect);
-    callbackManager = CallbackManager.Factory.create();
-    loginButton = (LoginButton)findViewById(R.id.login_button);
+
     // Get setting keys.
     PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
     sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
@@ -179,54 +173,15 @@ public class ConnectActivity extends RTCConnection  implements AppRTCClient.Sign
     keyprefRoomServerUrl = getString(R.string.pref_room_server_url_key);
     keyprefRoom = getString(R.string.pref_room_key);
     keyprefRoomList = getString(R.string.pref_room_list_key);
-    from = sharedPref.getString(keyprefFrom, getString(R.string.pref_from_default));
-    final String wssUrl = sharedPref.getString(keyprefRoomServerUrl, getString(R.string.pref_room_server_url_default));
-    roomConnectionParameters = new AppRTCClient.RoomConnectionParameters(wssUrl, from, false);
+
+
 
     // Video call enabled flag.
     boolean videoCallEnabled = sharedPref.getBoolean(keyprefVideoCallEnabled, Boolean.valueOf(getString(R.string.pref_videocall_default)));
 
-    startService(new Intent(this,TestService.class));
-    callbackManager = CallbackManager.Factory.create();
-    loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
-
-      @Override
-      public void onSuccess(LoginResult loginResult) {
-
-        from = loginResult.getAccessToken().getUserId();
-       // Log.i(TAG,  "facebook login successful:"+from);
-        logAndToast("facebook login successful:"+from);
-
-        //use facebook user id as login name
-
-        SharedPreferences saved_values = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        SharedPreferences.Editor editor=saved_values.edit();
-        editor.putString("from_settings_key", from);
-
-        boolean okey = editor.commit();
-
-
-        roomConnectionParameters.from = from;
-        roomConnectionParameters.wssUrl = wssUrl;
-        TestService.appRTCClient.reconnect();
-
-
-      }
-
-      @Override
-      public void onCancel() {
-      //  logAndToast( "facebook login canceled");
-
-      }
-
-      @Override
-      public void onError(FacebookException e) {
-       // logAndToast( "facebook login error:"+e.getMessage());
-      }
-
-    });
-
-
+    startService(new Intent(this,SignalingService.class));
+    String wssUrl = sharedPref.getString(keyprefRoomServerUrl, getString(R.string.pref_room_server_url_default));
+    from = sharedPref.getString(keyprefFrom, getString(R.string.pref_from_default));
     // Get default codecs.
     String videoCodec = sharedPref.getString(keyprefVideoCodec, getString(R.string.pref_videocodec_default));
     String audioCodec = sharedPref.getString(keyprefAudioCodec, getString(R.string.pref_audiocodec_default));
@@ -263,10 +218,10 @@ public class ConnectActivity extends RTCConnection  implements AppRTCClient.Sign
       public void onReceive(Context context, Intent intent) {
 
         if(intent.getFlags()==0){
-          TestService.appRTCClient.resetWebsocket();
+          SignalingService.appRTCClient.resetWebsocket();
         }
         if(intent.getFlags()==1){
-          TestService.appRTCClient.reconnect();
+          SignalingService.appRTCClient.reconnect();
           Toast.makeText(context, "network is online:"+intent.getFlags(), Toast.LENGTH_LONG).show();
         }
 
@@ -288,7 +243,7 @@ public class ConnectActivity extends RTCConnection  implements AppRTCClient.Sign
           logAndToast(getString(R.string.gcm_send_message));
           // mInformationTextView.setText(getString(R.string.token_error_message));
         }
-        TestService.appRTCClient.setSignalingEvents(signalingEvents);
+        SignalingService.appRTCClient.setSignalingEvents(signalingEvents);
       }
     };
 
@@ -311,11 +266,11 @@ public class ConnectActivity extends RTCConnection  implements AppRTCClient.Sign
     registerGCMReceiver();
     registerBringToFrontReceiver();
 
-    if (checkPlayServices()) {
+   // if (checkPlayServices()) {
       // Start IntentService to register this application with GCM.
       Intent intent = new Intent(this, RegistrationIntentService.class);
       startService(intent);
-    }
+   // }
     // Get video resolution from settings.
     int videoWidth = 0;
     int videoHeight = 0;
@@ -508,7 +463,7 @@ public class ConnectActivity extends RTCConnection  implements AppRTCClient.Sign
   @Override
   protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
-    callbackManager.onActivityResult(requestCode, resultCode, data);
+    //callbackManager.onActivityResult(requestCode, resultCode, data);
 
     if (requestCode == CONNECTION_REQUEST && commandLineRun) {
       Log.d(TAG, "Return: " + resultCode);
@@ -748,12 +703,12 @@ public class ConnectActivity extends RTCConnection  implements AppRTCClient.Sign
 
   @Override
   public void onPing() { //A stop was received by the peer - now answering please send new call (e.g. with screensharing)
-    TestService.appRTCClient.sendPong();
+    SignalingService.appRTCClient.sendPong();
   }
 
   @Override
   public void onCallback() { //A stop was received by the peer - now answering please send new call (e.g. with screensharing)
-    TestService.appRTCClient.sendCallback();
+    SignalingService.appRTCClient.sendCallback();
   }
 
   @Override
@@ -865,7 +820,7 @@ public class ConnectActivity extends RTCConnection  implements AppRTCClient.Sign
         public void onClick(DialogInterface dialog, int id) {
           // User cancelled the dialog send stop message to peer.
           r.stop();
-          TestService.appRTCClient.sendStopToPeer();
+          SignalingService.appRTCClient.sendStopToPeer();
           ;
         }
       });

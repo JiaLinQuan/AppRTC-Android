@@ -15,17 +15,13 @@ import org.json.JSONObject;
 
 import de.lespace.apprtc.util.LooperExecutor;
 
-public class TestService extends Service  implements WebSocketChannelClient.WebSocketChannelEvents {
+public class SignalingService extends Service  implements WebSocketChannelClient.WebSocketChannelEvents {
 
-    private static final String TAG = "TestService";
+    private static final String TAG = "SignalingService";
 
-    public TestService() {
-        Log.i(TAG, "TestService started");
+    public SignalingService() {
+        Log.i(TAG, "SignalingService started");
     }
-
-    public static final String EXTRA_PLAYLIST = "EXTRA_PLAYLIST";
-    public static final String EXTRA_SHUFFLE = "EXTRA_SHUFFLE";
-    private boolean isRunning = false;
 
     public static AppRTCClient appRTCClient;
     private LooperExecutor executor;
@@ -33,7 +29,7 @@ public class TestService extends Service  implements WebSocketChannelClient.WebS
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
-        Log.i(TAG, "TestService onStartCommand");
+        Log.i(TAG, "SignalingService onStartCommand");
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
         final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
 
@@ -65,24 +61,13 @@ public class TestService extends Service  implements WebSocketChannelClient.WebS
     return(START_NOT_STICKY);
     }
 
-
-    /*    @Override
-    public void onCreate() {
-        Log.i(TAG, "TestService created");
-        super.onCreate();
-        Intent notificationIntent = new Intent(this, ConnectActivity.class);
-
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0,
-                notificationIntent, 0);
-
-        Notification notification = new NotificationCompat.Builder(this)
-                 .setSmallIcon(R.drawable.ic_launcher)
-                .setContentTitle("My Awesome App")
-                .setContentText("Doing some work...")
-                .setContentIntent(pendingIntent).build();
-
-        startForeground(1337, notification);
-    }*/
+    @Override
+    public void onDestroy() {
+        Intent in = new Intent();
+        in.setAction("YouWillNeverKillMe");
+        sendBroadcast(in);
+        Log.d(TAG, "onDestroy()...");
+    }
 
     public void sendNotification(String message){
 
@@ -141,15 +126,22 @@ public class TestService extends Service  implements WebSocketChannelClient.WebS
     // (passed to WebSocket client constructor).
     @Override
     public void onWebSocketMessage(final String msg) {
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
 
-        try {
-            JSONObject json = new JSONObject(msg);
-            appRTCClient.getSignalingQueue().add(json);
+                try {
+                    JSONObject json = new JSONObject(msg);
+                    appRTCClient.getSignalingQueue().add(json);
 
-            if(!appRTCClient.isQueuing() && appRTCClient.getSignalingEvents()!=null) appRTCClient.processSignalingQueue();
-        } catch (JSONException e) {
-            reportError("WebSocket message JSON parsing error: " + e.toString());
-        }
+                    if(!appRTCClient.isQueuing() && appRTCClient.getSignalingEvents()!=null) appRTCClient.processSignalingQueue();
+                } catch (JSONException e) {
+                    reportError("WebSocket message JSON parsing error: " + e.toString());
+                }
+
+            }
+        });
+
 
     }
 

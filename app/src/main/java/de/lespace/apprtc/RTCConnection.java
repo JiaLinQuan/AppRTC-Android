@@ -25,8 +25,6 @@ public abstract class RTCConnection extends Activity implements
         PeerConnectionClient.PeerConnectionEvents {
 
     public static final String EXTRA_FROM = "de.lespace.mscwebrtc.FROM";
-    public static final String EXTRA_TO = "de.lespace.mscwebrtc.TO";
-    public static final String EXTRA_LOOPBACK = "de.lespace.mscwebrtc.LOOPBACK";
     public static final String EXTRA_VIDEO_CALL = "de.lespace.mscwebrtc.VIDEO_CALL";
     public static final String EXTRA_VIDEO_WIDTH = "de.lespace.mscwebrtc.VIDEO_WIDTH";
     public static final String EXTRA_VIDEO_HEIGHT = "de.lespace.mscwebrtc.VIDEO_HEIGHT";
@@ -87,7 +85,7 @@ public abstract class RTCConnection extends Activity implements
     public static PeerConnectionClient.PeerConnectionParameters peerConnectionParameters;
     public static AppRTCClient.SignalingParameters signalingParam;
 
-    private boolean doToast = false;
+    public static boolean doToast = false;
 
     public RTCConnection(){
 
@@ -139,14 +137,14 @@ public abstract class RTCConnection extends Activity implements
     }
 
     public void connectToWebsocket() {
-        if (TestService.appRTCClient == null) {
+        if (SignalingService.appRTCClient == null) {
             Log.e(TAG, "AppRTC client is not allocated for a call.");
             return;
         }
         callStartedTimeMs = System.currentTimeMillis();
 
         // Start room connection.
-        TestService.appRTCClient.connectToWebsocket(roomConnectionParameters);
+        SignalingService.appRTCClient.connectToWebsocket(RTCConnection.roomConnectionParameters);
     }
 
     // Disconnect from remote resources, dispose of local resources, and exit.
@@ -200,15 +198,15 @@ public abstract class RTCConnection extends Activity implements
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                if (TestService.appRTCClient != null) {
+                if (SignalingService.appRTCClient != null) {
 
                     boolean isScreenSharingConnection = (peerConnectionClient2!=null);
 
                     logAndToast("Sending " + sdp.type + ", delay=" + delta + "ms");
                     if (roomConnectionParameters.initiator && !isScreenSharingConnection) {
-                        TestService.appRTCClient.call(sdp);
+                        SignalingService.appRTCClient.call(sdp);
                     } else {
-                        TestService.appRTCClient.sendOfferSdp(sdp,isScreenSharingConnection);
+                        SignalingService.appRTCClient.sendOfferSdp(sdp,isScreenSharingConnection);
                     }
                 }
             }
@@ -220,8 +218,8 @@ public abstract class RTCConnection extends Activity implements
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                if (TestService.appRTCClient != null) {
-                    TestService.appRTCClient.sendLocalIceCandidate(candidate,(peerConnectionClient2!=null));
+                if (SignalingService.appRTCClient != null) {
+                    SignalingService.appRTCClient.sendLocalIceCandidate(candidate,(peerConnectionClient2!=null));
                 }
             }
         });
@@ -315,7 +313,7 @@ public abstract class RTCConnection extends Activity implements
                 public void onClick(DialogInterface dialog, int id) {
                     // User cancelled the dialog send stop message to peer.
                     r.stop();
-                    TestService.appRTCClient.sendStopToPeer();;
+                    SignalingService.appRTCClient.sendStopToPeer();;
                 }
             });
 
