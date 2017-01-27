@@ -155,6 +155,7 @@ public class WebSocketChannelClient {
             @Override
             public void run() {
               state = WebSocketConnectionState.CONNECTED;
+              RTCConnection.online = true;
               // Check if we have pending register request.
               if(state!=WebSocketConnectionState.REGISTERED) {
                 RoomParametersFetcher roomParametersFetcher = new RoomParametersFetcher(ws);
@@ -186,12 +187,14 @@ public class WebSocketChannelClient {
         public void onConnectError(WebSocket websocket, WebSocketException exception) throws Exception {
           super.onConnectError(websocket, exception);
           reportError("WebSocket onError : " + exception.getMessage());
+          RTCConnection.online = false;
         }
 
         @Override
         public void onError(WebSocket websocket, WebSocketException cause) throws Exception {
           super.onError(websocket, cause);
           reportError("WebSocket onError : " + cause.getMessage());
+          RTCConnection.online = false;
         }
 
         @Override

@@ -36,16 +36,15 @@ This WebRTC Android App simply connects to a Java Webrtc Signaling Server via We
 - (development) kurento server not running?
 
 ##Todo/Bugs
-- improve fb - login procedere 
 - display my userId
 - display status for connection (connecting,online,error)
 - generate code for blog <iframe /> or <script>
 
 
 #Improvements and Research
-- (improvement) disable signaling wake-lock when offline - enable signaling wake-lock when online 
 - (improvement) reconnect websocket in case of websocket error (every 10 seconds if not offline)
 - (improvement) try to reconnect to server if no ping is received
+- (improvement-3) disable signaling wake-lock when offline - enable signaling wake-lock when online 
 - compile own webrtc lib for android https://github.com/pristineio/webrtc-build-scripts
 - (feature) add wake up feature - if (user is offline - allow wake up trough gcm)
 - save gcm registration token with websocket registration on signaling server
@@ -53,7 +52,7 @@ This WebRTC Android App simply connects to a Java Webrtc Signaling Server via We
 
 - security check BEAST attack on production server (TEST SSL) 
 	https://www.ssllabs.com/ssltest/analyze.html?d=webrtc.a-fk.de&latest
-- goes in background - comes back and does not fetch new user list
+
 - Test necessary: don't let android go into idle mode during a call (who can test this in Android 5.0)
 	- http://stackoverflow.com/questions/3723634/how-do-i-prevent-an-android-device-from-going-to-sleep-programmatically
 	- https://developer.android.com/reference/android/os/PowerManager.html

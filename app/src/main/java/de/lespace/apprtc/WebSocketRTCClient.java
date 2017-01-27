@@ -341,7 +341,6 @@ public class WebSocketRTCClient implements AppRTCClient {
       private void connectToWebsocketInternal() {
 
           String connectionUrl = getConnectionUrl(RTCConnection.roomConnectionParameters);
-         // wsClient.setState(WebSocketConnectionState.NEW);
           wsClient = new WebSocketChannelClient(executor,wsEvents);
           wsClient.connect(connectionUrl);
           wsClient.setState(WebSocketConnectionState.CONNECTED);

@@ -63,10 +63,6 @@ public class ConnectActivity extends RTCConnection  implements AppRTCClient.Sign
   private static final String TAG = "ConnectActivity";
   private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
   private static boolean commandLineRun = false;
-/*
-  private LoginButton loginButton;
-  private CallbackManager callbackManager;*/
-
   private ImageButton connectButton;
   private String keyprefFrom;
   private String keyprefVideoCallEnabled;
@@ -219,6 +215,7 @@ public class ConnectActivity extends RTCConnection  implements AppRTCClient.Sign
 
         if(intent.getFlags()==0){
           SignalingService.appRTCClient.resetWebsocket();
+
         }
         if(intent.getFlags()==1){
           SignalingService.appRTCClient.reconnect();

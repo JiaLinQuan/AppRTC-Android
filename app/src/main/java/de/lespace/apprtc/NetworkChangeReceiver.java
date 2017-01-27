@@ -29,16 +29,23 @@ public class NetworkChangeReceiver extends BroadcastReceiver {
 
             // Do something
             if(wifi.isConnected() || mobile.isConnected()){
-                Intent networkOnline = new Intent(QuickstartPreferences.NETWORK_ONLINE);
-                networkOnline.setFlags(1);
-                LocalBroadcastManager.getInstance(context.getApplicationContext()).sendBroadcast(networkOnline);
-                Log.d("wifi connected", "flag No 1");
+                if(!RTCConnection.online){
+                    Intent networkOnline = new Intent(QuickstartPreferences.NETWORK_ONLINE);
+                    networkOnline.setFlags(1);
+                    RTCConnection.online = true;
+                    LocalBroadcastManager.getInstance(context.getApplicationContext()).sendBroadcast(networkOnline);
+                    Log.d("wifi connected", "flag No 1");
+                }
+
             }
             else{
-                Intent networkOffline = new Intent(QuickstartPreferences.NETWORK_ONLINE);
-                networkOffline.setFlags(0);
-                LocalBroadcastManager.getInstance(context.getApplicationContext()).sendBroadcast(networkOffline);
-                Log.d("wifi not connected", "flag No 0");
+                if(RTCConnection.online) {
+                    Intent networkOffline = new Intent(QuickstartPreferences.NETWORK_ONLINE);
+                    networkOffline.setFlags(0);
+                    RTCConnection.online = false;
+                    LocalBroadcastManager.getInstance(context.getApplicationContext()).sendBroadcast(networkOffline);
+                    Log.d("wifi not connected", "flag No 0");
+                }
             }
 
         }

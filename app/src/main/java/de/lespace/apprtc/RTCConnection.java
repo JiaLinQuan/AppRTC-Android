@@ -48,6 +48,7 @@ public abstract class RTCConnection extends Activity implements
     public static PeerConnectionClient peerConnectionClient = null;
     public static PeerConnectionClient peerConnectionClient2 = null;
 
+    public static boolean online = false;
 
     public String from = "";
     public Toast logToast;
