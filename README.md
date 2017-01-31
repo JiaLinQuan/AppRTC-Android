@@ -38,8 +38,7 @@ This WebRTC Android App simply connects to a Java Webrtc Signaling Server via We
 ##Todo/Bugs
 - display my userId
 - display status for connection (connecting,online,error)
-- generate code for blog <iframe /> or <script>
-
+- generate code for blog ```<iframe /> or <script>```
 
 #Improvements and Research
 - (improvement) reconnect websocket in case of websocket error (every 10 seconds if not offline)
@@ -79,6 +78,9 @@ This WebRTC Android App simply connects to a Java Webrtc Signaling Server via We
 - (ok) test socket stays connected in background mode. 
 
 ##Done:
+- 13.01.2017 - add msc-webrtc library to msc-android project
+- 13.01.2017 - convert app project into a library 
+	https://developer.android.com/studio/projects/android-library.html
 - 13.01.2017	- (bug) Signaling finishes when app goes to sleep 
 				- https://developer.android.com/training/scheduling/wakelock.html
 - (bug) service or activity gets destroyed - send message to start each other.
