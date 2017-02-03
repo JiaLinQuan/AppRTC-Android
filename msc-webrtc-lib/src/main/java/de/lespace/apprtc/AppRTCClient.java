@@ -27,6 +27,7 @@ public interface AppRTCClient {
   /**
    * Struct holding the connection parameters of an AppRTC room.
    */
+  /*
   public static class RoomConnectionParameters {
 
     public String wssUrl;
@@ -44,13 +45,15 @@ public interface AppRTCClient {
     }
 
   }
+  */
 
   /**
    * Asynchronously connect to an AppRTC room URL using supplied connection
    * parameters. Once connection is established onConnectedToRoom()
    * callback with room parameters is invoked.
    */
-  public void connectToWebsocket(RoomConnectionParameters connectionParameters);
+ // public void connectToWebsocket(RoomConnectionParameters connectionParameters);
+  public void connectToWebsocket(String wssUrl, String from);
 
   /**
    * Send offer SDP to the other participant.

@@ -1,1 +1,1 @@
-include ':msc-webrtc', ':le-space-webrtc'
+include ':msc-webrtc-lib', ':le-space-webrtc'

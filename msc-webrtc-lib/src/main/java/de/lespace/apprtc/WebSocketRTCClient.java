@@ -72,7 +72,7 @@ public class WebSocketRTCClient implements AppRTCClient {
 
                         AppRTCClient.SignalingParameters signalingParameters = new SignalingParameters(iceServers);
 
-                        wsClient.register(RTCConnection.roomConnectionParameters.from);
+                        wsClient.register(RTCConnection.from);
                     } catch (JSONException e) {
                       getSignalingEvents().onChannelError("app config JSON parsing error: " + e.toString());
                     }
@@ -244,8 +244,9 @@ public class WebSocketRTCClient implements AppRTCClient {
   // Asynchronously connect to an AppRTC room URL using supplied connection
   // parameters, retrieves room parameters and connect to WebSocket server.
   @Override
-  public void connectToWebsocket(RoomConnectionParameters connectionParameters) {
-      RTCConnection.roomConnectionParameters = connectionParameters;
+  public void connectToWebsocket(String wssUrl, String from) {
+     RTCConnection.wssUrl = wssUrl;
+      RTCConnection.from = from;
     executor.execute(new Runnable() {
       @Override
       public void run() {
@@ -340,7 +341,7 @@ public class WebSocketRTCClient implements AppRTCClient {
       // Connects to websocket - function runs on a local looper thread.
       private void connectToWebsocketInternal() {
 
-          String connectionUrl = getConnectionUrl(RTCConnection.roomConnectionParameters);
+          String connectionUrl = getConnectionUrl(RTCConnection.wssUrl);
           wsClient = new WebSocketChannelClient(executor,wsEvents);
           wsClient.connect(connectionUrl);
           wsClient.setState(WebSocketConnectionState.CONNECTED);
@@ -369,8 +370,8 @@ public class WebSocketRTCClient implements AppRTCClient {
       }
 
       // Helper functions to get connection, sendSocketMessage message and leave message URLs
-      private String getConnectionUrl(RoomConnectionParameters connectionParameters) {
-            return connectionParameters.wssUrl +"/ws";
+      private String getConnectionUrl(String wssUrl) {
+            return wssUrl +"/ws";
       }
 
     // Return the list of ICE servers described by a WebRTCPeerConnection
@@ -408,8 +409,8 @@ public class WebSocketRTCClient implements AppRTCClient {
                   JSONObject json = new JSONObject();
 
                   jsonPut(json,"id","call");
-                  jsonPut(json,"from",RTCConnection.roomConnectionParameters.from);
-                  jsonPut(json,"to",RTCConnection.roomConnectionParameters.to);
+                  jsonPut(json,"from",RTCConnection.from);
+                  jsonPut(json,"to",RTCConnection.to);
                   jsonPut(json, "sdpOffer", sdp.description);
                   wsClient.send(json.toString());
 
@@ -427,7 +428,7 @@ public class WebSocketRTCClient implements AppRTCClient {
               JSONObject json = new JSONObject();
               if(!isScreenSharing) jsonPut(json, "id","incomingCallResponse");
               else jsonPut(json, "id","incomingScreenCallResponse");
-              jsonPut(json, "from", RTCConnection.roomConnectionParameters.to);
+              jsonPut(json, "from", RTCConnection.to);
               jsonPut(json, "callResponse",  "accept");
               jsonPut(json, "sdpOffer", sdp.description);
               wsClient.send(json.toString());

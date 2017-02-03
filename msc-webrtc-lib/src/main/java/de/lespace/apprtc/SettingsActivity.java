@@ -134,8 +134,8 @@ public class SettingsActivity extends RTCConnection
     if(key.equals(keyPrefRoomServerUrl) || key.equals(keyPrefFrom)){
       Toast logToast = Toast.makeText(this, "connection settings changed", Toast.LENGTH_SHORT);
       logToast.show();
-      if(key.equals(keyPrefFrom)) roomConnectionParameters.from = sharedPreferences.getString(key, "");
-      if(key.equals(keyPrefRoomServerUrl)) roomConnectionParameters.wssUrl = sharedPreferences.getString(key, "");
+      if(key.equals(keyPrefFrom)) RTCConnection.from = sharedPreferences.getString(key, "");
+      if(key.equals(keyPrefRoomServerUrl)) RTCConnection.wssUrl = sharedPreferences.getString(key, "");
 
       SignalingService.appRTCClient.reconnect();
     }

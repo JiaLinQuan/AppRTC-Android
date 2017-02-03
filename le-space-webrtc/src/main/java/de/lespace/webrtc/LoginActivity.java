@@ -3,6 +3,7 @@ package de.lespace.webrtc;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
@@ -31,6 +32,8 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import de.lespace.apprtc.ConnectActivity;
 
 import static android.Manifest.permission.READ_CONTACTS;
 
@@ -94,6 +97,15 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         mProgressView = findViewById(R.id.login_progress);
     }
 
+    public final static String EXTRA_MESSAGE = "com.example.myfirstapp.MESSAGE";
+    private void startApp(){
+        Intent intent = new Intent(this, ConnectActivity.class);
+        //  EditText editText = (EditText) findViewById(R.id.edit_message);
+        //  String message = editText.getText().toString();
+
+        intent.putExtra(EXTRA_MESSAGE, "test");
+        startActivity(intent);
+    }
     private void populateAutoComplete() {
         if (!mayRequestContacts()) {
             return;
@@ -333,6 +345,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             showProgress(false);
 
             if (success) {
+                startApp();
                 finish();
             } else {
                 mPasswordView.setError(getString(R.string.error_incorrect_password));

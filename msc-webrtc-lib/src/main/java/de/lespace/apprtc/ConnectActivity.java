@@ -59,8 +59,7 @@ import java.util.List;
 public class ConnectActivity extends RTCConnection  implements AppRTCClient.SignalingEvents {
 
   private static final String TAG = "ConnectActivity";
-  private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
-  private static boolean commandLineRun = false;
+
   private ImageButton connectButton;
   private String keyprefFrom;
   private String keyprefVideoCallEnabled;
@@ -81,20 +80,13 @@ public class ConnectActivity extends RTCConnection  implements AppRTCClient.Sign
   private String keyprefDisplayHud;
   private String keyprefTracing;
   private String keyprefRoomServerUrl;
-  private String keyprefRoom;
   private String keyprefRoomList;
   private ListView roomListView;
   private List<String> missingPermissions;
   private Intent intent = null;
 
   private BroadcastReceiver networkchangeBroadcastReceiver;
-  private BroadcastReceiver gcmRegistrationBroadcastReceiver;
-  private BroadcastReceiver bringToFrontBroadcastReceiver;
-
   private boolean isNetworkChangeReceiverRegistered;
-  private boolean isGCMReceiverRegistered;
-  private boolean isBringToFrontReceiverRegistered;
-
 
   // List of mandatory application permissions.
   private static final String[] MANDATORY_PERMISSIONS = {
@@ -117,12 +109,8 @@ public class ConnectActivity extends RTCConnection  implements AppRTCClient.Sign
 
       Log.e(TAG,  MANDATORY_PERMISSIONS[0] +" Permission Granted!");
 
-      //  Toast.makeText(ConnectActivity.this, MANDATORY_PERMISSIONS[0] + " Permission Granted!", Toast.LENGTH_SHORT).show();
     } else {
-
       Log.e(TAG, MANDATORY_PERMISSIONS[0] + " Permission Denied!");
-
-      //Toast.makeText(ConnectActivity.this, MANDATORY_PERMISSIONS[0] + " Permission Denied!", Toast.LENGTH_SHORT).show();
     }
     missingPermissions.remove(0); //remove missing permission from array and request next left permission
     requestPermission();
@@ -165,15 +153,13 @@ public class ConnectActivity extends RTCConnection  implements AppRTCClient.Sign
     keyprefDisplayHud = getString(R.string.pref_displayhud_key);
     keyprefTracing = getString(R.string.pref_tracing_key);
     keyprefRoomServerUrl = getString(R.string.pref_room_server_url_key);
-    keyprefRoom = getString(R.string.pref_room_key);
     keyprefRoomList = getString(R.string.pref_room_list_key);
-
-
 
     // Video call enabled flag.
     boolean videoCallEnabled = sharedPref.getBoolean(keyprefVideoCallEnabled, Boolean.valueOf(getString(R.string.pref_videocall_default)));
 
     startService(new Intent(this,SignalingService.class));
+
     String wssUrl = sharedPref.getString(keyprefRoomServerUrl, getString(R.string.pref_room_server_url_default));
     from = sharedPref.getString(keyprefFrom, getString(R.string.pref_from_default));
     // Get default codecs.
@@ -213,59 +199,20 @@ public class ConnectActivity extends RTCConnection  implements AppRTCClient.Sign
 
         if(intent.getFlags()==0){
           SignalingService.appRTCClient.resetWebsocket();
-
         }
         if(intent.getFlags()==1){
           SignalingService.appRTCClient.reconnect();
           Toast.makeText(context, "network is online:"+intent.getFlags(), Toast.LENGTH_LONG).show();
         }
-
       }
     };
 
     final AppRTCClient.SignalingEvents signalingEvents = this;
-    // mRegistrationProgressBar = (ProgressBar) findViewById(R.id.registrationProgressBar);
-    gcmRegistrationBroadcastReceiver = new BroadcastReceiver() {
-      @Override
-      public void onReceive(Context context, Intent intent) {
-        // mRegistrationProgressBar.setVisibility(ProgressBar.GONE);
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
-        boolean sentToken = sharedPreferences.getBoolean(QuickstartPreferences.SENT_TOKEN_TO_SERVER, false);
-        if (sentToken) {
-          logAndToast(getString(R.string.gcm_send_message));
-          // mInformationTextView.setText(getString(R.string.gcm_send_message));
-        } else {
-          logAndToast(getString(R.string.gcm_send_message));
-          // mInformationTextView.setText(getString(R.string.token_error_message));
-        }
-        SignalingService.appRTCClient.setSignalingEvents(signalingEvents);
-      }
-    };
 
-    //Bring Call2Front when
-    bringToFrontBroadcastReceiver = new BroadcastReceiver() {
-      @Override
-      public void onReceive(Context context, Intent intent) {
-
-        Intent intentStart = new Intent(getApplicationContext(), ConnectActivity.class);
-            // intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-        intent.addFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
-        intent.addFlags(Intent.FLAG_ACTIVITY_PREVIOUS_IS_TOP);
-        startActivity(intentStart);
-      }
-    };
 
     // Registering BroadcastReceiver
     registerNetworkChangeReceiver();
-    registerGCMReceiver();
-    registerBringToFrontReceiver();
 
-   // if (checkPlayServices()) {
-      // Start IntentService to register this application with GCM.
-     // Intent intent = new Intent(this, RegistrationIntentService.class);
-      //startService(intent);
-   // }
     // Get video resolution from settings.
     int videoWidth = 0;
     int videoHeight = 0;
@@ -324,7 +271,7 @@ public class ConnectActivity extends RTCConnection  implements AppRTCClient.Sign
 
     boolean tracing = sharedPref.getBoolean(keyprefTracing, Boolean.valueOf(getString(R.string.pref_tracing_default)));
 
-    Log.d(TAG, "Connecting from " + from + " at URL " + wssUrl);
+   // Log.d(TAG, "Connecting from " + from + " at URL " + wssUrl);
 
     if (validateUrl(wssUrl)) {
       Uri uri = Uri.parse(wssUrl);
@@ -346,7 +293,7 @@ public class ConnectActivity extends RTCConnection  implements AppRTCClient.Sign
       intent.putExtra(CallActivity.EXTRA_AUDIOCODEC, audioCodec);
       intent.putExtra(CallActivity.EXTRA_DISPLAY_HUD, displayHud);
       intent.putExtra(CallActivity.EXTRA_TRACING, tracing);
-      intent.putExtra(CallActivity.EXTRA_CMDLINE, commandLineRun);
+     // intent.putExtra(CallActivity.EXTRA_CMDLINE, commandLineRun);
       intent.putExtra(CallActivity.EXTRA_RUNTIME, runTimeMs);
     }
 
@@ -360,7 +307,7 @@ public class ConnectActivity extends RTCConnection  implements AppRTCClient.Sign
     //final Intent intent = getIntent();
     Uri wsurl = Uri.parse(wssUrl);
     //intent.getData();
-    Log.d(TAG, "connecting to:" + wsurl.toString());
+   // Log.d(TAG, "connecting to:" + wsurl.toString());
     if (wsurl == null) {
       logAndToast(getString(R.string.missing_wsurl));
       Log.e(TAG, "Didn't get any URL in intent!");
@@ -384,9 +331,7 @@ public class ConnectActivity extends RTCConnection  implements AppRTCClient.Sign
             captureToTexture, audioStartBitrate, audioCodec, noAudioProcessing,
             aecDump, useOpenSLES);
 
-
-    Log.i(TAG, "creating appRtcClient with roomUri:" + wsurl.toString() + " from:" + from);
-
+    Log.i(TAG, "created apprtc with roomUri:" + wsurl.toString() + " from:" + from);
 
   }
 
@@ -411,9 +356,6 @@ public class ConnectActivity extends RTCConnection  implements AppRTCClient.Sign
   @Override
   public void onPause() {
 
-    LocalBroadcastManager.getInstance(this).unregisterReceiver(gcmRegistrationBroadcastReceiver);
-    isGCMReceiverRegistered = false;
-
     //String room = roomEditText.getText().toString();
     String roomListJson = new JSONArray(userList).toString();
     SharedPreferences.Editor editor = sharedPref.edit();
@@ -427,10 +369,6 @@ public class ConnectActivity extends RTCConnection  implements AppRTCClient.Sign
   @Override
   public void onResume() {
 
-    registerGCMReceiver();
-
-    String room = sharedPref.getString(keyprefRoom, "");
-    //roomEditText.setText(room);
     userList = new ArrayList<String>();
     String roomListJson = sharedPref.getString(keyprefRoomList, null);
     if (roomListJson != null) {
@@ -458,21 +396,15 @@ public class ConnectActivity extends RTCConnection  implements AppRTCClient.Sign
   @Override
   protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
-    //callbackManager.onActivityResult(requestCode, resultCode, data);
-
-    if (requestCode == CONNECTION_REQUEST && commandLineRun) {
+    if (requestCode == CONNECTION_REQUEST) {
       Log.d(TAG, "Return: " + resultCode);
       setResult(resultCode);
-      commandLineRun = false;
+      //commandLineRun = false;
       finish();
     }
     if(requestCode==RESULT_OK){
       //Now start callActivityAgain!
       if(callActive){
-        //Intent intent = new Intent(this, CallActivity.class);
-        //intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        //  r.stop();
-        //startActivityForResult(intent, CONNECTION_REQUEST);
         connectToUser();
         callActive=false;
       }
@@ -482,14 +414,18 @@ public class ConnectActivity extends RTCConnection  implements AppRTCClient.Sign
   private final OnClickListener connectListener = new OnClickListener() {
     @Override
     public void onClick(View view) {
-      commandLineRun = false;
-      String to = getSelectedItem();
-      roomConnectionParameters.initiator = true;
-      roomConnectionParameters.to = to;
 
-      connectToUser();
+      String to = getSelectedItem();
+      if(to !=null){
+        RTCConnection.initiator = true;
+        RTCConnection.to = to;
+
+        connectToUser();
+      }
+
     }
   };
+
   private void connectToUser() {
 
     Intent newIntent = new Intent(this, CallActivity.class);
@@ -536,7 +472,7 @@ public class ConnectActivity extends RTCConnection  implements AppRTCClient.Sign
             String username = mJSONArray.getString(i);
             if (username.length() > 0
                     && !userList.contains(username)
-                    && !username.equals(roomConnectionParameters.from)) {
+                    && !username.equals(RTCConnection.from)) {
               userList.add(username);
               adapter.add(username);
             }
@@ -552,8 +488,8 @@ public class ConnectActivity extends RTCConnection  implements AppRTCClient.Sign
   @Override
   public void onIncomingCall(final String from, final boolean screensharing) {
 
-    roomConnectionParameters.to = from;
-    roomConnectionParameters.initiator = false;
+    RTCConnection.to = from;
+    RTCConnection.initiator = false;
 
 
     if(screensharing){ //if its screensharing jsut re-connect without asking user!
@@ -736,21 +672,9 @@ public class ConnectActivity extends RTCConnection  implements AppRTCClient.Sign
       isNetworkChangeReceiverRegistered = true;
     }
   }
-  private void registerGCMReceiver() {
-    if (!isGCMReceiverRegistered) {
-      LocalBroadcastManager.getInstance(this).registerReceiver(gcmRegistrationBroadcastReceiver,
-              new IntentFilter(QuickstartPreferences.REGISTRATION_COMPLETE));
-      isGCMReceiverRegistered = true;
-    }
-  }
 
-  private void registerBringToFrontReceiver() {
-    if (!isBringToFrontReceiverRegistered) {
-      LocalBroadcastManager.getInstance(this).registerReceiver(bringToFrontBroadcastReceiver,
-              new IntentFilter(QuickstartPreferences.INCOMING_CALL));
-      isBringToFrontReceiverRegistered = true;
-    }
-  }
+
+
 
 
   @Override

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="de.lespace.apprtc">
-
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-feature android:name="android.hardware.camera" />
     <uses-feature android:name="android.hardware.camera.autofocus" />
     <uses-feature
@@ -17,6 +17,7 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+
 
     <application>
 
@@ -49,6 +50,7 @@
         <activity
             android:name=".SettingsActivity"
             android:label="@string/settings_name" />
+
         <activity
             android:name=".CallActivity"
             android:configChanges="orientation|screenSize"
@@ -56,6 +58,7 @@
             android:label="@string/app_name"
             android:screenOrientation="fullUser"
             android:theme="@style/CallActivityTheme" />
+
         <activity
             android:name="com.facebook.FacebookActivity"
             android:configChanges="keyboard|keyboardHidden|screenLayout|screenSize|orientation"
@@ -67,13 +70,17 @@
                 <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
             </intent-filter>
         </receiver>
-        <receiver android:name=".ServiceDestroyReceiver">
+        <receiver android:name=".ServiceDestroyReceiver"
+            android:enabled="true"
+            android:exported="true">
             <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+                <action android:name="android.intent.action.REBOOT"/>
                 <action android:name="YouWillNeverKillMe" />
             </intent-filter>
         </receiver>
 
-             <meta-data
+        <meta-data
             android:name="com.facebook.sdk.ApplicationId"
             android:value="@string/facebook_app_id" />
 
@@ -81,6 +88,7 @@
             android:name=".SignalingService"
             android:enabled="true"
             android:exported="true" />
+
         <service
             android:name=".ServiceManager"
             android:enabled="true"

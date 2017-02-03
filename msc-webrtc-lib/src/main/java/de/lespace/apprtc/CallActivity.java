@@ -194,7 +194,7 @@ public class CallActivity extends RTCConnection implements
 
     peerConnectionClient.createPeerConnection(rootEglBase.getEglBaseContext(),
             localRender, remoteRender, screenRender,
-            roomConnectionParameters.initiator);
+            RTCConnection.initiator);
 
     logAndToast("Creating OFFER...");
     // Create offer. Offer SDP will be sent to answering client in

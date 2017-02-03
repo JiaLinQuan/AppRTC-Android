@@ -36,7 +36,7 @@ public class SignalingService extends Service  implements WebSocketChannelClient
         final String keyprefFrom = getString(R.string.pref_from_key);
         final String keyprefRoomServerUrl = getString(R.string.pref_room_server_url_key);
 
-        Log.i(TAG, "WebsocketService started: ");
+        Log.i(TAG, "WebsocketService started with ");
 
         executor = new LooperExecutor();
         appRTCClient = new WebSocketRTCClient(this,executor);
@@ -44,14 +44,10 @@ public class SignalingService extends Service  implements WebSocketChannelClient
         executor.execute(new Runnable() {
             @Override
             public void run() {
-                if(RTCConnection.roomConnectionParameters.from==null){
-                    RTCConnection.roomConnectionParameters.from = sharedPref.getString(keyprefFrom, getString(R.string.pref_from_default));
-                }
 
-                if(RTCConnection.roomConnectionParameters.wssUrl==null)
-                    RTCConnection.roomConnectionParameters.wssUrl = sharedPref.getString(keyprefRoomServerUrl, getString(R.string.pref_room_server_url_default));
-
-                appRTCClient.connectToWebsocket(RTCConnection.roomConnectionParameters);
+                String from =    sharedPref.getString(keyprefFrom, getString(R.string.pref_from_default));
+                String wssUrl = sharedPref.getString(keyprefRoomServerUrl, getString(R.string.pref_room_server_url_default));
+                appRTCClient.connectToWebsocket(wssUrl,from);
             }
         });
 
@@ -134,7 +130,9 @@ public class SignalingService extends Service  implements WebSocketChannelClient
                     JSONObject json = new JSONObject(msg);
                     appRTCClient.getSignalingQueue().add(json);
 
-                    if(!appRTCClient.isQueuing() && appRTCClient.getSignalingEvents()!=null) appRTCClient.processSignalingQueue();
+                    if(!appRTCClient.isQueuing() && appRTCClient.getSignalingEvents()!=null){
+                        appRTCClient.processSignalingQueue();
+                    }
                 } catch (JSONException e) {
                     reportError("WebSocket message JSON parsing error: " + e.toString());
                 }

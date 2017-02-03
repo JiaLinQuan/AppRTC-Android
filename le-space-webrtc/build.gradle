@@ -1,8 +1,8 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 24
-    buildToolsVersion "24.0.2"
+    compileSdkVersion 23
+    buildToolsVersion '23.0.3'
 
     defaultConfig {
         applicationId "de.lespace.webrtc"
@@ -14,10 +14,15 @@ android {
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
     }
+
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            debuggable true
+            minifyEnabled false
         }
     }
 }
@@ -27,7 +32,7 @@ dependencies {
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-    compile project(':msc-webrtc')
+    compile project(':msc-webrtc-lib')
     compile 'com.android.support:appcompat-v7:24.2.1'
     compile 'com.android.support:design:24.2.1'
     testCompile 'junit:junit:4.12'

@@ -50,7 +50,8 @@ public class MainActivity extends Activity {
 
 
         final String wssUrl = sharedPref.getString(keyprefRoomServerUrl, getString(R.string.pref_room_server_url_default));
-        RTCConnection.roomConnectionParameters = new AppRTCClient.RoomConnectionParameters(wssUrl, from, false);
+        RTCConnection.wssUrl = wssUrl;
+        RTCConnection.from = from;
 
         callbackManager = CallbackManager.Factory.create();
         loginButton = (LoginButton)findViewById(R.id.login_button);
@@ -76,8 +77,8 @@ public class MainActivity extends Activity {
 
                 boolean okey = editor.commit();
 
-                RTCConnection.roomConnectionParameters.from = from;
-                RTCConnection.roomConnectionParameters.wssUrl = wssUrl;
+                RTCConnection.from = from;
+                RTCConnection.wssUrl = wssUrl;
                // SignalingService.appRTCClient.reconnect();
 
                 Intent i = new Intent(MainActivity.this, ConnectActivity.class);

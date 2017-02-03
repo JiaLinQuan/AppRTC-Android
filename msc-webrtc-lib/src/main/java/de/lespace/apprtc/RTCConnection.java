@@ -50,7 +50,12 @@ public abstract class RTCConnection extends Activity implements
 
     public static boolean online = false;
 
-    public String from = "";
+    //former RoomconnectionParamters
+    public static String wssUrl;
+    public static String from;
+    public static String to;
+    public static boolean initiator;
+
     public Toast logToast;
     public long callStartedTimeMs = 0;
     private static final String TAG = "RTCConnection";
@@ -82,11 +87,12 @@ public abstract class RTCConnection extends Activity implements
     private static final int LOCAL_WIDTH_CONNECTED = 25;
     private static final int LOCAL_HEIGHT_CONNECTED = 25;
 
-    public static AppRTCClient.RoomConnectionParameters roomConnectionParameters;
+   // public static AppRTCClient.RoomConnectionParameters roomConnectionParameters;
     public static PeerConnectionClient.PeerConnectionParameters peerConnectionParameters;
     public static AppRTCClient.SignalingParameters signalingParam;
 
     public static boolean doToast = false;
+
 
     public RTCConnection(){
 
@@ -136,7 +142,7 @@ public abstract class RTCConnection extends Activity implements
             peerConnectionClient.startVideoSource();
         }
     }
-
+/*
     public void connectToWebsocket() {
         if (SignalingService.appRTCClient == null) {
             Log.e(TAG, "AppRTC client is not allocated for a call.");
@@ -145,8 +151,8 @@ public abstract class RTCConnection extends Activity implements
         callStartedTimeMs = System.currentTimeMillis();
 
         // Start room connection.
-        SignalingService.appRTCClient.connectToWebsocket(RTCConnection.roomConnectionParameters);
-    }
+        SignalingService.appRTCClient.connectToWebsocket();
+    }*/
 
     // Disconnect from remote resources, dispose of local resources, and exit.
     public void disconnect(boolean sendRemoteHangup) {
@@ -204,7 +210,7 @@ public abstract class RTCConnection extends Activity implements
                     boolean isScreenSharingConnection = (peerConnectionClient2!=null);
 
                     logAndToast("Sending " + sdp.type + ", delay=" + delta + "ms");
-                    if (roomConnectionParameters.initiator && !isScreenSharingConnection) {
+                    if (initiator && !isScreenSharingConnection) {
                         SignalingService.appRTCClient.call(sdp);
                     } else {
                         SignalingService.appRTCClient.sendOfferSdp(sdp,isScreenSharingConnection);

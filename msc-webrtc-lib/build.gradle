@@ -1,6 +1,8 @@
 //apply plugin: 'com.android.application'
 apply plugin: 'com.android.library'
-
+apply plugin: 'com.github.dcendents.android-maven'
+group='com.github.inspiraluna'
+version = '2.0'
 
 android {
     compileSdkVersion 23
@@ -23,6 +25,12 @@ android {
     buildTypes {
         release {
             minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            debuggable true
+            minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
@@ -45,14 +53,9 @@ android {
 
 dependencies {
     compile files('libs/libjingle_peerconnection.jar')
-    // https://mvnrepository.com/artifact/io.pristine/libjingle
-    //compile 'io.pristine:libjingle:11139@aar'
-    //compile files('path/to/lib.so')
     compile 'com.neovisionaries:nv-websocket-client:1.30'
     compile 'com.facebook.android:facebook-android-sdk:4.0.0'
-    // compile 'com.google.android.gms:play-services-appindexing:9.8.0'
     compile 'com.android.support:appcompat-v7:23.4.0'
-    compile 'com.github.inspiraluna:AppRTC-Android:Tag'
 }
 
 //apply plugin: 'com.google.gms.google-services'
