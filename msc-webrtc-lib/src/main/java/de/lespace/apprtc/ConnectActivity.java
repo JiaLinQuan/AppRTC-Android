@@ -56,7 +56,7 @@ import java.util.List;
 /**
  * Handles the initial setup where the user selects which room to join.
  */
-public class ConnectActivity extends RTCConnection  implements AppRTCClient.SignalingEvents {
+public class ConnectActivity extends RTCConnection {
 
   private static final String TAG = "ConnectActivity";
 
@@ -95,7 +95,7 @@ public class ConnectActivity extends RTCConnection  implements AppRTCClient.Sign
           "android.permission.CAMERA",
           "android.permission.INTERNET"
   };
-  private boolean callActive;
+
 
 
   @Override
@@ -158,7 +158,6 @@ public class ConnectActivity extends RTCConnection  implements AppRTCClient.Sign
     // Video call enabled flag.
     boolean videoCallEnabled = sharedPref.getBoolean(keyprefVideoCallEnabled, Boolean.valueOf(getString(R.string.pref_videocall_default)));
 
-    startService(new Intent(this,SignalingService.class));
 
     String wssUrl = sharedPref.getString(keyprefRoomServerUrl, getString(R.string.pref_room_server_url_default));
     from = sharedPref.getString(keyprefFrom, getString(R.string.pref_from_default));
@@ -207,7 +206,7 @@ public class ConnectActivity extends RTCConnection  implements AppRTCClient.Sign
       }
     };
 
-    final AppRTCClient.SignalingEvents signalingEvents = this;
+   // final AppRTCClient.SignalingEvents signalingEvents = this;
 
 
     // Registering BroadcastReceiver
@@ -404,10 +403,10 @@ public class ConnectActivity extends RTCConnection  implements AppRTCClient.Sign
     }
     if(requestCode==RESULT_OK){
       //Now start callActivityAgain!
-      if(callActive){
+      //if(callActive){
         connectToUser();
-        callActive=false;
-      }
+        //callActive=false;
+     // }
     }
   }
 
@@ -452,213 +451,6 @@ public class ConnectActivity extends RTCConnection  implements AppRTCClient.Sign
     }
   }
 
-
-  @Override
-  public void onUserListUpdate(final String response) {
-
-    runOnUiThread(new Runnable() {
-
-
-      @Override
-      public void run() {
-        try {
-          JSONArray mJSONArray = new JSONArray(response);
-          userList = new ArrayList();
-          adapter.clear();
-          adapter.notifyDataSetChanged();
-
-
-          for(int i = 0; i < mJSONArray.length();i++){
-            String username = mJSONArray.getString(i);
-            if (username.length() > 0
-                    && !userList.contains(username)
-                    && !username.equals(RTCConnection.from)) {
-              userList.add(username);
-              adapter.add(username);
-            }
-          }
-          adapter.notifyDataSetChanged();
-        }catch (JSONException e) {
-          e.printStackTrace();
-        }
-      }
-    });
-  }
-
-  @Override
-  public void onIncomingCall(final String from, final boolean screensharing) {
-
-    RTCConnection.to = from;
-    RTCConnection.initiator = false;
-
-
-    if(screensharing){ //if its screensharing jsut re-connect without asking user!
-       this.callActive=true;
-       connectToUser();
-    }
-    else{
-      DialogFragment newFragment = new RTCConnection.CallDialogFragment();
-      Uri alert = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE);
-
-      if(alert == null){
-        // alert is null, using backup
-        alert = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-
-        // I can't see this ever being null (as always have a default notification)
-        // but just incase
-        if(alert == null) {
-          // alert backup is null, using 2nd backup
-          alert = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALL);
-        }
-      }
-      r = RingtoneManager.getRingtone(getApplicationContext(), alert);
-      r.play();
-
-      FragmentTransaction transaction = getFragmentManager().beginTransaction();
-      transaction.add(newFragment, "loading");
-      transaction.commitAllowingStateLoss();
-    }
-
-  }
-
-  @Override
-  public void onIncomingScreenCall(JSONObject from) {
-    // super.onIncomingScreenCall()
-    logAndToast("Creating OFFER for Screensharing Caller");
-    //do nothing here - just in CallActivity
-
-    peerConnectionClient2 = PeerConnectionClient.getInstance(true);
-    peerConnectionClient2.createPeerConnectionFactoryScreen(this);
-    peerConnectionClient2.createPeerConnectionScreen(peerConnectionClient.getRenderEGLContext(),peerConnectionClient.getScreenRender());
-    // Create offer. Offer SDP will be sent to answering client in
-    // PeerConnectionEvents.onLocalDescription event.
-    peerConnectionClient2.createOffer();
-
-  }
-
-
-  @Override
-  public void onStartCommunication(final SessionDescription sdp) {
-    final long delta = System.currentTimeMillis() - callStartedTimeMs;
-    runOnUiThread(new Runnable() {
-      @Override
-      public void run() {
-        if (peerConnectionClient == null) {
-          Log.e(TAG, "Received remote SDP for non-initilized peer connection.");
-          return;
-        }
-        logAndToast("Received remote " + sdp.type + ", delay=" + delta + "ms");
-        peerConnectionClient.setRemoteDescription(sdp);
-      }
-    });
-  }
-
-
-  @Override
-  public void onStartScreenCommunication(final SessionDescription sdp) {
-    final long delta = System.currentTimeMillis() - callStartedTimeMs;
-    runOnUiThread(new Runnable() {
-      @Override
-      public void run() {
-        if (peerConnectionClient2 == null) {
-          Log.e(TAG, "Received remote SDP for non-initilized peer connection.");
-          return;
-        }
-        logAndToast("Received remote " + sdp.type + ", delay=" + delta + "ms");
-        peerConnectionClient2.setRemoteDescription(sdp);
-      }
-    });
-  }
-
-  @Override
-  public void onRemoteDescription(final SessionDescription sdp) {
-    final long delta = System.currentTimeMillis() - callStartedTimeMs;
-    runOnUiThread(new Runnable() {
-      @Override
-      public void run() {
-        if (peerConnectionClient == null) {
-          Log.e(TAG, "Received remote SDP for non-initilized peer connection.");
-          return;
-        }
-        logAndToast("Received remote " + sdp.type + ", delay=" + delta + "ms");
-        peerConnectionClient.setRemoteDescription(sdp);
-      }
-    });
-  }
-
-  @Override
-  public void onRemoteIceCandidate(final IceCandidate candidate) {
-    runOnUiThread(new Runnable() {
-      @Override
-      public void run() {
-        if (peerConnectionClient == null) {
-          Log.e(TAG,
-                  "Received ICE candidate for non-initilized peer connection.");
-          return;
-        }
-        peerConnectionClient.addRemoteIceCandidate(candidate);
-      }
-    });
-  }
-
-  @Override
-  public void onRemoteScreenDescription(final SessionDescription sdp) {
-    final long delta = System.currentTimeMillis() - callStartedTimeMs;
-    runOnUiThread(new Runnable() {
-      @Override
-      public void run() {
-        if (peerConnectionClient2 == null) {
-          Log.e(TAG, "Received remote SDP for non-initilized peer connection.");
-          return;
-        }
-        logAndToast("Received remote " + sdp.type + ", delay=" + delta + "ms");
-        peerConnectionClient2.setRemoteDescription(sdp);
-      }
-    });
-  }
-
-  @Override
-  public void onRemoteScreenIceCandidate(final IceCandidate candidate) {
-    runOnUiThread(new Runnable() {
-      @Override
-      public void run() {
-        if (peerConnectionClient2 == null) {
-          Log.e(TAG,
-                  "Received ICE candidate for non-initilized peer connection.");
-          return;
-        }
-        peerConnectionClient2.addRemoteIceCandidate(candidate);
-      }
-    });
-  }
-
-  @Override
-  public void onPing() { //A stop was received by the peer - now answering please send new call (e.g. with screensharing)
-    SignalingService.appRTCClient.sendPong();
-  }
-
-  @Override
-  public void onCallback() { //A stop was received by the peer - now answering please send new call (e.g. with screensharing)
-    SignalingService.appRTCClient.sendCallback();
-  }
-
-  @Override
-  public void onChannelClose() {
-    runOnUiThread(new Runnable() {
-      @Override
-      public void run() {
-        logAndToast("stopCommunication from remotereceived; finishing CallActivity");
-        disconnect(false);
-      }
-    });
-  }
-
-  @Override
-  public void onChannelScreenClose() {
-    Intent intent = new Intent("finish_screensharing");
-    sendBroadcast(intent);
-  }
-
   @Override
   public void onChannelError(String description) {
     logAndToast(description);
@@ -672,10 +464,6 @@ public class ConnectActivity extends RTCConnection  implements AppRTCClient.Sign
       isNetworkChangeReceiverRegistered = true;
     }
   }
-
-
-
-
 
   @Override
   public void onStart() {

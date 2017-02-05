@@ -70,8 +70,8 @@ public abstract class RTCConnection extends Activity implements
     public RendererCommon.ScalingType scalingType;
     public boolean callControlFragmentVisible = true;
 
-    public ArrayList<String> userList;
-    public ArrayAdapter adapter;
+    public static ArrayList<String> userList;
+    public static ArrayAdapter adapter;
     public static Ringtone r;
 
     // Peer connection statistics callback period in ms.
@@ -142,6 +142,7 @@ public abstract class RTCConnection extends Activity implements
             peerConnectionClient.startVideoSource();
         }
     }
+
 /*
     public void connectToWebsocket() {
         if (SignalingService.appRTCClient == null) {

@@ -78,6 +78,18 @@ This WebRTC Android App simply connects to a Java Webrtc Signaling Server via We
 - (ok) test socket stays connected in background mode. 
 
 ##Done:
+- 03.02.2017 - added library to github / jitpack.io
+			 - creating and sharing an own android library (blog)
+			 	https://mayojava.github.io/android/library/creating-and-distributing-your-own-android-library/
+			 - JitPack.Io
+			 	https://jitpack.io
+			 	https://jitpack.io/#inspiraluna/AppRTC-Android/2.01
+			 - android-gradle-maven-plugin 
+			 	https://github.com/dcendents/android-maven-gradle-plugin 
+			 - some stackoverflow answers 
+			 	http://stackoverflow.com/questions/33058358/jitpack-io-failed-to-resolve-github-repo/33059275#33059275
+			 - Git-SubModules - https://git-scm.com/book/en/v2/Git-Tools-Submodules
+
 - 13.01.2017 - add msc-webrtc library to msc-android project
 - 13.01.2017 - convert app project into a library 
 	https://developer.android.com/studio/projects/android-library.html

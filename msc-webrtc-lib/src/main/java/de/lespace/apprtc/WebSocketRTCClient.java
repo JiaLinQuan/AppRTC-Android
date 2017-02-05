@@ -40,15 +40,19 @@ public class WebSocketRTCClient implements AppRTCClient {
     private SignalingEvents signalingEvents;
     private boolean queuing = false;
 
-    public WebSocketRTCClient( WebSocketChannelEvents wsEvents, LooperExecutor executor) {
+    public WebSocketRTCClient(WebSocketChannelEvents wsEvents, SignalingEvents signalingEvents, LooperExecutor executor) {
         this.executor = executor;
         this.wsEvents = wsEvents;
-         executor.requestStart();
+        this.signalingEvents = signalingEvents;
+        executor.requestStart();
     }
+
     private List<JSONObject> signalingQueue = new ArrayList<JSONObject>();
+
     public void processSignalingQueue(){
         try {
-        while(getSignalingQueue().size()>0){
+
+            while(getSignalingQueue().size()>0){
             setQueuing(true);
             JSONObject json= getSignalingQueue().remove(0);
             String msg = json.toString();
@@ -87,8 +91,8 @@ public class WebSocketRTCClient implements AppRTCClient {
             }
 
 
-            String id = "";
-            String response = "";
+                String id = "";
+                String response = "";
 
             if(json.has("id")) id = json.getString("id");
 
@@ -111,7 +115,9 @@ public class WebSocketRTCClient implements AppRTCClient {
             }
 
             if(id.equals("ping")){
-                if(getSignalingEvents()!=null)  getSignalingEvents().onPing();
+                if(getSignalingEvents()!=null){
+                    getSignalingEvents().onPing();
+                }
             }
 
             if(id.equals("registeredUsers")){

@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import de.lespace.apprtc.ConnectActivity;
+import de.lespace.apprtc.SignalingService;
 
 import static android.Manifest.permission.READ_CONTACTS;
 
@@ -68,6 +69,9 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        startService(new Intent(this,SignalingService.class));
+
         setContentView(R.layout.activity_login);
         // Set up the login form.
         mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
