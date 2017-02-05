@@ -10,7 +10,6 @@ import android.content.SharedPreferences;
 import android.media.Ringtone;
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
 import org.webrtc.IceCandidate;
@@ -71,7 +70,7 @@ public abstract class RTCConnection extends Activity implements
     public boolean callControlFragmentVisible = true;
 
     public static ArrayList<String> userList;
-    public static ArrayAdapter adapter;
+  //  public static ArrayAdapter adapter;
     public static Ringtone r;
 
     // Peer connection statistics callback period in ms.

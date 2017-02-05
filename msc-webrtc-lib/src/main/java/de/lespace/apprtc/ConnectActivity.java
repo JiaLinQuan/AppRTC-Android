@@ -81,6 +81,7 @@ public class ConnectActivity extends RTCConnection {
   private String keyprefTracing;
   private String keyprefRoomServerUrl;
   private String keyprefRoomList;
+  private ArrayAdapter adapter;
   private ListView roomListView;
   private List<String> missingPermissions;
   private Intent intent = null;

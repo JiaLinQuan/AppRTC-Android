@@ -13,6 +13,7 @@ import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
+import android.widget.ArrayAdapter;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -202,20 +203,22 @@ public class SignalingService extends Service  implements WebSocketChannelClient
                 try {
                     JSONArray mJSONArray = new JSONArray(response);
                     RTCConnection.userList = new ArrayList();
-                    RTCConnection.adapter.clear();
-                    RTCConnection.adapter.notifyDataSetChanged();
+
+                   //     RTCConnection.adapter = new ArrayAdapter(mJSONArray);
+                  //  RTCConnection.adapter.clear();
+                  //  RTCConnection.adapter.notifyDataSetChanged();
 
                     for(int i = 0; i < mJSONArray.length();i++){
                         String username = mJSONArray.getString(i);
                         if (username.length() > 0
                                 && !RTCConnection.userList.contains(username)
                                 && !username.equals(RTCConnection.from)) {
-                            RTCConnection.userList.add(username);
-                            RTCConnection.adapter.add(username);
+                 //           RTCConnection.userList.add(username);
+                 //           RTCConnection.adapter.add(username);
                         }
                     }
 
-                    RTCConnection.adapter.notifyDataSetChanged();
+               //     RTCConnection.adapter.notifyDataSetChanged();
                 }catch (JSONException e) {
                     e.printStackTrace();
                 }
