@@ -120,7 +120,7 @@ public class CallActivity extends RTCConnection implements
     // Create UI controls.
     localRender = (SurfaceViewRenderer) findViewById(R.id.local_video_view);
     remoteRender = (SurfaceViewRenderer) findViewById(R.id.remote_video_view);
-      screenRender = (SurfaceViewRenderer) findViewById(R.id.remote_screen_view);
+        screenRender = (SurfaceViewRenderer) findViewById(R.id.remote_screen_view);
 
     localRenderLayout = (PercentFrameLayout) findViewById(R.id.local_video_layout);
     remoteRenderLayout = (PercentFrameLayout) findViewById(R.id.remote_video_layout);
@@ -169,7 +169,6 @@ public class CallActivity extends RTCConnection implements
     ft.add(R.id.hud_fragment_container, hudFragment);
     ft.commit();
 
-
     // Create and audio manager that will take care of audio routing,
     // audio modes, audio device enumeration etc.
     audioManager = AppRTCAudioManager.create(this, new Runnable() {
@@ -187,7 +186,7 @@ public class CallActivity extends RTCConnection implements
     Log.d(TAG, "Initializing the audio manager...");
     audioManager.init();
 
-        activityRunning = true;
+    activityRunning = true;
     peerConnectionClient = PeerConnectionClient.getInstance(true);
     peerConnectionClient.createPeerConnectionFactory(
             CallActivity.this, peerConnectionParameters, CallActivity.this);

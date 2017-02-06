@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import de.lespace.apprtc.ConnectActivity;
+import de.lespace.apprtc.RTCConnection;
 import de.lespace.apprtc.SignalingService;
 
 import static android.Manifest.permission.READ_CONTACTS;
@@ -101,13 +102,13 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         mProgressView = findViewById(R.id.login_progress);
     }
 
-    public final static String EXTRA_MESSAGE = "com.example.myfirstapp.MESSAGE";
+
     private void startApp(){
         Intent intent = new Intent(this, ConnectActivity.class);
         //  EditText editText = (EditText) findViewById(R.id.edit_message);
         //  String message = editText.getText().toString();
 
-        intent.putExtra(EXTRA_MESSAGE, "test");
+        intent.putExtra(RTCConnection.EXTRA_TO, "chrome");
         startActivity(intent);
     }
     private void populateAutoComplete() {

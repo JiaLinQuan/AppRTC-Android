@@ -23,6 +23,8 @@ import java.util.ArrayList;
 public abstract class RTCConnection extends Activity implements
         PeerConnectionClient.PeerConnectionEvents {
 
+
+    public final static String EXTRA_TO = "de.lespace.mscwebrtc.TO";
     public static final String EXTRA_FROM = "de.lespace.mscwebrtc.FROM";
     public static final String EXTRA_VIDEO_CALL = "de.lespace.mscwebrtc.VIDEO_CALL";
     public static final String EXTRA_VIDEO_WIDTH = "de.lespace.mscwebrtc.VIDEO_WIDTH";
@@ -40,7 +42,6 @@ public abstract class RTCConnection extends Activity implements
     public static final String EXTRA_OPENSLES_ENABLED = "de.lespace.mscwebrtc.OPENSLES";
     public static final String EXTRA_DISPLAY_HUD = "de.lespace.mscwebrtc.DISPLAY_HUD";
     public static final String EXTRA_TRACING = "de.lespace.mscwebrtc.TRACING";
-    public static final String EXTRA_CMDLINE = "de.lespace.mscwebrtc.CMDLINE";
     public static final String EXTRA_RUNTIME = "de.lespace.mscwebrtc.RUNTIME";
     public static final int CONNECTION_REQUEST = 1;
 

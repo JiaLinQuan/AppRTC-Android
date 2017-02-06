@@ -333,6 +333,10 @@ public class ConnectActivity extends RTCConnection {
 
     Log.i(TAG, "created apprtc with roomUri:" + wsurl.toString() + " from:" + from);
 
+    Intent intent = getIntent();
+    RTCConnection.to = intent.getStringExtra(RTCConnection.EXTRA_TO);
+    RTCConnection.initiator = true;
+    connectToUser();
   }
 
   @Override
@@ -392,7 +396,7 @@ public class ConnectActivity extends RTCConnection {
     super.onResume();
   }
 
-
+  public final static String EXTRA_MESSAGE = "com.example.myfirstapp.MESSAGE";
   @Override
   protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
