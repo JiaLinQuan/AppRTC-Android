@@ -2,13 +2,11 @@ package de.lespace.apprtc;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.Dialog;
-import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.media.Ringtone;
-import android.os.Bundle;
+
 import android.util.Log;
 import android.widget.Toast;
 
@@ -23,7 +21,7 @@ import java.util.ArrayList;
 public abstract class RTCConnection extends Activity implements
         PeerConnectionClient.PeerConnectionEvents {
 
-
+    public final static String EXTRA_INITIATOR = "de.lespace.mscwebrtc.INITIATOR";
     public final static String EXTRA_TO = "de.lespace.mscwebrtc.TO";
     public static final String EXTRA_FROM = "de.lespace.mscwebrtc.FROM";
     public static final String EXTRA_VIDEO_CALL = "de.lespace.mscwebrtc.VIDEO_CALL";
@@ -47,10 +45,10 @@ public abstract class RTCConnection extends Activity implements
 
     public static PeerConnectionClient peerConnectionClient = null;
     public static PeerConnectionClient peerConnectionClient2 = null;
-
+    public static boolean callActive = false;
     public static boolean online = false;
 
-    //former RoomconnectionParamters
+    //"ConnectionParamters"
     public static String wssUrl;
     public static String from;
     public static String to;
@@ -71,7 +69,6 @@ public abstract class RTCConnection extends Activity implements
     public boolean callControlFragmentVisible = true;
 
     public static ArrayList<String> userList;
-  //  public static ArrayAdapter adapter;
     public static Ringtone r;
 
     // Peer connection statistics callback period in ms.
@@ -141,24 +138,6 @@ public abstract class RTCConnection extends Activity implements
         if (peerConnectionClient != null) {
             peerConnectionClient.startVideoSource();
         }
-    }
-
-/*
-    public void connectToWebsocket() {
-        if (SignalingService.appRTCClient == null) {
-            Log.e(TAG, "AppRTC client is not allocated for a call.");
-            return;
-        }
-        callStartedTimeMs = System.currentTimeMillis();
-
-        // Start room connection.
-        SignalingService.appRTCClient.connectToWebsocket();
-    }*/
-
-    // Disconnect from remote resources, dispose of local resources, and exit.
-    public void disconnect(boolean sendRemoteHangup) {
-        Intent intent = new Intent("finish_CallActivity");
-        sendBroadcast(intent);
     }
 
     public boolean validateUrl(String url) {
@@ -285,6 +264,13 @@ public abstract class RTCConnection extends Activity implements
         }
     }
 
+
+    // Disconnect from remote resources, dispose of local resources, and exit.
+    public void disconnect(boolean sendRemoteHangup) {
+        Intent intent = new Intent("finish_CallActivity");
+        sendBroadcast(intent);
+    }
+
     /**
      * @return True iff the url is an https: url.
      */
@@ -294,41 +280,4 @@ public abstract class RTCConnection extends Activity implements
                 url.substring(0, 6).equalsIgnoreCase("wss://");
     }
 
-    public static class CallDialogFragment extends DialogFragment {
-
-        public CallDialogFragment(){
-
-        }
-        @Override
-        public Dialog onCreateDialog(Bundle savedInstanceState) {
-            // Build the dialog and set up the button click handlers
-            // 1. Instantiate an AlertDialog.Builder with its constructor
-            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-
-// 2. Chain together various setter methods to set the dialog characteristics
-            builder.setMessage(R.string.calldialog_question).setTitle(R.string.calldialog_title);
-            // Add the buttons
-            builder.setPositiveButton(R.string.calldialog_answer, new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int id) {
-
-                    Intent intent = new Intent(getActivity(),CallActivity.class);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                    r.stop();
-                    startActivity(intent);
-                }
-            });
-            builder.setNegativeButton(R.string.calldialog_hangung, new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int id) {
-                    // User cancelled the dialog send stop message to peer.
-                    r.stop();
-                    SignalingService.appRTCClient.sendStopToPeer();;
-                }
-            });
-
-// 3. Get the AlertDialog from create()
-            AlertDialog dialog = builder.create();
-
-            return builder.create();
-        }
-    }
 }

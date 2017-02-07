@@ -102,15 +102,14 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         mProgressView = findViewById(R.id.login_progress);
     }
 
-
     private void startApp(){
         Intent intent = new Intent(this, ConnectActivity.class);
-        //  EditText editText = (EditText) findViewById(R.id.edit_message);
-        //  String message = editText.getText().toString();
 
         intent.putExtra(RTCConnection.EXTRA_TO, "chrome");
+        intent.putExtra(RTCConnection.EXTRA_INITIATOR, true);
         startActivity(intent);
     }
+
     private void populateAutoComplete() {
         if (!mayRequestContacts()) {
             return;

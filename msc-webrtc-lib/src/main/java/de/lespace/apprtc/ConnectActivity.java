@@ -10,18 +10,12 @@
 
 package de.lespace.apprtc;
 
-import android.app.AlertDialog;
-import android.app.Dialog;
-import android.app.DialogFragment;
-import android.app.FragmentTransaction;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -37,18 +31,8 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.Toast;
-
-import com.facebook.CallbackManager;
-import com.facebook.FacebookCallback;
-import com.facebook.FacebookException;
-import com.facebook.FacebookSdk;
-import com.facebook.login.LoginResult;
-import com.facebook.login.widget.LoginButton;
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
-import org.webrtc.IceCandidate;
-import org.webrtc.SessionDescription;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -96,8 +80,6 @@ public class ConnectActivity extends RTCConnection {
           "android.permission.CAMERA",
           "android.permission.INTERNET"
   };
-
-
 
   @Override
   public void onRequestPermissionsResult(
@@ -207,8 +189,6 @@ public class ConnectActivity extends RTCConnection {
       }
     };
 
-   // final AppRTCClient.SignalingEvents signalingEvents = this;
-
 
     // Registering BroadcastReceiver
     registerNetworkChangeReceiver();
@@ -293,7 +273,6 @@ public class ConnectActivity extends RTCConnection {
       intent.putExtra(CallActivity.EXTRA_AUDIOCODEC, audioCodec);
       intent.putExtra(CallActivity.EXTRA_DISPLAY_HUD, displayHud);
       intent.putExtra(CallActivity.EXTRA_TRACING, tracing);
-     // intent.putExtra(CallActivity.EXTRA_CMDLINE, commandLineRun);
       intent.putExtra(CallActivity.EXTRA_RUNTIME, runTimeMs);
     }
 
@@ -331,12 +310,20 @@ public class ConnectActivity extends RTCConnection {
             captureToTexture, audioStartBitrate, audioCodec, noAudioProcessing,
             aecDump, useOpenSLES);
 
-    Log.i(TAG, "created apprtc with roomUri:" + wsurl.toString() + " from:" + from);
 
     Intent intent = getIntent();
-    RTCConnection.to = intent.getStringExtra(RTCConnection.EXTRA_TO);
-    RTCConnection.initiator = true;
-    connectToUser();
+    Log.i(TAG, "created apprtc with roomUri:" + wsurl.toString() + " from:" + from);
+    Log.i(TAG, "intent.EXTRA_TO:"+intent.getStringExtra(RTCConnection.EXTRA_TO));
+    Log.i(TAG, "intent.EXTRA_INITIATOR:"+intent.getBooleanExtra(RTCConnection.EXTRA_INITIATOR,false));
+
+    if(intent.getStringExtra(RTCConnection.EXTRA_TO)!=null
+            && !intent.getStringExtra(RTCConnection.EXTRA_TO).equals("")){
+
+      RTCConnection.to = intent.getStringExtra(RTCConnection.EXTRA_TO);
+      RTCConnection.initiator = intent.getBooleanExtra(RTCConnection.EXTRA_INITIATOR,false);;
+      connectToUser();
+    }
+
   }
 
   @Override
@@ -480,7 +467,7 @@ public class ConnectActivity extends RTCConnection {
     super.onStop();
 
   }
-
+/*
   public static class CallDialogFragment extends DialogFragment {
 
     public CallDialogFragment() {
@@ -520,5 +507,5 @@ public class ConnectActivity extends RTCConnection {
 
       return builder.create();
     }
-  }
+  }*/
 }

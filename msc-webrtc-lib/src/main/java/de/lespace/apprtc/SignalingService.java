@@ -123,9 +123,7 @@ public class SignalingService extends Service  implements WebSocketChannelClient
     }
     @Override
     public IBinder onBind(Intent intent) {
-
         return(null);
-        //throw new UnsupportedOperationException("Not yet implemented");
     }
 
 
@@ -230,13 +228,15 @@ public class SignalingService extends Service  implements WebSocketChannelClient
         RTCConnection.to = from;
         RTCConnection.initiator = false;
 
-
         if(screensharing){ //if its screensharing jsut re-connect without asking user!
-            //RTCConnection.callActive=true;
-         //   connectToUser();
+            RTCConnection.callActive=true;
+
+            Intent intent = new Intent(getApplicationContext(), ConnectActivity.class);
+            intent.putExtra(RTCConnection.EXTRA_TO,  RTCConnection.to);
+            intent.putExtra(RTCConnection.EXTRA_INITIATOR,  RTCConnection.initiator);
+            startActivity(intent);
         }
         else{
-            DialogFragment newFragment = new RTCConnection.CallDialogFragment();
             Uri alert = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE);
 
             if(alert == null){
@@ -253,10 +253,9 @@ public class SignalingService extends Service  implements WebSocketChannelClient
             r = RingtoneManager.getRingtone(getApplicationContext(), alert);
             r.play();
 
-
-           /* FragmentTransaction transaction = getFragmentManager().beginTransaction();
-            transaction.add(newFragment, "loading");
-            transaction.commitAllowingStateLoss();*/
+            Intent intent = new Intent(this, IncomingCall.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
         }
 
     }
@@ -279,17 +278,16 @@ public class SignalingService extends Service  implements WebSocketChannelClient
     @Override
     public void onStartCommunication(final SessionDescription sdp) {
         RTCConnection.peerConnectionClient.setRemoteDescription(sdp);
-
     }
 
 
     @Override
     public void onStartScreenCommunication(final SessionDescription sdp) {
 
-                if (RTCConnection.peerConnectionClient2 == null) {
-                    Log.e(TAG, "Received remote SDP for non-initilized peer connection.");
-                    return;
-                }
+        if (RTCConnection.peerConnectionClient2 == null) {
+            Log.e(TAG, "Received remote SDP for non-initilized peer connection.");
+            return;
+        }
         RTCConnection.peerConnectionClient2.setRemoteDescription(sdp);
 
     }
@@ -350,9 +348,8 @@ public class SignalingService extends Service  implements WebSocketChannelClient
 
     @Override
     public void onChannelClose() {
-
-        //  disconnect(false);
-
+        Intent intent = new Intent("finish_CallActivity");
+        sendBroadcast(intent);
     }
 
     @Override

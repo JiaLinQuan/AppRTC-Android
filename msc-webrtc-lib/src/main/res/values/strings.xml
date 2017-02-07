@@ -151,4 +151,6 @@
         running the sample again.</string>
     <string name="no_audio" translatable="false">Switch off Audio</string>
     <string name="facebook_app_id">1691776261109055</string>
+    <string name="btn_hangup">Hangup</string>
+    <string name="btn_answer">Answer</string>
 </resources>
