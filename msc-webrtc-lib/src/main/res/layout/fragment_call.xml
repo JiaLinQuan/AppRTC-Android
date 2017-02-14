@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    <de.lespace.mscrtc.GestureAreaView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:color="#80000000"
+
+        android:layout_alignParentLeft="true"
+        android:layout_centerVertical="true"
+         />
+
+    <TextView
+        android:id="@+id/contact_name_call"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_above="@+id/buttons_call_container"
+        android:textSize="24sp"
+        android:layout_margin="8dp"/>
+
+    <LinearLayout
+           android:id="@+id/buttons_call_container"
+           android:orientation="horizontal"
+           android:layout_above="@+id/capture_format_text_call"
+           android:layout_alignWithParentIfMissing="true"
+           android:layout_marginBottom="50dp"
+           android:layout_centerHorizontal="true"
+           android:layout_width="wrap_content"
+           android:layout_height="wrap_content">
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/capture_format_text_call"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_above="@+id/capture_format_slider_call"
+        android:textSize="16sp"
+        android:text="Slide to change capture format"/>
+
+    <SeekBar
+        android:id="@+id/capture_format_slider_call"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentBottom="true"
+        android:progress="50"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginBottom="8dp" />
+
+    <ImageButton
+       android:id="@+id/button_call_scaling_mode"
+       android:background="@drawable/ic_action_return_from_full_screen"
+       android:contentDescription="@string/disconnect_call"
+       android:layout_width="48dp"
+       android:layout_height="48dp"
+        android:layout_above="@+id/buttons_call_container"
+        android:layout_toEndOf="@+id/button_call_switch_camera"
+  />
+
+    <ImageButton
+       android:id="@+id/button_call_switch_camera"
+       android:background="@android:drawable/ic_menu_camera"
+       android:contentDescription="@string/switch_camera"
+        android:layout_width="48dp"
+       android:layout_height="48dp"
+        android:layout_above="@+id/buttons_call_container"
+        android:layout_toEndOf="@+id/button_audio_on_off" />
+
+
+
+    <ImageButton
+        android:id="@+id/button_audio_on_off"
+        android:background="@drawable/ic_no_audio_48"
+        android:contentDescription="@string/no_audio"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_above="@+id/buttons_call_container"
+        android:layout_toEndOf="@+id/button_call_disconnect" />
+
+    <ImageButton
+        android:id="@+id/button_call_disconnect"
+        android:background="@drawable/disconnect"
+        android:contentDescription="@string/disconnect_call"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginLeft="58dp"
+        android:layout_above="@+id/buttons_call_container"
+        />
+
+</RelativeLayout>
