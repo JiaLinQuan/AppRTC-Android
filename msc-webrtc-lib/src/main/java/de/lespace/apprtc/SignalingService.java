@@ -38,10 +38,19 @@ public class SignalingService extends Service  implements WebSocketChannelClient
     public static AppRTCClient appRTCClient;
     private LooperExecutor executor;
 
+    String from;
+    String wssUrl;
+
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
-        Log.i(TAG, "SignalingService onStartCommand");
+        if(intent.getStringExtra(RTCConnection.EXTRA_FROM)!=null)
+            from = intent.getStringExtra(RTCConnection.EXTRA_FROM);
+
+      /*  if(intent.getStringExtra(RTCConnection.EXTRA_FROM)!=null)
+            wssUrl = intent.getStringExtra(RTCConnection.EXTRA_FROM);*/
+
+
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
         final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
 
@@ -58,9 +67,19 @@ public class SignalingService extends Service  implements WebSocketChannelClient
         executor.execute(new Runnable() {
             @Override
             public void run() {
+                SharedPreferences.Editor editor = sharedPref.edit();
+                if(from==null)
+                    from = sharedPref.getString(keyprefFrom, getString(R.string.pref_from_default));
+                else
+                    editor.putString(keyprefFrom, from);
+                if(wssUrl==null)
+                    wssUrl = sharedPref.getString(keyprefRoomServerUrl, getString(R.string.pref_room_server_url_default));
+                else
+                    editor.putString(keyprefRoomServerUrl, wssUrl);
+                editor.commit();
 
-                String from =    sharedPref.getString(keyprefFrom, getString(R.string.pref_from_default));
-                String wssUrl = sharedPref.getString(keyprefRoomServerUrl, getString(R.string.pref_room_server_url_default));
+                Log.i(TAG, "starting SignalingService and registering:"+from+" connecting to url: "+wssUrl);
+
                 appRTCClient.connectToWebsocket(wssUrl,from);
             }
         });

@@ -188,8 +188,8 @@ public abstract class RTCConnection extends Activity implements
                 if (SignalingService.appRTCClient != null) {
 
                     boolean isScreenSharingConnection = (peerConnectionClient2!=null);
-
                     logAndToast("Sending " + sdp.type + ", delay=" + delta + "ms");
+
                     if (initiator && !isScreenSharingConnection) {
                         SignalingService.appRTCClient.call(sdp);
                     } else {

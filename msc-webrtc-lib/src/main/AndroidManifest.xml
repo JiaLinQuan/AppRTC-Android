@@ -101,7 +101,8 @@
 
         <activity
             android:name=".IncomingCall"
-            android:theme="@android:style/Theme.Dialog" ></activity>
+            android:theme="@android:style/Theme.Dialog" />
+        <activity android:name=".EmptyActivity"></activity>
     </application>
 
 </manifest>

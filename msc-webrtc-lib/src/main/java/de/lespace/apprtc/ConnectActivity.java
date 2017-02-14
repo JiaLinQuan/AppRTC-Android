@@ -311,18 +311,21 @@ public class ConnectActivity extends RTCConnection {
             aecDump, useOpenSLES);
 
 
-    Intent intent = getIntent();
-    Log.i(TAG, "created apprtc with roomUri:" + wsurl.toString() + " from:" + from);
-    Log.i(TAG, "intent.EXTRA_TO:"+intent.getStringExtra(RTCConnection.EXTRA_TO));
-    Log.i(TAG, "intent.EXTRA_INITIATOR:"+intent.getBooleanExtra(RTCConnection.EXTRA_INITIATOR,false));
+            Intent intent = getIntent();
+            Log.i(TAG, "created apprtc with roomUri:" + wsurl.toString() + " from:" + from);
 
-    if(intent.getStringExtra(RTCConnection.EXTRA_TO)!=null
-            && !intent.getStringExtra(RTCConnection.EXTRA_TO).equals("")){
+            Log.i(TAG, "intent.EXTRA_TO:"+intent.getStringExtra(RTCConnection.EXTRA_TO));
+            Log.i(TAG, "intent.EXTRA_FROM:"+intent.getStringExtra(RTCConnection.EXTRA_FROM));
+            Log.i(TAG, "intent.EXTRA_INITIATOR:"+intent.getBooleanExtra(RTCConnection.EXTRA_INITIATOR,false));
 
-      RTCConnection.to = intent.getStringExtra(RTCConnection.EXTRA_TO);
-      RTCConnection.initiator = intent.getBooleanExtra(RTCConnection.EXTRA_INITIATOR,false);;
-      connectToUser();
-    }
+            if(intent.getStringExtra(RTCConnection.EXTRA_TO)!=null
+                    && !intent.getStringExtra(RTCConnection.EXTRA_TO).equals("")){
+
+                  RTCConnection.to = intent.getStringExtra(RTCConnection.EXTRA_TO);
+                 // RTCConnection.from = intent.getStringExtra(RTCConnection.EXTRA_FROM);
+                  RTCConnection.initiator = intent.getBooleanExtra(RTCConnection.EXTRA_INITIATOR,false);;
+                  connectToUser();
+            }
 
   }
 

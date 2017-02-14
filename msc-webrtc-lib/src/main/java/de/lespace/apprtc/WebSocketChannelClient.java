@@ -19,6 +19,8 @@ import com.neovisionaries.ws.client.WebSocketFactory;
 import com.neovisionaries.ws.client.WebSocketState;
 
 import de.lespace.apprtc.util.LooperExecutor;
+
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -236,10 +238,14 @@ public class WebSocketChannelClient {
       return;
     }
 
+    JSONArray mySavedFollowers = new JSONArray();
+    mySavedFollowers.put("LEVEL+MAKLER-99999");
     JSONObject json = new JSONObject();
     try {
         json.put("id", "register");
         json.put("name", from);
+        json.put("followers", mySavedFollowers);
+
         Log.d(TAG, "C->WSS: " + json.toString());
         ws.sendText(json.toString());
 
