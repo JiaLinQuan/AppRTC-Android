@@ -8,7 +8,7 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-package de.lespace.apprtc;
+package de.lespace.apprtc.activity;
 
 import android.app.Fragment;
 import android.os.Bundle;
@@ -23,6 +23,10 @@ import org.webrtc.StatsReport;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import de.lespace.apprtc.CpuMonitor;
+import de.lespace.apprtc.PeerConnectionClient;
+import de.lespace.apprtc.R;
 
 /**
  * Fragment for HUD statistics display.

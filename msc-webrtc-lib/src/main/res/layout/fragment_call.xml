@@ -6,7 +6,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-    <de.lespace.mscrtc.GestureAreaView
+    <de.lespace.apprtc.activity.GestureAreaView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:color="#80000000"

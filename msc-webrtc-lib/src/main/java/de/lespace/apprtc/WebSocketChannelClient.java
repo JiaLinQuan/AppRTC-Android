@@ -239,7 +239,7 @@ public class WebSocketChannelClient {
     }
 
     JSONArray mySavedFollowers = new JSONArray();
-    mySavedFollowers.put("LEVEL+MAKLER-99999");
+    //mySavedFollowers.put("LEVEL+MAKLER-99999");
     JSONObject json = new JSONObject();
     try {
         json.put("id", "register");

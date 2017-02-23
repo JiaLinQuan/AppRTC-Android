@@ -8,13 +8,17 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-package de.lespace.apprtc;
+package de.lespace.apprtc.activity;
 
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.widget.Toast;
+
+import de.lespace.apprtc.R;
+import de.lespace.apprtc.RTCConnection;
+import de.lespace.apprtc.service.SignalingService;
 
 /**
  * Settings activity for AppRTC.

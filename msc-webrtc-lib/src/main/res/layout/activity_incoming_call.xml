@@ -8,7 +8,7 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="de.lespace.apprtc.IncomingCall">
+    tools:context="de.lespace.apprtc.activity.IncomingCall">
 
     <Button
         android:text="@string/btn_hangup"

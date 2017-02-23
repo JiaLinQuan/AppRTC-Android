@@ -20,6 +20,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import de.lespace.apprtc.activity.CallFragment;
+
 /**
  * Control capture format based on a seekbar listener.
  */

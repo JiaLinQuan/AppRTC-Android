@@ -2,7 +2,8 @@ package de.lespace.apprtc;
 
 import android.view.GestureDetector;
 import android.view.MotionEvent;
-import android.widget.Toast;
+
+import de.lespace.apprtc.activity.GestureAreaView;
 
 
 /**

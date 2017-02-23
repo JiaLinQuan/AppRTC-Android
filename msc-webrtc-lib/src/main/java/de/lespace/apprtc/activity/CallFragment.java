@@ -8,7 +8,7 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-package de.lespace.apprtc;
+package de.lespace.apprtc.activity;
 
 import android.app.Activity;
 import android.app.Fragment;
@@ -19,9 +19,11 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.SeekBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import org.webrtc.RendererCommon.ScalingType;
+
+import de.lespace.apprtc.CaptureQualityController;
+import de.lespace.apprtc.R;
 
 /**
  * Fragment for call control.

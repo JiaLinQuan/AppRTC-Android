@@ -1,7 +1,5 @@
-package de.lespace.apprtc;
+package de.lespace.apprtc.service;
 
-import android.app.DialogFragment;
-import android.app.FragmentTransaction;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -11,9 +9,9 @@ import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
-import android.support.v4.app.NotificationCompat;
 import android.util.Log;
-import android.widget.ArrayAdapter;
+
+import com.google.firebase.iid.FirebaseInstanceId;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -23,6 +21,14 @@ import org.webrtc.SessionDescription;
 
 import java.util.ArrayList;
 
+import de.lespace.apprtc.AppRTCClient;
+import de.lespace.apprtc.R;
+import de.lespace.apprtc.RTCConnection;
+import de.lespace.apprtc.WebSocketChannelClient;
+import de.lespace.apprtc.WebSocketRTCClient;
+import de.lespace.apprtc.activity.ConnectActivity;
+import de.lespace.apprtc.activity.IncomingCall;
+import de.lespace.apprtc.thrift.ThriftEntwicklungServerRegistrationAsyncTask;
 import de.lespace.apprtc.util.LooperExecutor;
 
 import static de.lespace.apprtc.RTCConnection.r;
@@ -33,6 +39,7 @@ public class SignalingService extends Service  implements WebSocketChannelClient
 
     public SignalingService() {
         Log.i(TAG, "SignalingService started");
+
     }
 
     public static AppRTCClient appRTCClient;
@@ -43,58 +50,76 @@ public class SignalingService extends Service  implements WebSocketChannelClient
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        Log.i(TAG, "SignalingService starten: with " + intent.getStringExtra(RTCConnection.EXTRA_MSC_REGISTRATION));
 
-        if(intent.getStringExtra(RTCConnection.EXTRA_FROM)!=null)
+        if (intent.getStringExtra(RTCConnection.EXTRA_FROM) != null)
             from = intent.getStringExtra(RTCConnection.EXTRA_FROM);
 
-      /*  if(intent.getStringExtra(RTCConnection.EXTRA_FROM)!=null)
+       /* if(intent.getStringExtra(RTCConnection.EXTRA_)!=null)
             wssUrl = intent.getStringExtra(RTCConnection.EXTRA_FROM);*/
 
+        //during development only! register current userId on testThriftServer
+        //not necessary after integration into msc system
+        if (intent.getStringExtra(RTCConnection.EXTRA_MSC_REGISTRATION) != null) {
+            String token = FirebaseInstanceId.getInstance().getToken();
+            Log.i(TAG, "TOKEN:" + token);
 
-        PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
-        final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+            ThriftEntwicklungServerRegistrationAsyncTask th = new ThriftEntwicklungServerRegistrationAsyncTask();
+            th.userId = from;
+            th.firebaseToken = token;
+            th.service = this;
+            th.execute();
+        }
 
-        final String keyprefFrom = getString(R.string.pref_from_key);
-        final String keyprefRoomServerUrl = getString(R.string.pref_room_server_url_key);
+        /**
+         * Preparation for a call receiving generated fromUUID and
+         * registering this name on WebRTC-Signaling-Server
+         */
+        if (intent.getStringExtra(RTCConnection.EXTRA_SIGNALING_REGISTRATION) != null) {
+            PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
+            final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
 
-        Log.i(TAG, "WebsocketService started with ");
+            final String keyprefFrom = getString(R.string.pref_from_key);
+            final String keyprefRoomServerUrl = getString(R.string.pref_room_server_url_key);
 
-        executor = new LooperExecutor();
-        appRTCClient = new WebSocketRTCClient(this,this,executor);
+            Log.i(TAG, "starting WebsocketSignaling Service with UUID:"+from);
 
-        AppRTCClient.SignalingEvents signalingEvents = this;
+            executor = new LooperExecutor();
+            appRTCClient = new WebSocketRTCClient(this, this, executor);
 
-        executor.execute(new Runnable() {
-            @Override
-            public void run() {
-                SharedPreferences.Editor editor = sharedPref.edit();
-                if(from==null)
-                    from = sharedPref.getString(keyprefFrom, getString(R.string.pref_from_default));
-                else
-                    editor.putString(keyprefFrom, from);
-                if(wssUrl==null)
-                    wssUrl = sharedPref.getString(keyprefRoomServerUrl, getString(R.string.pref_room_server_url_default));
-                else
-                    editor.putString(keyprefRoomServerUrl, wssUrl);
-                editor.commit();
+            AppRTCClient.SignalingEvents signalingEvents = this;
 
-                Log.i(TAG, "starting SignalingService and registering:"+from+" connecting to url: "+wssUrl);
+            executor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    SharedPreferences.Editor editor = sharedPref.edit();
+                    if (from == null)
+                        from = sharedPref.getString(keyprefFrom, getString(R.string.pref_from_default));
+                    else
+                        editor.putString(keyprefFrom, from);
+                    if (wssUrl == null)
+                        wssUrl = sharedPref.getString(keyprefRoomServerUrl, getString(R.string.pref_room_server_url_default));
+                    else
+                        editor.putString(keyprefRoomServerUrl, wssUrl);
+                    editor.commit();
 
-                appRTCClient.connectToWebsocket(wssUrl,from);
-            }
-        });
+                    Log.i(TAG, "starting SignalingService and registering:" + from + " connecting to url: " + wssUrl);
 
-        sendNotification("signaling running now...");
+                    appRTCClient.connectToWebsocket(wssUrl, from);
+                }
+            });
 
-        return(START_NOT_STICKY);
+        }
+        return (START_NOT_STICKY);
+        //  sendNotification("signaling running now..."); //the foreground service with le space icon
     }
 
     @Override
     public void onDestroy() {
-        Intent in = new Intent();
+      /*  Intent in = new Intent();
         in.setAction("YouWillNeverKillMe");
         sendBroadcast(in);
-        Log.d(TAG, "onDestroy()...");
+        Log.d(TAG, "onDestroy()...");*/
     }
 
     public void sendNotification(String message){
@@ -256,21 +281,6 @@ public class SignalingService extends Service  implements WebSocketChannelClient
             startActivity(intent);
         }
         else{
-            Uri alert = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE);
-
-            if(alert == null){
-                // alert is null, using backup
-                alert = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-
-                // I can't see this ever being null (as always have a default notification)
-                // but just incase
-                if(alert == null) {
-                    // alert backup is null, using 2nd backup
-                    alert = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALL);
-                }
-            }
-            r = RingtoneManager.getRingtone(getApplicationContext(), alert);
-            r.play();
 
             Intent intent = new Intent(this, IncomingCall.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);

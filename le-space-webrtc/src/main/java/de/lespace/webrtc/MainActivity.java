@@ -1,21 +1,22 @@
-package de.lespace.apprtc;
+package de.lespace.webrtc;
 
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
 
 import com.facebook.CallbackManager;
-import com.facebook.FacebookActivity;
 import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
 import com.facebook.FacebookSdk;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
+
+import de.lespace.apprtc.activity.ConnectActivity;
+import de.lespace.apprtc.RTCConnection;
 
 public class MainActivity extends Activity {
 
@@ -36,8 +37,8 @@ public class MainActivity extends Activity {
         logAndToast("I have a client token:"+FacebookSdk.getClientToken());
 
         final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
-        keyprefFrom = getString(R.string.pref_from_key);
-        from = sharedPref.getString(keyprefFrom, getString(R.string.pref_from_default));
+        keyprefFrom = getString(de.lespace.apprtc.R.string.pref_from_key);
+        from = sharedPref.getString(keyprefFrom, getString(de.lespace.apprtc.R.string.pref_from_default));
         logAndToast("from:"+from);
         if(from != null && !from.equals("nandi")){
            // logAndToast("I have a client token:"+FacebookSdk.getClientToken());
@@ -46,15 +47,15 @@ public class MainActivity extends Activity {
             finish();
         }
 
-        setContentView(R.layout.activity_main);
+        setContentView(de.lespace.apprtc.R.layout.activity_main);
 
 
-        final String wssUrl = sharedPref.getString(keyprefRoomServerUrl, getString(R.string.pref_room_server_url_default));
+        final String wssUrl = sharedPref.getString(keyprefRoomServerUrl, getString(de.lespace.apprtc.R.string.pref_room_server_url_default));
         RTCConnection.wssUrl = wssUrl;
         RTCConnection.from = from;
 
         callbackManager = CallbackManager.Factory.create();
-        loginButton = (LoginButton)findViewById(R.id.login_button);
+        loginButton = (LoginButton)findViewById(de.lespace.apprtc.R.id.login_button);
         callbackManager = CallbackManager.Factory.create();
         loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
 

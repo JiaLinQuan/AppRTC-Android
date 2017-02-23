@@ -4,6 +4,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.support.v4.content.WakefulBroadcastReceiver;
 
+import de.lespace.apprtc.service.SignalingService;
+
 public class WakeFulReceiver extends WakefulBroadcastReceiver {
     public WakeFulReceiver() {
     }

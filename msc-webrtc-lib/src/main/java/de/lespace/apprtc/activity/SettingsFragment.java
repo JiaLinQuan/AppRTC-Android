@@ -8,10 +8,12 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-package de.lespace.apprtc;
+package de.lespace.apprtc.activity;
 
 import android.os.Bundle;
 import android.preference.PreferenceFragment;
+
+import de.lespace.apprtc.R;
 
 /**
  * Settings fragment for AppRTC.

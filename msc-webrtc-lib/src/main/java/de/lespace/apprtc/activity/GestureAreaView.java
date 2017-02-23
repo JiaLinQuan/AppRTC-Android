@@ -1,4 +1,4 @@
-package de.lespace.apprtc;
+package de.lespace.apprtc.activity;
 
 import android.content.Context;
 import android.content.Intent;
@@ -10,6 +10,8 @@ import android.util.AttributeSet;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
+
+import de.lespace.apprtc.MyGestureListener;
 
 public class GestureAreaView extends View  {
 

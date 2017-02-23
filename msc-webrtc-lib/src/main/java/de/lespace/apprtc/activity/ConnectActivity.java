@@ -8,7 +8,7 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-package de.lespace.apprtc;
+package de.lespace.apprtc.activity;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -31,10 +31,18 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.Toast;
+
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import java.util.ArrayList;
 import java.util.List;
+
+import de.lespace.apprtc.PeerConnectionClient;
+import de.lespace.apprtc.QuickstartPreferences;
+import de.lespace.apprtc.R;
+import de.lespace.apprtc.RTCConnection;
+import de.lespace.apprtc.service.SignalingService;
 
 
 /**
@@ -43,6 +51,7 @@ import java.util.List;
 public class ConnectActivity extends RTCConnection {
 
   private static final String TAG = "ConnectActivity";
+  private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
 
   private ImageButton connectButton;
   private String keyprefFrom;
@@ -72,6 +81,7 @@ public class ConnectActivity extends RTCConnection {
 
   private BroadcastReceiver networkchangeBroadcastReceiver;
   private boolean isNetworkChangeReceiverRegistered;
+
 
   // List of mandatory application permissions.
   private static final String[] MANDATORY_PERMISSIONS = {
@@ -193,6 +203,7 @@ public class ConnectActivity extends RTCConnection {
     // Registering BroadcastReceiver
     registerNetworkChangeReceiver();
 
+
     // Get video resolution from settings.
     int videoWidth = 0;
     int videoHeight = 0;
@@ -312,7 +323,7 @@ public class ConnectActivity extends RTCConnection {
 
 
             Intent intent = getIntent();
-            Log.i(TAG, "created apprtc with roomUri:" + wsurl.toString() + " from:" + from);
+            Log.i(TAG, "created apprtc with uri:" + wsurl.toString() + " from:" + from);
 
             Log.i(TAG, "intent.EXTRA_TO:"+intent.getStringExtra(RTCConnection.EXTRA_TO));
             Log.i(TAG, "intent.EXTRA_FROM:"+intent.getStringExtra(RTCConnection.EXTRA_FROM));
@@ -322,10 +333,25 @@ public class ConnectActivity extends RTCConnection {
                     && !intent.getStringExtra(RTCConnection.EXTRA_TO).equals("")){
 
                   RTCConnection.to = intent.getStringExtra(RTCConnection.EXTRA_TO);
-                 // RTCConnection.from = intent.getStringExtra(RTCConnection.EXTRA_FROM);
+                  RTCConnection.from = intent.getStringExtra(RTCConnection.EXTRA_FROM);
                   RTCConnection.initiator = intent.getBooleanExtra(RTCConnection.EXTRA_INITIATOR,false);;
                   connectToUser();
             }
+
+          /*  if(intent.getStringExtra(RTCConnection.EXTRA_TO)!=null
+                    && !intent.getStringExtra(RTCConnection.EXTRA_TO).equals("")){
+
+                  RTCConnection.to = intent.getStringExtra(RTCConnection.EXTRA_TO);
+                 // RTCConnection.from = intent.getStringExtra(RTCConnection.EXTRA_FROM);
+                  RTCConnection.initiator = intent.getBooleanExtra(RTCConnection.EXTRA_INITIATOR,false);;
+
+              Intent serviceIntent = new Intent(this,SignalingService.class);
+              serviceIntent.putExtra(RTCConnection.EXTRA_FROM, RTCConnection.to);
+
+			  //WebRTC-Signaling
+			  startService(intent);
+            }*/
+
 
   }
 
@@ -470,45 +496,5 @@ public class ConnectActivity extends RTCConnection {
     super.onStop();
 
   }
-/*
-  public static class CallDialogFragment extends DialogFragment {
 
-    public CallDialogFragment() {
-
-    }
-
-    @Override
-    public Dialog onCreateDialog(Bundle savedInstanceState) {
-      // Build the dialog and set up the button click handlers
-      // 1. Instantiate an AlertDialog.Builder with its constructor
-      AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-
-// 2. Chain together various setter methods to set the dialog characteristics
-      builder.setMessage(R.string.calldialog_question).setTitle(R.string.calldialog_title);
-      // Add the buttons
-      builder.setPositiveButton(R.string.calldialog_answer, new DialogInterface.OnClickListener() {
-        public void onClick(DialogInterface dialog, int id) {
-
-          Intent intent = new Intent(getActivity(), CallActivity.class);
-          intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-          r.stop();
-          startActivityForResult(intent, CONNECTION_REQUEST);
-
-        //  startActivity(intent);
-        }
-      });
-      builder.setNegativeButton(R.string.calldialog_hangung, new DialogInterface.OnClickListener() {
-        public void onClick(DialogInterface dialog, int id) {
-          // User cancelled the dialog send stop message to peer.
-          r.stop();
-          SignalingService.appRTCClient.sendStopToPeer();
-          ;
-        }
-      });
-
-// 3. Get the AlertDialog from create()
-
-      return builder.create();
-    }
-  }*/
 }

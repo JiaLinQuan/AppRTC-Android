@@ -61,7 +61,7 @@ import java.util.Scanner;
  *      jumping up and back down we might create faulty CPU load readings.
  */
 
-class CpuMonitor {
+public class CpuMonitor {
   private static final int SAMPLE_SAVE_NUMBER = 10;  // Assumed to be >= 3.
   private int[] percentVec = new int[SAMPLE_SAVE_NUMBER];
   private int sum3 = 0;

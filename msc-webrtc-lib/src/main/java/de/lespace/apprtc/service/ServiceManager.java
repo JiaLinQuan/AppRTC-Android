@@ -1,4 +1,4 @@
-package de.lespace.apprtc;
+package de.lespace.apprtc.service;
 
 import android.app.Service;
 import android.content.Context;

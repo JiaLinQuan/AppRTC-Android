@@ -1,4 +1,4 @@
-package de.lespace.apprtc;
+package de.lespace.apprtc.service;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -14,6 +14,6 @@ public class ServiceDestroyReceiver extends BroadcastReceiver {
         Log.d(TAG, "onReceive...");
         Log.d(TAG, "action:" + intent.getAction());
         Log.d(TAG, "ServeiceDestroy auto start service...");
-        ServiceManager.startService();
+      //  ServiceManager.startService();
     }
 }

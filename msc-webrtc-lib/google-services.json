@@ -1,27 +1,58 @@
 {
   "project_info": {
-    "project_number": "1059503121530",
-    "firebase_url": "https://le-space-webrtc.firebaseio.com",
-    "project_id": "le-space-webrtc",
-    "storage_bucket": "le-space-webrtc.appspot.com"
+    "project_number": "589982886599",
+    "firebase_url": "https://mscwebrtc.firebaseio.com",
+    "project_id": "mscwebrtc",
+    "storage_bucket": "mscwebrtc.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:1059503121530:android:f36173e948059ccb",
+        "mobilesdk_app_id": "1:589982886599:android:5920de3503a2d18c",
         "android_client_info": {
-          "package_name": "de.lespace.mscrtc"
+          "package_name": "com.google.firebase.quickstart.fcm"
         }
       },
       "oauth_client": [
         {
-          "client_id": "1059503121530-ed58ln2s813feeu2v7speinm759f99qu.apps.googleusercontent.com",
+          "client_id": "589982886599-j5umq3btdtr165eeg6jfo53khr7ddtco.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyB1lKLIZ_9wixONhxQlcDUo6lrNU1AUNSM"
+          "current_key": "AIzaSyD8RX1cDpGOtLmYQeZ3smZDlnk6Km2wSck"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:589982886599:android:5113fde9c93272ec",
+        "android_client_info": {
+          "package_name": "de.lespace.apprtc"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "589982886599-j5umq3btdtr165eeg6jfo53khr7ddtco.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD8RX1cDpGOtLmYQeZ3smZDlnk6Km2wSck"
         }
       ],
       "services": {

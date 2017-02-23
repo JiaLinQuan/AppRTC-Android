@@ -404,6 +404,7 @@ public class WebSocketRTCClient implements AppRTCClient {
     }
 
       public void call(final SessionDescription sdp)  {
+          Log.d(TAG, "outgoing call from:"+RTCConnection.from+ " to:"+RTCConnection.to);
           executor.execute(new Runnable() {
               @Override
               public void run() {

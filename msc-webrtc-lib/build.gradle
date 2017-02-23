@@ -1,6 +1,7 @@
-//apply plugin: 'com.android.application'
 apply plugin: 'com.android.library'
 apply plugin: 'com.github.dcendents.android-maven'
+
+
 group='com.github.inspiraluna'
 version = '2.0'
 
@@ -12,7 +13,6 @@ android {
         jni.srcDirs = [] //disable automatic ndk-build call
     }
     defaultConfig {
-      //  applicationId "de.lespace.apprtc"
         minSdkVersion 17
         targetSdkVersion 23
 
@@ -56,6 +56,11 @@ dependencies {
     compile 'com.neovisionaries:nv-websocket-client:1.30'
     compile 'com.facebook.android:facebook-android-sdk:4.0.0'
     compile 'com.android.support:appcompat-v7:23.4.0'
+
+    compile 'com.google.firebase:firebase-core:10.2.0'
+    compile 'com.google.firebase:firebase-messaging:10.2.0'
+    compile 'com.google.android.gms:play-services:10.2.0'
+    compile 'com.microsoft.thrifty:thrifty-runtime:0.3.2'
 }
 
-//apply plugin: 'com.google.gms.google-services'
+apply plugin: 'com.google.gms.google-services'

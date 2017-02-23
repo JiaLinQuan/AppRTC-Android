@@ -8,7 +8,7 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-package de.lespace.apprtc;
+package de.lespace.apprtc.activity;
 
 import android.app.FragmentTransaction;
 import android.content.BroadcastReceiver;
@@ -29,6 +29,14 @@ import org.webrtc.RendererCommon;
 import org.webrtc.RendererCommon.ScalingType;
 import org.webrtc.StatsReport;
 import org.webrtc.SurfaceViewRenderer;
+
+import de.lespace.apprtc.AppRTCAudioManager;
+import de.lespace.apprtc.PeerConnectionClient;
+import de.lespace.apprtc.PercentFrameLayout;
+import de.lespace.apprtc.R;
+import de.lespace.apprtc.RTCConnection;
+import de.lespace.apprtc.UnhandledExceptionHandler;
+import de.lespace.apprtc.service.SignalingService;
 
 
 /**
@@ -124,8 +132,7 @@ public class CallActivity extends RTCConnection implements
 
     localRenderLayout = (PercentFrameLayout) findViewById(R.id.local_video_layout);
     remoteRenderLayout = (PercentFrameLayout) findViewById(R.id.remote_video_layout);
-
-      screenRenderLayout = (PercentFrameLayout) findViewById(R.id.remote_screen_layout);
+        screenRenderLayout = (PercentFrameLayout) findViewById(R.id.remote_screen_layout);
 
 
       // Show/hide call control fragment on view click.
@@ -195,11 +202,11 @@ public class CallActivity extends RTCConnection implements
             localRender, remoteRender, screenRender,
             RTCConnection.initiator);
 
-    logAndToast("Creating OFFER...");
+        Log.d(TAG, "created PeerConnection");
     // Create offer. Offer SDP will be sent to answering client in
     // PeerConnectionEvents.onLocalDescription event.
     peerConnectionClient.createOffer();
-
+        Log.d(TAG, "created offer");
   }
 
     private void onAudioManagerChangedState() {

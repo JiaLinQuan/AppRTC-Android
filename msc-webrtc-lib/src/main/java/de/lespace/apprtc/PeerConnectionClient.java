@@ -538,19 +538,19 @@ public class PeerConnectionClient {
       Log.e(TAG, "Peerconnection factory is not created");
       return;
     }
-    Log.d(TAG, "Create peer connection.");
+    Log.d(TAG, "Create peer connection.0");
 
     Log.d(TAG, "PCConstraints: " + pcConstraints.toString());
     if (videoConstraints != null) {
       Log.d(TAG, "VideoConstraints: " + videoConstraints.toString());
     }
     queuedRemoteCandidates = new LinkedList<IceCandidate>();
-
+    Log.d(TAG, "Create peer connection.1");
     if (videoCallEnabled) {
       Log.d(TAG, "EGLContext: " + renderEGLContext);
       factory.setVideoHwAccelerationOptions(renderEGLContext, renderEGLContext);
     }
-
+    Log.d(TAG, "Create peer connection.2");
     PeerConnection.RTCConfiguration rtcConfig = new PeerConnection.RTCConfiguration(SignalingParameters.iceServers);
     // TCP candidates are only useful when connecting to a server that supports
     // ICE-TCP.
@@ -559,9 +559,9 @@ public class PeerConnectionClient {
     rtcConfig.rtcpMuxPolicy = PeerConnection.RtcpMuxPolicy.REQUIRE;
     // Use ECDSA encryption.
     rtcConfig.keyType = PeerConnection.KeyType.ECDSA;
-
+    Log.d(TAG, "Create peer connection.4 rtcConfig:"+rtcConfig+" pcConstraints:"+(pcConstraints!=null)+" pcObserver:"+(pcObserver!=null));
     peerConnection = factory.createPeerConnection(rtcConfig, pcConstraints, pcObserver);
-
+    Log.d(TAG, "Create peer connection.5");
     //isInitiator = false;
 
     // Set default WebRTC tracing and INFO libjingle logging.
@@ -594,6 +594,7 @@ public class PeerConnectionClient {
     }
 
     if(!isScreenSharingConnection()) {
+      Log.d(TAG, "add stream");
       mediaStream.addTrack(factory.createAudioTrack(
               AUDIO_TRACK_ID,
               factory.createAudioSource(audioConstraints)));
@@ -728,11 +729,12 @@ public class PeerConnectionClient {
   }
 
   public void createOffer() {
+    Log.d(TAG, "PC Create OFFER 1 peerConnection:"+(peerConnection!=null)+" isError:"+isError);
     executor.execute(new Runnable() {
       @Override
       public void run() {
         if (peerConnection != null && !isError) {
-          Log.d(TAG, "PC Create OFFER");
+          Log.d(TAG, "PC Create OFFER 2");
           peerConnection.createOffer(sdpObserver, sdpMediaConstraints);
         }
       }

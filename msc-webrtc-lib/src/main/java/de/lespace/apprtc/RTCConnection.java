@@ -17,9 +17,12 @@ import org.webrtc.StatsReport;
 
 import java.util.ArrayList;
 
+import de.lespace.apprtc.service.SignalingService;
+
 
 public abstract class RTCConnection extends Activity implements
         PeerConnectionClient.PeerConnectionEvents {
+
 
     public final static String EXTRA_INITIATOR = "de.lespace.mscwebrtc.INITIATOR";
     public final static String EXTRA_TO = "de.lespace.mscwebrtc.TO";
@@ -41,6 +44,8 @@ public abstract class RTCConnection extends Activity implements
     public static final String EXTRA_DISPLAY_HUD = "de.lespace.mscwebrtc.DISPLAY_HUD";
     public static final String EXTRA_TRACING = "de.lespace.mscwebrtc.TRACING";
     public static final String EXTRA_RUNTIME = "de.lespace.mscwebrtc.RUNTIME";
+    public static final String EXTRA_MSC_REGISTRATION = "de.lespace.mscwebrtc.MSC_REGISTRATION";
+    public static final String EXTRA_SIGNALING_REGISTRATION = "de.lespace.mscwebrtc.SIGNALING_REGISTRATION";
     public static final int CONNECTION_REQUEST = 1;
 
     public static PeerConnectionClient peerConnectionClient = null;
