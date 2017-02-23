@@ -14,12 +14,14 @@ import java.io.IOException;
 
 /**
  * Created by nico on 18.02.17.
+ * This Thrift-Client AsyncTask is a simple Mock-Call to a running Thrift-Server.
+ * Please replace or use.
  */
 
 public class ThriftCallAsyncTask extends AsyncTask<String, Void, CallResult> {
 
     private static final String TAG = "TCAT";
-    public static final String SERVER_IP = "192.168.43.151"; //"192.168.43.151"
+    public static final String SERVER_IP = "nicokrause.com"; //"192.168.43.151"
     @Override
     protected CallResult doInBackground(String... params) {
         Log.i(TAG, "calling from:"+params[0]+" to:"+params[1]+" over MSC");

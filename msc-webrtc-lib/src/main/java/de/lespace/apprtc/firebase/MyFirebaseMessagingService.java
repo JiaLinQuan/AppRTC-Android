@@ -64,12 +64,13 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         Log.d(TAG, "we should call to:" + remoteMessage.getData().get("fromUUID")+" but callto 'chrome' now!");
         Intent connectIntent = new Intent(getApplicationContext(), IncomingCall.class);
         String to = "chrome";
-      /*  RTCConnection.from = remoteMessage.getData().get("toUUID");
+        RTCConnection.from = remoteMessage.getData().get("toUUID");
         RTCConnection.to = to;
-        RTCConnection.initiator = true;*/
+        RTCConnection.initiator = true;
+        /*
         connectIntent.putExtra(RTCConnection.EXTRA_TO, to);
         connectIntent.putExtra(RTCConnection.EXTRA_FROM, remoteMessage.getData().get("toUUID"));
-        connectIntent.putExtra(RTCConnection.EXTRA_INITIATOR, true);
+        connectIntent.putExtra(RTCConnection.EXTRA_INITIATOR, true);*/
         connectIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(connectIntent);
 
